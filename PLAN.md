@@ -64,7 +64,7 @@ Done when: `make check` passes locally and in CI with a placeholder test.
       .editorconfig.
 - [x] `docs: add Claude Code instructions and build plan`
       CLAUDE.md and PLAN.md.
-- [ ] `chore: add Python project tooling`
+- [x] `chore: add Python project tooling`
       pyproject.toml, ruff config, pytest config, Makefile with `check`,
       empty `prospect/` package, one placeholder test.
 - [ ] `chore(db): add PostGIS via docker compose`
