@@ -67,7 +67,7 @@ Done when: `make check` passes locally and in CI with a placeholder test.
 - [x] `chore: add Python project tooling`
       pyproject.toml, ruff config, pytest config, Makefile with `check`,
       empty `prospect/` package, one placeholder test.
-- [ ] `chore(db): add PostGIS via docker compose`
+- [x] `chore(db): add PostGIS via docker compose`
       docker-compose.yml, .env.example, `make db-up` and `make db-down`.
 - [ ] `ci: run lint and tests on push and pull request`
       GitHub Actions workflow for Python.
