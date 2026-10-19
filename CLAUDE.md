@@ -6,10 +6,11 @@ at the start of every session.
 ## What this project is
 
 A prospecting tool for behind-the-meter battery storage in Massachusetts. It
-ranks commercial and industrial buildings by estimated demand-charge savings
-from a standard battery fleet, with an uncertainty range and the reasons for
-each rank, grouped by region so someone preparing for a local chamber of
-commerce event knows which buildings to talk to.
+ranks commercial and industrial sites by model confidence: the probability
+that a standard battery block pays for itself and still leaves the host a
+minimum yearly benefit. Each rank comes with a band and the reasons, grouped
+by region so someone preparing for a local chamber of commerce event knows
+which buildings to talk to.
 
 It uses public data only. It is not affiliated with Powertown and does not use
 Powertown's data.
@@ -83,6 +84,9 @@ Never rewrite history on main.
 - The CLI and the web app must show which placeholders are in use.
 - Never describe outputs as accurate unless a validation metric in
   `docs/VALIDATION.md` supports it.
+- Peak shape is unvalidated until real interval meter data tests it.
+  Calibration covers only the annual energy estimate.
+- Never present model confidence as accurate.
 - Credit the earlier public prototype (github.com/thutch17/powertown-hackathon)
   as prior work. Do not call it a hackathon entry or say how it placed.
 - Do not claim anything about Powertown's customers, contracts or revenue split.
