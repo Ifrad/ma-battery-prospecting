@@ -27,8 +27,9 @@ range and the reasons, grouped by region.
    electricity counts as missing, never as zero.
 2. Every site shows a P10 to P90 range, not a single score.
 3. Nonprofit hospitals are included rather than silently filtered out:
-   state code 955, 9550 or 955V, Boston code 979, or an owner name
-   containing HOSPITAL, MEDICAL CENTER or HEALTH.
+   state code 955 or 9550, Boston code 979, or an owner name containing
+   HOSPITAL, MEDICAL CENTER or HEALTH. Vacant land (`955V`) is not a
+   hospital.
 4. Every ranked site has an owner name and site address for outreach.
 
 ## Verified facts this plan relies on
@@ -39,7 +40,7 @@ range and the reasons, grouped by region.
   no bld_area, and Brockton has no year_built for any of them.
 - Boston's assessor code list has 305 for private taxable hospitals, 979 for
   exempt hospitals and 414 for food processing plants. Code 979 is used
-  only in Boston. Other towns use the state code 955 (or 9550, 955V) for
+  only in Boston. Other towns use the state code 955 (or 9550) for
   charitable hospitals.
 - DOER's Large Building Energy Reporting covers buildings of 20,000 sq ft or
   more statewide. Utilities report usage, DOER publishes by October 31 each
@@ -142,17 +143,30 @@ is reported, and exempt hospitals appear.
 
 - [ ] `feat(config): add assessor use code classes`
       config/use_codes.yaml: 300 to 499 as commercial and industrial, plus
-      exempt hospitals (955, 9550, 955V statewide, 979 in Boston), with each
-      code's source. Normalize 4 character codes such as `9550` and `955V`.
+      exempt hospitals (955 and 9550 statewide, 979 in Boston), with each
+      code's source. Normalize 4 character codes such as `9550`. A fourth
+      character `V` means vacant land (`955V` is "EXEMPT VACANT LAND"), so
+      those codes are never a hospital, even when the owner name matches.
       Mark codes not yet checked against the statewide list as placeholders.
 - [ ] `feat(sites): build site table from parcels and footprints`
       SQL migration creating `sites` with area, year built, use code, owner,
       site address and geometry. Where bld_area is missing, use footprint
       area times stories, or footprint area alone if stories is missing, and
-      flag which one was used. Year built is optional.
+      flag which one was used. Year built is optional. No size floor: keep
+      every site and let the model decide.
+- [ ] `feat(sites): group hospital parcels that share an owner into one site`
+      In the pilot, 145 of 205 hospital parcels share an owner with another
+      parcel. Normalize owner names first (punctuation, INC, CORP, CO, THE,
+      and names cut off at about 30 characters), since one owner appears as
+      `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. Group only within
+      a town and only parcels that touch or lie within a set distance, kept
+      in config as a placeholder, so scattered parcels of one owner stay
+      separate sites.
 - [ ] `feat(sites): assign electric utility and flag municipal light plants`
       Join on TOWN_ID, no spatial join. Flag sites in multi-provider towns
-      as unknown utility.
+      as unknown utility. In the pilot, six towns have a municipal light
+      plant and must be flagged: Boylston, Holden, Paxton, Princeton,
+      Sterling and West Boylston.
 - [ ] `feat(sites): match sites to LBER records`
       Point in parcel plus address normalization, match confidence, and a
       table of unmatched rows.
