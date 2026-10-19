@@ -1,6 +1,10 @@
-.PHONY: check lint test db-up db-down
+-include .env
+export
+
+.PHONY: check lint test db-up db-down migrate
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
+PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
 
 check: lint test
 
@@ -17,3 +21,6 @@ db-up:
 # Keeps the pgdata volume. Use `docker compose down -v` to wipe it.
 db-down:
 	docker compose down
+
+migrate:
+	$(PY) -m prospect.migrate

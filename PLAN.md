@@ -89,7 +89,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `feat(ingest): add HTTP client with retries and rate limiting`
       httpx plus tenacity, exponential backoff, a polite delay between pages,
       a user agent. Tests use a mocked transport.
-- [ ] `feat(db): add migration runner and provenance table`
+- [x] `feat(db): add migration runner and provenance table`
       Numbered SQL migrations, `make migrate`, an `ingest_runs` table with
       source, url, started_at, finished_at, rows, sha256 and status.
 - [ ] `feat(ingest): add schema probe for data sources`
