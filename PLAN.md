@@ -92,7 +92,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `feat(db): add migration runner and provenance table`
       Numbered SQL migrations, `make migrate`, an `ingest_runs` table with
       source, url, started_at, finished_at, rows, sha256 and status.
-- [ ] `feat(ingest): add schema probe for data sources`
+- [x] `feat(ingest): add schema probe for data sources`
       A command that fetches one page from each source and prints field
       names and types. No database writes.
 - [ ] `docs(data): record source schemas, licenses and gaps`
