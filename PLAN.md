@@ -69,7 +69,7 @@ Done when: `make check` passes locally and in CI with a placeholder test.
       empty `prospect/` package, one placeholder test.
 - [x] `chore(db): add PostGIS via docker compose`
       docker-compose.yml, .env.example, `make db-up` and `make db-down`.
-- [ ] `ci: run lint and tests on push and pull request`
+- [x] `ci: run lint and tests on push and pull request`
       GitHub Actions workflow for Python.
 
 Kickoff prompt:
