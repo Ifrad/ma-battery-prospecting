@@ -122,7 +122,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
       since each October 31 release is likely a new layer. Record the
       reporting year on every row. Zero grid electricity is stored as
       missing.
-- [ ] `chore(ingest): add ingest summary report`
+- [x] `chore(ingest): add ingest summary report`
       `make ingest` prints rows per source and region and any failures.
 
 Kickoff prompt:
