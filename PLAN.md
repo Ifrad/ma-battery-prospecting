@@ -186,7 +186,7 @@ Evidence flags, per building and per site:
       records (3,391 in the pilot) follow one documented rule, and the 52
       that mix residential and C&I records are flagged. No size floor: keep
       every building and let the model decide.
-- [ ] `feat(sites): group buildings into outreach sites`
+- [x] `feat(sites): group buildings into outreach sites`
       A site is the buildings on touching parcels with the same normalized
       owner, within one town, for every owner, not only hospitals.
       Normalize owner names first (punctuation, INC, CORP, CO, THE, and
