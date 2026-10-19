@@ -1,0 +1,69 @@
+# Assessor use code classes. A parcel's class comes from its USE_CODE in the
+# MassGIS L3 parcels. Codes with no class here (residential, open space,
+# most exempt property, municipal) are not candidates yet.
+
+# The state classification is three digits. Many towns add a fourth
+# character (9550, 955C, 3160): in the pilot, 48 of 53 towns do, and the
+# description stays that of the first three digits. A fourth character V
+# marks vacant land ("955V" is "EXEMPT VACANT LAND", none of its 19 pilot
+# parcels has a building), so V codes never get a class, even when the
+# owner name matches a keyword.
+normalize:
+  class_from: first 3 characters
+  vacant_suffix: V
+  status: placeholder
+  note: >-
+    Inferred from the pilot data (USE_CODE and USE_DESC), not from a DOR
+    document, which defines three digit codes only. Check if a town's
+    fourth character turns out to mean something else.
+
+classes:
+  commercial_industrial:
+    ranges: [[300, 499]]
+    status: sourced
+    source: >-
+      Massachusetts Property Type Classification Codes (DOR, 2019): 3xx
+      Commercial, 4xx Industrial, as reproduced in EPA CII General Permit
+      Appendix H, https://www.epa.gov/system/files/documents/2024-10/appendix-h-matax-assessor-use-code-for-cii-land-uses.pdf
+    note: Includes 305 Private Hospitals (taxable), segmented in a later task.
+
+  hospital:
+    codes: ["955"]
+    status: sourced
+    source: >-
+      DOR 2019 classification, 955 Hospitals (charitable organization), as
+      reproduced in EPA CII General Permit Appendix H (link above).
+    note: >-
+      Normalization also catches town variants seen in the pilot: 9550,
+      955C, 9551, 9552, 955R. 955V is vacant land and excluded.
+
+  hospital_boston:
+    codes: ["979"]
+    town_ids: [35]
+    status: sourced
+    source: >-
+      City of Boston assessor code list (979 exempt hospital). In MassGIS L3
+      all 189 parcels coded 979 are in Boston, described "HOSPITAL
+      (EXEMPT)". 979 is not a state code, so it applies to Boston only.
+
+  mixed_commercial_industrial:
+    prefixes: ["03", "04"]
+    status: placeholder
+    note: >-
+      DOR multiple-use codes whose first class is commercial (03x, for
+      example 031 "primarily Commercial") or industrial (04x). Not in the
+      plan's classes; included as a placeholder because Worcester's largest
+      hospital parcel is coded 049C. The owner decides whether these stay.
+
+  charitable_former:
+    codes: ["905"]
+    status: placeholder
+    note: >-
+      Retired code, described in L3 as "formerly Charitable Organizations
+      (private hospitals, etc...). Removed June 2009." Still on about 100
+      pilot parcels, some owned by hospitals. Not counted as a hospital by
+      code; the segment task's owner keywords decide.
+
+# Open decision for the owner: municipal property (DOR 9xx government
+# codes) is not covered by any class yet. Whether to add a municipal class
+# has not been decided.
