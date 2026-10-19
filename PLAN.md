@@ -15,22 +15,23 @@ highest 15-minute spike each month. A battery can shave that spike. A company
 that installs batteries at no upfront cost and shares the savings earns money
 only if the site has large, predictable peaks, so choosing sites is choosing
 revenue. Before a business shares meter data, nobody knows its peak. This tool
-estimates it from public data and ranks sites by the probability that a
-standard battery pays for itself and still leaves the host a minimum yearly
-benefit, with a band and the reasons, grouped by region.
+estimates it from public data and ranks sites by model confidence, the
+probability that a standard battery pays for itself and still leaves the host
+a minimum yearly benefit, with a band and the reasons, grouped by region.
 
 ## What "better than size ranking" means, measurably
 
 1. On buildings with reported grid electricity in DOER LBER, the model's
    annual kWh estimate beats a size-only estimate on Spearman correlation
    and median absolute percent error, with whole towns held out. Measured
-   statewide, with the pilot towns reported separately. Zero grid
-   electricity counts as missing, never as zero.
-2. Every site shows the probability that its total value exceeds the
-   annualized battery cost plus a minimum yearly benefit for the host,
-   with a band and its evidence flags, not a single point estimate. The
-   annual energy estimate behind it is checked for calibration. Peak shape
-   is unvalidated until real interval meter data tests it.
+   statewide, with the pilot towns reported separately. Zero or negative
+   grid electricity counts as missing, never as zero.
+2. Every site shows its model confidence: the probability that its total
+   value exceeds the annualized battery cost plus a minimum yearly benefit
+   for the host, with a band and its evidence flags, not a single point
+   estimate. The annual energy estimate behind it is checked for
+   calibration. Peak shape is unvalidated until real interval meter data
+   tests it.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
    HOSPITAL or MEDICAL CENTER. Vacant land (`955V`) is not a
@@ -61,8 +62,9 @@ on this list gets verified before it is relied on.
 
 ## Pilot scope
 
-Start with two regions tied to chambers Powertown is publicly active in:
-Metro South (Brockton) and Worcester. Statewide comes after the pilot works.
+Start with two regions I chose: Metro South (Brockton) and Worcester, each
+defined by its chamber of commerce's service area. Nothing here claims where
+Powertown operates. Statewide comes after the pilot works.
 
 ---
 
@@ -126,8 +128,8 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `feat(ingest): load DOER large building energy data`
       Into `raw_lber`. The layer URL and reporting year live in config,
       since each October 31 release is likely a new layer. Record the
-      reporting year on every row. Zero grid electricity is stored as
-      missing.
+      reporting year on every row. Zero or negative grid electricity is
+      stored as missing.
 - [x] `chore(ingest): add ingest summary report`
       `make ingest` prints rows per source and region and any failures.
 
@@ -173,6 +175,8 @@ Evidence flags, per building and per site:
       character `V` means vacant land (`955V` is "EXEMPT VACANT LAND"), so
       those codes are never a hospital, even when the owner name matches.
       Mark codes not yet checked against the statewide list as placeholders.
+      Municipal sites are not covered by these classes yet. Whether to add
+      a municipal class is an open decision for the owner.
 - [ ] `feat(sites): build the building table from footprints and parcels`
       SQL migration creating `buildings`: one row per footprint, linked to
       the parcel it sits in, with owner, site address, use code, year built
@@ -251,16 +255,28 @@ placeholders and each sourced value names its source.
       filed tariffs. Anything not read from a tariff stays a placeholder.
 - [ ] `feat(config): add battery block specification`
       config/battery.yaml for the standard deployment, one battery block:
-      250 kW, 522 kWh (two cabinets in parallel), 97.5 percent PCS
-      efficiency, usable depth of discharge 90 percent (placeholder, the
-      spec does not state it). That gives about 1.8 hours at full power.
+      250 kW, 522 kWh and 97.5 percent PCS efficiency, status sourced, from
+      the manufacturer's product page
+      (https://www.powertownusa.com/product), read 2026-10-19. The page
+      lists "typical deployment: two cabinets in parallel" with weight and
+      dimensions per cabinet, and does not say whether 250 kW and 522 kWh
+      are per cabinet or for the pair. We treat them as totals for the
+      pair, marked as an assumption. Usable depth of discharge 90 percent
+      stays a placeholder: the page does not state it. That gives about
+      1.8 hours at full power. In config, `source:` lines say
+      "manufacturer product page, see docs/METHOD.md", since the Powertown
+      name appears only in docs.
 - [ ] `feat(config): add cost assumptions`
-      Each with status and source: installed cost $180,000 (low case from
-      2026 vendor ranges, pending Powertown's real number) and $260,000
-      (middle case), 10-year life (matches the warranty), 8 percent
-      financing (placeholder), $4,000 a year O&M (vendor estimate). The 30
-      percent ITC is a scenario setting, default off, with a note that FEOC
-      sourcing rules decide eligibility.
+      Each with status and source. Installed cost $180,000 (low case) and
+      $260,000 (middle case): both the owner's own estimates, unverified,
+      pending Powertown's real number. Life 10 years: sourced, the stated
+      warranty on the manufacturer's product page, with the page's 15 to 20
+      year claim as a sensitivity case, not an input. Financing 8 percent:
+      placeholder. O&M $4,000 a year: unverified estimate. The 30 percent
+      ITC is a scenario setting, default off, with a note that FEOC
+      sourcing rules decide eligibility. The page's claims of "1 to 3
+      months off your bill" and recovering costs "by year two or three"
+      are not inputs.
 - [ ] `feat(config): add minimum host benefit`
       The minimum yearly benefit a host must get for the deal to be worth
       offering, in dollars a year, added to the annualized cost in the
@@ -287,15 +303,18 @@ placeholders and each sourced value names its source.
       buildings with measured grid electricity count.
 - [ ] `docs(method): document priors and how to recalibrate`
       docs/METHOD.md section on priors, battery and cost assumptions,
-      including what to rerun after each October 31 LBER release.
+      including what to rerun after each October 31 LBER release. Record
+      the manufacturer product page URL
+      (https://www.powertownusa.com/product) and its read date,
+      2026-10-19, which the config `source:` lines point to.
 
 ---
 
 ## Phase 4: Economics model  (branch `phase-4-model`, tag v0.4.0)
 
-Goal: for each site, the probability that a standard battery deployment
-clears the profit hurdle (annualized cost plus the minimum host benefit),
-with a band, under each scenario.
+Goal: for each site, its model confidence that a standard battery
+deployment clears the profit hurdle (annualized cost plus the minimum host
+benefit), with a band, under each scenario.
 Done when: `make score` writes a scored row per site and scenario with the
 model confidence, P10, P50 and P90 of total value, expected
 blocks and top drivers, and model tests pass.
@@ -318,20 +337,20 @@ blocks and top drivers, and model tests pass.
 - [ ] `feat(model): add grid program revenue`
       ConnectedSolutions only where the utility is eligible, discounted by
       the overlap factor. Tests: municipal sites get none.
-- [ ] `feat(model): score the probability of clearing the profit hurdle`
-      The headline score, called model confidence: the probability that
-      total value (demand savings plus grid revenue) exceeds the
-      annualized battery cost (installed cost over life at the financing
-      rate, plus O&M) plus the minimum yearly host benefit from config. It
-      does not depend on the host share split. Tests: higher cost or a
-      higher minimum host benefit never raises model confidence.
+- [ ] `feat(model): compute model confidence for the profit hurdle`
+      Model confidence is the probability that total value (demand
+      savings plus grid revenue) exceeds the annualized battery cost
+      (installed cost over life at the financing rate, plus O&M) plus the
+      minimum yearly host benefit from config. It does not depend on the
+      host share split. Tests: higher cost or a higher minimum host
+      benefit never raises model confidence.
 - [ ] `feat(model): run scenarios`
       With and without ITC, and with and without ConnectedSolutions. Every
       score names its scenario.
 - [ ] `feat(model): split savings between host and operator`
       Host share as a parameter. It only changes the site panel numbers
-      (host share, operator share minus annualized cost), never the
-      headline score.
+      (host share, operator share minus annualized cost), never model
+      confidence.
 - [ ] `feat(model): attribute results to input drivers`
       Rank correlation between each input and the result.
 - [ ] `feat(model): persist scores with run metadata`
@@ -404,10 +423,11 @@ works on a phone.
 - [ ] `feat(web): show ranked list and map for a region`
       Ranked by model confidence.
 - [ ] `feat(web): color sites by model confidence`
-      One scale: 90 to 100 green, 80 to 90 yellow, 70 to 80 orange, 50 to
-      70 deep orange, below 50 red. Always show the number and a short
-      label next to the color, never color alone. Red sites are hidden by
-      default and shown with one click, with the reason each is red.
+      One scale: 90 and above green, 80 to under 90 yellow, 70 to under 80
+      orange, 50 to under 70 deep orange, under 50 red. Always show the
+      number and a short label next to the color, never color alone. Red
+      sites are hidden by default and shown with one click, with the reason
+      each is red.
 - [ ] `feat(web): add site panel with savings range and reasons`
       Data quality appears as text labels from the evidence flags, not as
       a second color scale.
@@ -435,13 +455,15 @@ Done when: the README follows that structure and every link works on a phone.
 - [ ] `docs: write layered README`
       Top: problem sentence, what it does, GIF, live link, "Start here" path.
       Middle: 2 minute walkthrough link. Bottom: method, validation, limits,
-      how to run. Call the headline score model confidence. State the low
-      cost assumption and the cost sensitivity result, and that shape
-      estimates are unvalidated until real meter data tests them. List open
-      questions for Powertown: installed cost, ITC
+      how to run. Use the term model confidence. State the low cost
+      assumption and the cost sensitivity result, and that shape estimates
+      are unvalidated until real meter data tests them. List open questions
+      for Powertown: how they find sites today, installed cost, ITC
       eligibility, whether ConnectedSolutions stacks with peak shaving, the
       savings split, and how their own meter data could replace the
-      type-based shape estimates.
+      type-based shape estimates. Also list two product page claims to
+      check, which are not used as inputs: "1 to 3 months off your bill"
+      and recovering costs "by year two or three".
 - [ ] `docs: add method, data and limits pages`
 - [ ] `docs: add guide for plugging in operator data`
       docs/POWERTOWN_DATA.md: where real block size, cost, tariffs, meter
