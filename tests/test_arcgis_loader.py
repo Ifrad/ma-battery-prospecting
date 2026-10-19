@@ -115,6 +115,41 @@ def test_lber_zero_or_negative_electricity_is_missing(db):
     assert rows == [(1, 2024, None), (2, 2024, None), (3, 2024, pytest.approx(1e5))]
 
 
+def test_lber_reporting_years_sit_side_by_side(db):
+    field = "Total_Electricity_Use_Purchased_From_Grid__kBtu_"
+
+    def release(ids):
+        return FakeLayer(
+            [
+                {"type": "Feature", "id": i, "geometry": None, "properties": {field: 1}}
+                for i in ids
+            ]
+        )
+
+    def load_year(year, ids):
+        url = f"https://example.test/{year}/FeatureServer/0"
+        arcgis.load(
+            db,
+            client(release(ids)),
+            "lber",
+            url,
+            "raw_lber",
+            "1=1",
+            {"reporting_year": year},
+        )
+
+    def years():
+        return db.execute(
+            "SELECT reporting_year, count(*) FROM raw_lber GROUP BY 1 ORDER BY 1"
+        ).fetchall()
+
+    load_year(2024, [1, 2, 3])
+    load_year(2025, [1, 2])  # a new release reuses object ids
+    assert years() == [(2024, 3), (2025, 2)]
+    load_year(2024, [1, 2])  # reloading one year leaves the other alone
+    assert years() == [(2024, 2), (2025, 2)]
+
+
 def test_rows_gone_from_source_are_removed(db):
     load(db, FakeLayer(FEATURES))
     result = load(db, FakeLayer(FEATURES[:2]))

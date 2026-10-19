@@ -164,7 +164,7 @@ Evidence flags, per building and per site:
 - mixed residential and C&I parcel
 - tenure, ignoring nominal sales
 
-- [ ] `feat(db): keep LBER reporting years side by side`
+- [x] `feat(db): keep LBER reporting years side by side`
       `raw_lber` holds one release today and is keyed on object id alone.
       Add the reporting year to its key so a new October 31 release is
       loaded next to the old one instead of replacing it.

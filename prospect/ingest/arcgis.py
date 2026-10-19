@@ -62,14 +62,16 @@ def fetch_pages(
 
 
 def _start_run(conn, source: str, url: str, scope: str) -> tuple[int, bool]:
-    """Reuse the newest unfinished run for this scope, or start a new one."""
+    """Reuse the newest unfinished run for this layer and scope, or start one."""
     row = conn.execute(
         "SELECT id FROM ingest_runs"
-        " WHERE source = %s AND scope = %s AND status IN ('running', 'failed')"
+        " WHERE source = %s AND url = %s AND scope = %s"
+        " AND status IN ('running', 'failed')"
         " AND id > coalesce((SELECT max(id) FROM ingest_runs"
-        "   WHERE source = %s AND scope = %s AND status = 'succeeded'), 0)"
+        "   WHERE source = %s AND url = %s AND scope = %s"
+        "   AND status = 'succeeded'), 0)"
         " ORDER BY id DESC LIMIT 1",
-        (source, scope, source, scope),
+        (source, url, scope, source, url, scope),
     ).fetchone()
     if row:
         conn.execute(
@@ -96,7 +98,10 @@ def load(
     """Load one scope of a layer into `table`. `conn` must be in autocommit mode.
 
     `extra` holds constant columns written on every row, such as a
-    reporting year.
+    reporting year. They are part of the row's key: the table's primary key
+    must be (extra columns..., objectid), and a load only replaces or
+    deletes rows with the same extra values, so two reporting years sit
+    side by side.
     """
     extra = extra or {}
     run_id, resumed = _start_run(conn, source, url, scope)
@@ -105,8 +110,11 @@ def load(
         sql.SQL(", {}").format(sql.Identifier(c)) for c in extra
     )
     extra_vals = sql.SQL(", %s" * len(extra))
-    extra_set = sql.SQL("").join(
-        sql.SQL(", {0} = EXCLUDED.{0}").format(sql.Identifier(c)) for c in extra
+    key = sql.SQL(", ").join(
+        [sql.Identifier(c) for c in extra] + [sql.Identifier("objectid")]
+    )
+    same_extra = sql.SQL("").join(
+        sql.SQL(" AND {} = %s").format(sql.Identifier(c)) for c in extra
     )
     try:
         oid = object_id_field(client, url)
@@ -122,10 +130,9 @@ def load(
         upsert = sql.SQL(
             "INSERT INTO {t} (objectid, scope, run_id, attrs, geom{cols})"
             " VALUES (%s, %s, %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326){vals})"
-            " ON CONFLICT (objectid) DO UPDATE SET scope = EXCLUDED.scope,"
+            " ON CONFLICT ({key}) DO UPDATE SET scope = EXCLUDED.scope,"
             " run_id = EXCLUDED.run_id, attrs = EXCLUDED.attrs, geom = EXCLUDED.geom"
-            "{sets}"
-        ).format(t=t, cols=extra_cols, vals=extra_vals, sets=extra_set)
+        ).format(t=t, cols=extra_cols, vals=extra_vals, key=key)
         for features in fetch_pages(client, url, scope, oid, after):
             rows = [
                 (
@@ -142,8 +149,10 @@ def load(
                 cur.executemany(upsert, rows)
         with conn.transaction():
             conn.execute(
-                sql.SQL("DELETE FROM {} WHERE scope = %s AND run_id <> %s").format(t),
-                (scope, run_id),
+                sql.SQL("DELETE FROM {} WHERE scope = %s AND run_id <> %s{}").format(
+                    t, same_extra
+                ),
+                (scope, run_id, *extra.values()),
             )
             rows, digest = conn.execute(
                 sql.SQL(
