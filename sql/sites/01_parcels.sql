@@ -8,7 +8,7 @@
 --     RES_AREA is never used.
 --   mixed_res_ci: some record is residential (1xx) and some record has a
 --     commercial, industrial or hospital class.
-TRUNCATE buildings, parcels;
+TRUNCATE sites, buildings, parcels;
 
 INSERT INTO parcels (
     loc_id, town_id, records, prop_id, owner, site_addr, use_code, use_desc,

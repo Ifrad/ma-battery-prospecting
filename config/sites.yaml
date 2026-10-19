@@ -1,0 +1,22 @@
+# How buildings are grouped into outreach sites: buildings on touching
+# parcels with the same normalized owner, within one town.
+
+owner_normalization:
+  # Removed after punctuation is turned into spaces.
+  drop_words: [THE, INC, INCORPORATED, CORP, CORPORATION, CO, COMPANY, LLC, LTD]
+  status: placeholder
+  note: >-
+    Words the pilot data shows varying within one owner, for example
+    BROCKTON HOSPITAL, BROCKTON HOSPITAL INC and BROCKTON HOSPITAL COMPANY
+    THE. Check false merges in the match rate report review.
+  # A name within one character of the longest owner name in its town is
+  # treated as possibly cut off (8 pilot towns cap names at 29 or 30
+  # characters, and a cut name can lose its trailing space). Its last word
+  # is dropped and it may match a longer name that starts with it.
+
+touch_tolerance_m:
+  value: 1.0
+  status: placeholder
+  note: >-
+    Parcels this close count as touching, to allow for small gaps where
+    parcel lines were digitized separately. Not checked against the data.
