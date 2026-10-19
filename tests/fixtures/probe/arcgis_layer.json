@@ -1,0 +1,43 @@
+{
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID"
+  },
+  {
+   "name": "LOC_ID",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "TOWN_ID",
+   "type": "esriFieldTypeInteger"
+  },
+  {
+   "name": "LS_DATE",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "USE_CODE",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "SITE_ADDR",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "OWNER1",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "YEAR_BUILT",
+   "type": "esriFieldTypeInteger"
+  },
+  {
+   "name": "BLD_AREA",
+   "type": "esriFieldTypeInteger"
+  }
+ ],
+ "geometryType": "esriGeometryPolygon",
+ "maxRecordCount": 2000,
+ "name": "Massachusetts Property Tax Parcels"
+}

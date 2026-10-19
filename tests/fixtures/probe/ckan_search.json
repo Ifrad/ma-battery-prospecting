@@ -1,0 +1,44 @@
+{
+ "result": {
+  "fields": [
+   {
+    "id": "_id",
+    "type": "int"
+   },
+   {
+    "id": "BERDO ID",
+    "type": "text"
+   },
+   {
+    "id": "Tax Parcel ID",
+    "type": "text"
+   },
+   {
+    "id": "Building Address Zip  Code",
+    "type": "text"
+   },
+   {
+    "id": "Electricity Usage (kWh)",
+    "type": "text"
+   }
+  ],
+  "records": [
+   {
+    "BERDO ID": "100001",
+    "Building Address Zip  Code": "2114",
+    "Electricity Usage (kWh)": "3582326",
+    "Tax Parcel ID": "303060001",
+    "_id": 1
+   },
+   {
+    "BERDO ID": "100002",
+    "Building Address Zip  Code": "2111",
+    "Electricity Usage (kWh)": "783843.1",
+    "Tax Parcel ID": "304794000",
+    "_id": 2
+   }
+  ],
+  "total": 5638
+ },
+ "success": true
+}

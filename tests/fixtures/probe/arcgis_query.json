@@ -1,0 +1,30 @@
+{
+ "features": [
+  {
+   "attributes": {
+    "BLD_AREA": 53935,
+    "LOC_ID": "F_777178_2845271",
+    "LS_DATE": "20200109",
+    "OBJECTID": 323241,
+    "OWNER1": "TTSR LLC",
+    "SITE_ADDR": "920 W CHESTNUT ST",
+    "TOWN_ID": 44,
+    "USE_CODE": "316",
+    "YEAR_BUILT": null
+   }
+  },
+  {
+   "attributes": {
+    "BLD_AREA": 56574,
+    "LOC_ID": "F_774019_2858242",
+    "LS_DATE": "20210513",
+    "OBJECTID": 323524,
+    "OWNER1": "34 NORTH U BUILDING LLC",
+    "SITE_ADDR": "34 N PEARL ST",
+    "TOWN_ID": 44,
+    "USE_CODE": "306",
+    "YEAR_BUILT": null
+   }
+  }
+ ]
+}
