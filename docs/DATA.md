@@ -218,3 +218,38 @@ After review, recorded in PLAN.md on 2026-10-19:
 4. Utilities join on `TOWN_ID`. Multi-provider towns are flagged as
    unknown utility.
 5. BERDO moves to PLAN.md's Later section.
+
+## Site table rules
+
+`make sites` rebuilds `parcels` and `buildings` from the raw tables. The SQL
+is in `sql/sites/`.
+
+Parcels, one row per polygon (`LOC_ID`). When a polygon has several
+assessor records (3,391 in the pilot, mostly condo units and ground leases,
+often with different owners):
+
+- Owner, address, use code, stories and year built come from the record
+  with the largest `BLD_AREA`. Ties go to a record with a use class, then
+  the lowest object id.
+- `bld_area` is the sum of the records' `BLD_AREA`, since units and leases
+  add up. When every nonzero value is the same (652 polygons), it counts
+  once. `RES_AREA` is never used.
+- `mixed_res_ci` is set when one record is residential (1xx) and another has
+  a commercial, industrial or hospital class: 50 polygons. The Phase 1
+  count of 52 included 4 polygons whose only C&I record was vacant land
+  (`452V`), and missed 2 with multi-use commercial codes (`035R`, `0370`).
+- `STORIES` is text. Its leading number is used, and 0 counts as missing.
+
+Buildings, one row per footprint (359,301 in the pilot). Each is linked to
+the smallest parcel containing its interior point; 363 lie in no parcel.
+Area, in order:
+
+| Area source | Rule | Pilot buildings | On candidate parcels |
+|---|---|---|---|
+| assessor | parcel `BLD_AREA`, shared by footprint area | 322,938 | 14,746 |
+| footprint_x_stories | footprint area times stories | 27,685 | 31 |
+| footprint_only | footprint area alone | 8,678 | 873 |
+
+Candidate parcels are those with a commercial, industrial, hospital or
+multi-use commercial class. How estimated areas are used is decided after
+the footprint area error is measured.
