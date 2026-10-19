@@ -166,22 +166,55 @@ Gaps:
 - The SQL endpoint (`datastore_search_sql`) returns 403. Only plain
   `datastore_search` works.
 
-## Decisions needed
+## Manual spot check
 
-1. Hospital codes. The plan and success measure 3 name code 979, which
-   only Boston uses. Proposal: classify exempt hospitals as 955, 9550,
-   955V statewide plus 979 in Boston, and add owner name keywords
-   ("HOSPITAL", "MEDICAL CENTER") in Phase 2 to catch cases like `049C`.
-2. Missing building area. About 30% of pilot C&I parcels have no
-   `BLD_AREA`, and all Brockton C&I parcels lack `YEAR_BUILT`. Proposal:
-   in Phase 2, fill missing area from footprint area times stories and
-   mark it as estimated. Treat year built as optional.
-3. LBER sample size. Only 496 pilot buildings have electricity data.
-   Proposal: validate statewide (8,487 buildings) with town holdout, and
-   report pilot numbers separately. The calendar 2025 release on
-   October 31, 2026 may add more.
-4. Utility join. Territories are town outlines, so a `TOWN_ID` join gives
-   the same answer as a spatial join. Proposal: join on `TOWN_ID` and
-   flag the 18 mixed towns as unknown utility.
-5. BERDO year. Proposal: load the datastore file now, and decide whether
-   to add openpyxl so the newer 2025 data year can be loaded too.
+Three random commercial parcels from `raw_parcels` were checked by hand
+against the Massachusetts Interactive Property Map in October 2026.
+
+| Parcel | Result |
+|---|---|
+| 683 Southbridge St, Auburn | Owner, address and use code 3220 match. The map shows 7,186 sq ft, which is its Residential Area field. Our 8,146 sq ft is `BLD_AREA`, the gross building area. |
+| 7-9 Chocksett Road, Sterling | Owner, address, use code 4020 and 9,990 sq ft match. The owner's mailing address is a P.O. Box in the same town. |
+| 1129 Auburn St, Whitman | Owner and address match. The map shows use 104 (two-family, 1,924 sq ft). Our sample showed 332 (auto repair, 2,280 sq ft). Both are right: see below. |
+
+1129 Auburn St in Whitman is two separate parcels with the same owner
+(BOYER ELPHEGE H) and the same site address. They touch, and each has one
+record:
+
+| LOC_ID | Parcel id | Use code | BLD_AREA | RES_AREA | Land area |
+|---|---|---|---|---|---|
+| M_243849_869416 | 23A-8-361 | 104, two-family | 3,748 | 1,924 | 1,615 m2 |
+| M_244061_869448 | 23A-8-362A | 332, auto repair | 2,280 | 2,280 | 52,271 m2 |
+
+The map lookup by address landed on the house lot. The random sample
+landed on the auto repair lot next to it. The map's 1,924 sq ft is again
+`RES_AREA`, not `BLD_AREA`.
+
+What this shows:
+
+- Building area must come from `BLD_AREA`. The map's headline area is
+  `RES_AREA`.
+- A site address is not a unique key. One address can cover several
+  parcels, which matters when matching LBER buildings by address.
+- Several records on one parcel is a separate, real pattern. In the pilot,
+  3,391 of 295,078 parcels (by `LOC_ID`) have more than one record,
+  34,328 records in all, up to 361 on one parcel (condominiums). 304 of
+  those parcels have a C&I record, and 52 mix residential (1xx) and C&I
+  records.
+- An owner mailing address in the same town, including a P.O. Box, is a
+  usable sign of a local owner.
+
+## Decisions taken
+
+After review, recorded in PLAN.md on 2026-10-19:
+
+1. Hospitals are state codes 955 and 9550, Boston code 979, or an owner
+   name containing HOSPITAL or MEDICAL CENTER. `955V` is vacant land, not
+   a hospital. Owner names containing HEALTH are other healthcare.
+2. Missing `BLD_AREA` is filled from footprint area times stories, or
+   footprint area alone, and flagged as estimated. Year built is optional.
+3. LBER zero or negative grid electricity is missing, never zero.
+   Validation is statewide, with the pilot towns reported separately.
+4. Utilities join on `TOWN_ID`. Multi-provider towns are flagged as
+   unknown utility.
+5. BERDO moves to PLAN.md's Later section.

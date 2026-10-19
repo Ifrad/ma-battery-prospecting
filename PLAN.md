@@ -28,7 +28,7 @@ range and the reasons, grouped by region.
 2. Every site shows a P10 to P90 range, not a single score.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
-   HOSPITAL, MEDICAL CENTER or HEALTH. Vacant land (`955V`) is not a
+   HOSPITAL or MEDICAL CENTER. Vacant land (`955V`) is not a
    hospital.
 4. Every ranked site has an owner name and site address for outreach.
 
@@ -141,6 +141,22 @@ segment and any reported energy use.
 Done when: the site table exists for both pilot regions, the LBER match rate
 is reported, and exempt hospitals appear.
 
+Carried into Phase 2 (from Phase 1 checks; details in docs/DATA.md):
+
+- Keep LBER reporting years side by side. This is the first Phase 2
+  commit: `raw_lber` holds one release today and is keyed on object id
+  alone, so it needs the reporting year in its key.
+- Drop `955V` from hospital codes. It is vacant land.
+- Group hospital parcels that share an owner into one site.
+- Use `BLD_AREA`, not `RES_AREA`, for building area.
+- Ignore nominal sales ($1, $100 and similar) in the tenure signal.
+- Treat an owner mailing address in the same town, including a P.O. Box,
+  as the local-owner signal.
+- Set a rule for parcels with several records (3,391 in the pilot), and
+  flag the 52 that mix residential and C&I records. One site address can
+  also cover several parcels.
+- Owner names containing HEALTH go to `other_healthcare`, not hospital.
+
 - [ ] `feat(config): add assessor use code classes`
       config/use_codes.yaml: 300 to 499 as commercial and industrial, plus
       exempt hospitals (955 and 9550 statewide, 979 in Boston), with each
@@ -155,7 +171,7 @@ is reported, and exempt hospitals appear.
       flag which one was used. Year built is optional. No size floor: keep
       every site and let the model decide.
 - [ ] `feat(sites): group hospital parcels that share an owner into one site`
-      In the pilot, 145 of 205 hospital parcels share an owner with another
+      In the pilot, 85 of 125 hospital parcels share an owner with another
       parcel. Normalize owner names first (punctuation, INC, CORP, CO, THE,
       and names cut off at about 30 characters), since one owner appears as
       `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. Group only within
@@ -173,7 +189,7 @@ is reported, and exempt hospitals appear.
 - [ ] `feat(sites): assign segments from use codes and owner text`
       Cold storage, food production, laundry, hospital, manufacturing,
       warehouse, generic. Keyword rules in config with tests. Hospital owner
-      keywords: HOSPITAL, MEDICAL CENTER, HEALTH.
+      keywords: HOSPITAL, MEDICAL CENTER. HEALTH goes to other_healthcare.
 - [ ] `feat(sites): add tenure signal from last sale date`
       Years since last sale, as a rough proxy for a locally rooted business.
 - [ ] `docs(data): generate match rate report`
