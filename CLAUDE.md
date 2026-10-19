@@ -16,17 +16,15 @@ Powertown's data.
 
 ## How to work
 
-- Follow PLAN.md in order. Work on exactly one commit-sized task at a time.
-  Do not start the next task until I say so.
-- Before writing code for a task, state in two or three lines what you will
-  change and which files you will touch. Wait for my go-ahead on anything that
-  changes the plan.
+- Follow PLAN.md in order. Work on exactly one commit-sized task at a time,
+  and continue task by task until the stopping point I give for the session.
 - Run `make check` (lint plus tests) before every commit, starting with the
   `chore: add Python project tooling` task that creates the Makefile. Never
   commit if it fails.
 - One logical change per commit. Tests belong in the same commit as the code
   they test. Tick the task's checkbox in PLAN.md in that same commit.
-- Show me `git diff --cached --stat` and the commit message before committing.
+- Commit each task as soon as it is done and `make check` passes. Do not wait
+  for my approval.
 - Commit, never push. I handle all pushes.
 - Ask before adding any dependency not listed under Stack.
 - If you discover the plan is wrong (a field does not exist, a source changed),

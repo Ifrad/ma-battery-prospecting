@@ -86,7 +86,7 @@ Goal: every source loads into Postgres reproducibly, with provenance.
 Done when: `make ingest` loads all sources for both pilot regions, a second
 run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 
-- [ ] `feat(ingest): add HTTP client with retries and rate limiting`
+- [x] `feat(ingest): add HTTP client with retries and rate limiting`
       httpx plus tenacity, exponential backoff, a polite delay between pages,
       a user agent. Tests use a mocked transport.
 - [ ] `feat(db): add migration runner and provenance table`
