@@ -177,7 +177,7 @@ Evidence flags, per building and per site:
       Mark codes not yet checked against the statewide list as placeholders.
       Municipal sites are not covered by these classes yet. Whether to add
       a municipal class is an open decision for the owner.
-- [ ] `feat(sites): build the building table from footprints and parcels`
+- [x] `feat(sites): build the building table from footprints and parcels`
       SQL migration creating `buildings`: one row per footprint, linked to
       the parcel it sits in, with owner, site address, use code, year built
       (optional) and geometry. Building area comes from `BLD_AREA`, never
