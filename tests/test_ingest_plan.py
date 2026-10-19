@@ -6,6 +6,7 @@ def test_statewide_sources_once_and_town_sources_per_town():
     loads = plan({"a": {44: "BROCKTON"}, "b": {348: "WORCESTER"}})
     assert loads == [
         Load("statewide", "", "utility_territories", "raw_utility_territories", "1=1"),
+        Load("statewide", "", "lber", "raw_lber", "1=1", {"reporting_year": 2024}),
         Load("a", "BROCKTON", "parcels", "raw_parcels", "TOWN_ID=44"),
         Load("a", "BROCKTON", "footprints", "raw_footprints", "TOWN_ID=44"),
         Load("b", "WORCESTER", "parcels", "raw_parcels", "TOWN_ID=348"),

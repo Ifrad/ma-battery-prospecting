@@ -84,10 +84,30 @@ def _start_run(conn, source: str, url: str, scope: str) -> tuple[int, bool]:
     return row[0], False
 
 
-def load(conn, client: Client, source: str, url: str, table: str, scope: str) -> dict:
-    """Load one scope of a layer into `table`. `conn` must be in autocommit mode."""
+def load(
+    conn,
+    client: Client,
+    source: str,
+    url: str,
+    table: str,
+    scope: str,
+    extra: dict | None = None,
+) -> dict:
+    """Load one scope of a layer into `table`. `conn` must be in autocommit mode.
+
+    `extra` holds constant columns written on every row, such as a
+    reporting year.
+    """
+    extra = extra or {}
     run_id, resumed = _start_run(conn, source, url, scope)
     t = sql.Identifier(table)
+    extra_cols = sql.SQL("").join(
+        sql.SQL(", {}").format(sql.Identifier(c)) for c in extra
+    )
+    extra_vals = sql.SQL(", %s" * len(extra))
+    extra_set = sql.SQL("").join(
+        sql.SQL(", {0} = EXCLUDED.{0}").format(sql.Identifier(c)) for c in extra
+    )
     try:
         oid = object_id_field(client, url)
         source_rows = count(client, url, scope)
@@ -100,11 +120,12 @@ def load(conn, client: Client, source: str, url: str, table: str, scope: str) ->
                 (run_id,),
             ).fetchone()[0]
         upsert = sql.SQL(
-            "INSERT INTO {} (objectid, scope, run_id, attrs, geom)"
-            " VALUES (%s, %s, %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))"
+            "INSERT INTO {t} (objectid, scope, run_id, attrs, geom{cols})"
+            " VALUES (%s, %s, %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326){vals})"
             " ON CONFLICT (objectid) DO UPDATE SET scope = EXCLUDED.scope,"
             " run_id = EXCLUDED.run_id, attrs = EXCLUDED.attrs, geom = EXCLUDED.geom"
-        ).format(t)
+            "{sets}"
+        ).format(t=t, cols=extra_cols, vals=extra_vals, sets=extra_set)
         for features in fetch_pages(client, url, scope, oid, after):
             rows = [
                 (
@@ -113,6 +134,7 @@ def load(conn, client: Client, source: str, url: str, table: str, scope: str) ->
                     run_id,
                     Jsonb(f["properties"]),
                     json.dumps(f["geometry"]) if f.get("geometry") else None,
+                    *extra.values(),
                 )
                 for f in features
             ]
