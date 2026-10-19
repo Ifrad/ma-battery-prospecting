@@ -1,6 +1,7 @@
 # DOER Large Building Energy Reporting results layer. DOER publishes a new
 # release each October 31, likely as a new layer: update url and
-# reporting_year then, and rerun make ingest.
+# reporting_year then, and rerun make ingest. Earlier releases stay in
+# raw_lber next to the new one.
 url: https://services1.arcgis.com/7iJyYTjCtKsZS1LR/arcgis/rest/services/2025_Annual_Report_Data/FeatureServer/0
 reporting_year: 2024
 status: sourced
