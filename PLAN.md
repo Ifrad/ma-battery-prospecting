@@ -106,7 +106,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `docs(data): record source schemas, licenses and gaps`
       docs/DATA.md from the probe output. Note anything in "Verified facts"
       that turned out wrong and stop if a core field is missing.
-- [ ] `feat(config): define pilot regions by chamber territory`
+- [x] `feat(config): define pilot regions by chamber territory`
       config/regions.yaml mapping chamber name to towns, each with the URL
       the town list came from. Start with Brockton and Worcester only and
       add towns by hand from the chambers' own sites.

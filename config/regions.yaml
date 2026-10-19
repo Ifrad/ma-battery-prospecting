@@ -1,0 +1,82 @@
+# Pilot regions: the towns in each chamber of commerce's service area, copied
+# by hand from the chamber's own website. town_id is the MassGIS TOWN_ID,
+# checked against the MassGIS Electricity Providers layer on 2026-10-19.
+
+regions:
+  metro_south:
+    chamber: Metro South Chamber of Commerce
+    source: https://metrosouthchamber.com/
+    # The live site blocks automated requests. The list was read from the
+    # Internet Archive copy of the home page ("The Metro South Region").
+    source_copy: https://web.archive.org/web/20260706024938/https://metrosouthchamber.com/
+    checked: 2026-10-19
+    # The page also lists Dighton and Kingston, marked "water supply town".
+    # They are left out as they are not part of the business service area.
+    towns:
+      - {name: ABINGTON, town_id: 1}
+      - {name: AVON, town_id: 18}
+      - {name: BRIDGEWATER, town_id: 42}
+      - {name: BROCKTON, town_id: 44}
+      - {name: CANTON, town_id: 50}
+      - {name: EAST BRIDGEWATER, town_id: 83}
+      - {name: EASTON, town_id: 88}
+      - {name: HALIFAX, town_id: 118}
+      - {name: HANOVER, town_id: 122}
+      - {name: HANSON, town_id: 123}
+      - {name: HOLBROOK, town_id: 133}
+      - {name: NORWELL, town_id: 219}
+      - {name: RANDOLPH, town_id: 244}
+      - {name: ROCKLAND, town_id: 251}
+      - {name: SHARON, town_id: 266}
+      - {name: STOUGHTON, town_id: 285}
+      - {name: WEST BRIDGEWATER, town_id: 322}
+      - {name: WHITMAN, town_id: 338}
+
+  worcester:
+    chamber: Worcester Regional Chamber of Commerce
+    source: https://www.worcesterchamber.org/contact-us/affiliate-partner-chambers/
+    checked: 2026-10-19
+    # The page says 37 communities but names 35: Worcester plus the towns of
+    # its affiliate chambers. The Clinton Area chamber names only Clinton.
+    towns:
+      - {name: WORCESTER, town_id: 348}
+      # Auburn Chamber of Commerce
+      - {name: AUBURN, town_id: 17}
+      # Blackstone Valley Chamber of Commerce
+      - {name: BLACKSTONE, town_id: 32}
+      - {name: DOUGLAS, town_id: 77}
+      - {name: GRAFTON, town_id: 110}
+      - {name: HOPEDALE, town_id: 138}
+      - {name: MENDON, town_id: 179}
+      - {name: MILLBURY, town_id: 186}
+      - {name: MILLVILLE, town_id: 188}
+      - {name: NORTHBRIDGE, town_id: 216}
+      - {name: SUTTON, town_id: 290}
+      - {name: UPTON, town_id: 303}
+      - {name: UXBRIDGE, town_id: 304}
+      # Central Mass South Chamber of Commerce
+      - {name: STURBRIDGE, town_id: 287}
+      - {name: SOUTHBRIDGE, town_id: 278}
+      - {name: CHARLTON, town_id: 54}
+      - {name: SPENCER, town_id: 280}
+      - {name: BROOKFIELD, town_id: 45}
+      - {name: NORTH BROOKFIELD, town_id: 212}
+      - {name: EAST BROOKFIELD, town_id: 84}
+      - {name: WEST BROOKFIELD, town_id: 323}
+      - {name: BRIMFIELD, town_id: 43}
+      - {name: HOLLAND, town_id: 135}
+      - {name: WALES, town_id: 306}
+      # Clinton Area Chamber of Commerce
+      - {name: CLINTON, town_id: 64}
+      # Wachusett Area Chamber of Commerce
+      - {name: BOYLSTON, town_id: 39}
+      - {name: HOLDEN, town_id: 134}
+      - {name: PAXTON, town_id: 228}
+      - {name: PRINCETON, town_id: 241}
+      - {name: RUTLAND, town_id: 257}
+      - {name: STERLING, town_id: 282}
+      - {name: WEST BOYLSTON, town_id: 321}
+      # Webster Dudley Oxford Chamber of Commerce
+      - {name: WEBSTER, town_id: 316}
+      - {name: DUDLEY, town_id: 80}
+      - {name: OXFORD, town_id: 226}
