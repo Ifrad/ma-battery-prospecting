@@ -114,7 +114,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
       Paged feature service queries, resumable by object id, upsert into
       `raw_parcels`. Each load records its fetch date and row count in
       `ingest_runs`. Fixture-based tests for paging and idempotency.
-- [ ] `feat(ingest): load building footprints and utility territories`
+- [x] `feat(ingest): load building footprints and utility territories`
       Into `raw_footprints` and `raw_utility_territories`. Utilities are a
       per-town table, joined later on TOWN_ID.
 - [ ] `feat(ingest): load DOER large building energy data`
