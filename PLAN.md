@@ -168,7 +168,7 @@ Evidence flags, per building and per site:
       `raw_lber` holds one release today and is keyed on object id alone.
       Add the reporting year to its key so a new October 31 release is
       loaded next to the old one instead of replacing it.
-- [ ] `feat(config): add assessor use code classes`
+- [x] `feat(config): add assessor use code classes`
       config/use_codes.yaml: 300 to 499 as commercial and industrial, plus
       exempt hospitals (955 and 9550 statewide, 979 in Boston), with each
       code's source. Normalize 4 character codes such as `9550`. A fourth
