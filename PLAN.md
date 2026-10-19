@@ -95,7 +95,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `feat(ingest): add schema probe for data sources`
       A command that fetches one page from each source and prints field
       names and types. No database writes.
-- [ ] `docs(data): record source schemas, licenses and gaps`
+- [x] `docs(data): record source schemas, licenses and gaps`
       docs/DATA.md from the probe output. Note anything in "Verified facts"
       that turned out wrong and stop if a core field is missing.
 - [ ] `feat(config): define pilot regions by chamber territory`
