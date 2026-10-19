@@ -15,8 +15,9 @@ highest 15-minute spike each month. A battery can shave that spike. A company
 that installs batteries at no upfront cost and shares the savings earns money
 only if the site has large, predictable peaks, so choosing sites is choosing
 revenue. Before a business shares meter data, nobody knows its peak. This tool
-estimates it from public data and ranks buildings by expected savings, with a
-range and the reasons, grouped by region.
+estimates it from public data and ranks sites by the probability that a
+standard battery pays for itself and still leaves the host a minimum yearly
+benefit, with a band and the reasons, grouped by region.
 
 ## What "better than size ranking" means, measurably
 
@@ -25,7 +26,11 @@ range and the reasons, grouped by region.
    and median absolute percent error, with whole towns held out. Measured
    statewide, with the pilot towns reported separately. Zero grid
    electricity counts as missing, never as zero.
-2. Every site shows a P10 to P90 range, not a single score.
+2. Every site shows the probability that its total value exceeds the
+   annualized battery cost plus a minimum yearly benefit for the host,
+   with a band and its evidence flags, not a single point estimate. The
+   annual energy estimate behind it is checked for calibration. Peak shape
+   is unvalidated until real interval meter data tests it.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
    HOSPITAL or MEDICAL CENTER. Vacant land (`955V`) is not a
@@ -136,27 +141,31 @@ Kickoff prompt:
 
 ## Phase 2: Sites  (branch `phase-2-sites`, tag v0.2.0)
 
-Goal: one clean row per candidate building with owner, address, utility,
-segment and any reported energy use.
-Done when: the site table exists for both pilot regions, the LBER match rate
-is reported, and exempt hospitals appear.
+Goal: collect evidence, no scoring. Two levels: buildings (MassGIS
+footprints) are the unit for energy and peak estimates, and outreach sites
+group buildings on touching parcels with the same normalized owner, within
+one town. Every building and site carries evidence flags that say how much
+of its data is measured and how much is estimated.
+Done when: buildings and sites exist for both pilot regions with their
+evidence flags, the LBER match rate is reported by method (UBID exact match
+first), exempt hospitals appear, and the footprint area error is recorded
+in docs/DATA.md.
 
-Carried into Phase 2 (from Phase 1 checks; details in docs/DATA.md):
+Evidence flags, per building and per site:
 
-- Keep LBER reporting years side by side. This is the first Phase 2
-  commit: `raw_lber` holds one release today and is keyed on object id
-  alone, so it needs the reporting year in its key.
-- Drop `955V` from hospital codes. It is vacant land.
-- Group hospital parcels that share an owner into one site.
-- Use `BLD_AREA`, not `RES_AREA`, for building area.
-- Ignore nominal sales ($1, $100 and similar) in the tenure signal.
-- Treat an owner mailing address in the same town, including a P.O. Box,
-  as the local-owner signal.
-- Set a rule for parcels with several records (3,391 in the pilot), and
-  flag the 52 that mix residential and C&I records. One site address can
-  also cover several parcels.
-- Owner names containing HEALTH go to `other_healthcare`, not hospital.
+- electricity source: measured (LBER) or estimated
+- area source: assessor, footprint_x_stories or footprint_only
+- LBER match method and confidence
+- utility: known, municipal, or unknown (multi-provider towns)
+- segment, and how it was assigned (use code or owner keyword)
+- local owner: owner mailing address in the same town, P.O. boxes included
+- mixed residential and C&I parcel
+- tenure, ignoring nominal sales
 
+- [ ] `feat(db): keep LBER reporting years side by side`
+      `raw_lber` holds one release today and is keyed on object id alone.
+      Add the reporting year to its key so a new October 31 release is
+      loaded next to the old one instead of replacing it.
 - [ ] `feat(config): add assessor use code classes`
       config/use_codes.yaml: 300 to 499 as commercial and industrial, plus
       exempt hospitals (955 and 9550 statewide, 979 in Boston), with each
@@ -164,36 +173,64 @@ Carried into Phase 2 (from Phase 1 checks; details in docs/DATA.md):
       character `V` means vacant land (`955V` is "EXEMPT VACANT LAND"), so
       those codes are never a hospital, even when the owner name matches.
       Mark codes not yet checked against the statewide list as placeholders.
-- [ ] `feat(sites): build site table from parcels and footprints`
-      SQL migration creating `sites` with area, year built, use code, owner,
-      site address and geometry. Where bld_area is missing, use footprint
-      area times stories, or footprint area alone if stories is missing, and
-      flag which one was used. Year built is optional. No size floor: keep
-      every site and let the model decide.
-- [ ] `feat(sites): group hospital parcels that share an owner into one site`
-      In the pilot, 85 of 125 hospital parcels share an owner with another
-      parcel. Normalize owner names first (punctuation, INC, CORP, CO, THE,
-      and names cut off at about 30 characters), since one owner appears as
-      `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. Group only within
-      a town and only parcels that touch or lie within a set distance, kept
-      in config as a placeholder, so scattered parcels of one owner stay
-      separate sites.
+- [ ] `feat(sites): build the building table from footprints and parcels`
+      SQL migration creating `buildings`: one row per footprint, linked to
+      the parcel it sits in, with owner, site address, use code, year built
+      (optional) and geometry. Building area comes from `BLD_AREA`, never
+      `RES_AREA`, otherwise footprint area times stories, otherwise
+      footprint area alone, with the area source flag. Parcels with several
+      records (3,391 in the pilot) follow one documented rule, and the 52
+      that mix residential and C&I records are flagged. No size floor: keep
+      every building and let the model decide.
+- [ ] `feat(sites): group buildings into outreach sites`
+      A site is the buildings on touching parcels with the same normalized
+      owner, within one town, for every owner, not only hospitals.
+      Normalize owner names first (punctuation, INC, CORP, CO, THE, and
+      names cut off at about 30 characters), since one owner appears as
+      `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. This also joins
+      cases like 1129 Auburn St, Whitman: two touching parcels, one owner,
+      one address. Scattered parcels of one owner stay separate sites.
+- [ ] `feat(sites): compute UBIDs for footprints`
+      Unique Building Identifiers from the MassGIS footprints, so LBER's
+      `UBID` field can be matched exactly. This needs PNNL's open source
+      buildingid implementation, which is not in the Stack: propose the
+      dependency and wait for approval before adding it.
+- [ ] `feat(sites): match buildings to LBER records`
+      In order, stopping at the first that works: (1) exact UBID match,
+      (2) LBER point inside a footprint, (3) point inside a parcel,
+      (4) normalized address. Record the method and a confidence for every
+      match, and keep a table of unmatched LBER rows. Report the UBID exact
+      match rate first. Matched buildings get electricity source measured.
 - [ ] `feat(sites): assign electric utility and flag municipal light plants`
-      Join on TOWN_ID, no spatial join. Flag sites in multi-provider towns
-      as unknown utility. In the pilot, six towns have a municipal light
-      plant and must be flagged: Boylston, Holden, Paxton, Princeton,
-      Sterling and West Boylston.
-- [ ] `feat(sites): match sites to LBER records`
-      Point in parcel plus address normalization, match confidence, and a
-      table of unmatched rows.
+      Join on TOWN_ID, no spatial join. Utility flag is known, municipal,
+      or unknown for multi-provider towns. In the pilot, six towns have a
+      municipal light plant: Boylston, Holden, Paxton, Princeton, Sterling
+      and West Boylston.
 - [ ] `feat(sites): assign segments from use codes and owner text`
-      Cold storage, food production, laundry, hospital, manufacturing,
-      warehouse, generic. Keyword rules in config with tests. Hospital owner
+      Cold storage, food production, laundry, hospital, other_healthcare,
+      manufacturing, warehouse, generic. Keyword rules in config with
+      tests, and a flag for how each segment was assigned. Hospital owner
       keywords: HOSPITAL, MEDICAL CENTER. HEALTH goes to other_healthcare.
-- [ ] `feat(sites): add tenure signal from last sale date`
-      Years since last sale, as a rough proxy for a locally rooted business.
+- [ ] `feat(sites): add local owner and tenure signals`
+      Local owner: the owner mailing address is in the same town, P.O.
+      boxes included. Tenure: years since the last sale, ignoring nominal
+      sales ($1, $100 and similar), as a rough proxy for a locally rooted
+      business.
+- [ ] `feat(sites): collect evidence flags per building and per site`
+      One place to read every flag listed above, for both levels. A site's
+      flags summarize its buildings (for example, how many have measured
+      electricity).
+- [ ] `docs(data): measure footprint area error`
+      Compare footprint-based area with `BLD_AREA`, and with LBER
+      `Gross_Floor_Area` for matched buildings: median and 90th percentile
+      error for footprint_x_stories and footprint_only. Record it in
+      docs/DATA.md, then stop and show the owner before deciding how
+      estimated areas are used.
 - [ ] `docs(data): generate match rate report`
-      docs/MATCH_RATES.md with counts by region, segment and match type.
+      docs/MATCH_RATES.md with counts by region, segment and match method.
+      Review by hand and record the results: 20 owner groups for false
+      merges, about 10 sites per segment for keyword precision, and where
+      LBER points land (C&I parcel, residential parcel, none).
 
 ---
 
@@ -204,54 +241,111 @@ as a placeholder.
 Done when: `prospect priors --list-placeholders` prints the remaining
 placeholders and each sourced value names its source.
 
+- [ ] `feat(config): add National Grid demand rate from its tariff`
+      Read the demand charge in dollars per kW-month from National Grid's
+      filed Massachusetts tariff. It serves 45 of the 53 pilot towns.
 - [ ] `feat(priors): add config loader with sourced and placeholder status`
       Loader, schema checks and a CLI that lists placeholders.
-- [ ] `feat(config): add utility demand rates with sources`
-      Per-utility demand charge in dollars per kW-month from filed tariffs.
-      Anything not read from a tariff stays a placeholder.
-- [ ] `feat(priors): derive load factor priors from ComStock profiles`
-      Fetch a small subset by building type through a loader in
-      `prospect/ingest/`, then compute load factor distributions from the
-      local copy and write them to config with source notes.
+- [ ] `feat(config): add remaining utility demand rates with sources`
+      Eversource (2 pilot towns) and the six municipal light plants, from
+      filed tariffs. Anything not read from a tariff stays a placeholder.
+- [ ] `feat(config): add battery block specification`
+      config/battery.yaml for the standard deployment, one battery block:
+      250 kW, 522 kWh (two cabinets in parallel), 97.5 percent PCS
+      efficiency, usable depth of discharge 90 percent (placeholder, the
+      spec does not state it). That gives about 1.8 hours at full power.
+- [ ] `feat(config): add cost assumptions`
+      Each with status and source: installed cost $180,000 (low case from
+      2026 vendor ranges, pending Powertown's real number) and $260,000
+      (middle case), 10-year life (matches the warranty), 8 percent
+      financing (placeholder), $4,000 a year O&M (vendor estimate). The 30
+      percent ITC is a scenario setting, default off, with a note that FEOC
+      sourcing rules decide eligibility.
+- [ ] `feat(config): add minimum host benefit`
+      The minimum yearly benefit a host must get for the deal to be worth
+      offering, in dollars a year, added to the annualized cost in the
+      Phase 4 hurdle. A placeholder with status and a note until Powertown
+      gives a real figure.
+- [ ] `feat(ingest): download ComStock profiles for Massachusetts`
+      A loader in `prospect/ingest/` that fetches 15-minute ComStock
+      profiles for each building type in Massachusetts and saves them
+      under `data/`, with an `ingest_runs` row for provenance. This is the
+      only step in this work that uses the network.
+- [ ] `feat(priors): simulate the battery block on ComStock profiles`
+      Read the downloaded profiles from local files. Simulate one battery
+      block within its power and energy limits, and record the
+      distribution of monthly peak reduction as a share of peak, per
+      building type. Load factor is a secondary output. Write both to
+      config with source notes.
+- [ ] `feat(config): add ConnectedSolutions assumptions`
+      $200 per kW-season (vendor source), a performance factor
+      (placeholder), and an overlap factor (placeholder) for event days
+      that fall on the building's own peak, so grid revenue is not double
+      counted with peak shaving.
 - [ ] `feat(priors): derive energy intensity priors from LBER`
-      kWh per sq ft by segment, for sites without reported use.
+      kWh per sq ft by segment, for buildings without reported use. Only
+      buildings with measured grid electricity count.
 - [ ] `docs(method): document priors and how to recalibrate`
-      docs/METHOD.md section on priors, including what to rerun after each
-      October 31 LBER release.
+      docs/METHOD.md section on priors, battery and cost assumptions,
+      including what to rerun after each October 31 LBER release.
 
 ---
 
 ## Phase 4: Economics model  (branch `phase-4-model`, tag v0.4.0)
 
-Goal: for each site, a distribution of annual savings from whole battery
-blocks.
-Done when: `make score` writes a scored row per site with P10, P50, P90,
-expected blocks and top drivers, and model tests pass.
+Goal: for each site, the probability that a standard battery deployment
+clears the profit hurdle (annualized cost plus the minimum host benefit),
+with a band, under each scenario.
+Done when: `make score` writes a scored row per site and scenario with the
+model confidence, P10, P50 and P90 of total value, expected
+blocks and top drivers, and model tests pass.
 
 - [ ] `feat(model): estimate peak demand from annual energy and load factor`
-      Monte Carlo draws, seeded per site id so results never depend on row
-      order. Tests: determinism, known kWh narrows the range.
+      Monte Carlo draws per building, seeded per building id so results
+      never depend on row order. Tests: determinism, known kWh narrows the
+      range.
+- [ ] `feat(model): widen or narrow uncertainty from evidence flags`
+      Each evidence flag from Phase 2 sets how wide the draws are: measured
+      electricity narrows them, footprint_only area, a weak LBER match or
+      an unknown utility widens them. Widths live in config as
+      placeholders.
 - [ ] `feat(model): size whole battery blocks and compute demand savings`
-      Block size and count cap from config (placeholders). Tests: flat load
-      gives zero, higher rate never lowers savings.
-- [ ] `feat(model): add grid program revenue as a separate scenario`
-      ConnectedSolutions only where the utility is eligible. Tests: municipal
-      sites get none.
+      Block from config/battery.yaml, count cap from config (placeholder).
+      Peak shaving respects both the power limit and the energy limit, so
+      long spikes are only partly shaved, using the Phase 3 simulation.
+      Tests: flat load gives zero, higher rate never lowers savings, a
+      longer spike never raises the shaved share.
+- [ ] `feat(model): add grid program revenue`
+      ConnectedSolutions only where the utility is eligible, discounted by
+      the overlap factor. Tests: municipal sites get none.
+- [ ] `feat(model): score the probability of clearing the profit hurdle`
+      The headline score, called model confidence: the probability that
+      total value (demand savings plus grid revenue) exceeds the
+      annualized battery cost (installed cost over life at the financing
+      rate, plus O&M) plus the minimum yearly host benefit from config. It
+      does not depend on the host share split. Tests: higher cost or a
+      higher minimum host benefit never raises model confidence.
+- [ ] `feat(model): run scenarios`
+      With and without ITC, and with and without ConnectedSolutions. Every
+      score names its scenario.
 - [ ] `feat(model): split savings between host and operator`
-      Host share as a parameter. Outputs: total savings created, host share,
-      operator share minus annualized cost.
+      Host share as a parameter. It only changes the site panel numbers
+      (host share, operator share minus annualized cost), never the
+      headline score.
 - [ ] `feat(model): attribute results to input drivers`
       Rank correlation between each input and the result.
 - [ ] `feat(model): persist scores with run metadata`
-      `site_scores` table with run id, config hash and timestamp.
+      `site_scores` table with run id, scenario, config hash and timestamp.
 
 ---
 
 ## Phase 5: Validation  (branch `phase-5-validation`, tag v0.5.0)
 
-Goal: one honest headline number.
+Goal: one honest headline number, and a clear line between what is
+validated and what is not.
 Done when: docs/VALIDATION.md exists, is generated by `make validate`, and
-states where the model wins and where it does not.
+states where the model wins, where it does not, whether the annual energy
+bands are calibrated, and whether peak shape was validated.
 
 - [ ] `feat(validate): reproduce size-only baseline`
       Rank by building area, matching the earlier prototype's behavior.
@@ -259,8 +353,25 @@ states where the model wins and where it does not.
       Spearman and median absolute percent error, model versus baseline.
       Statewide, with the pilot towns reported separately. Buildings with
       zero grid electricity are excluded as missing.
+- [ ] `feat(validate): check calibration of the annual energy estimate`
+      This tests the annual energy estimate only, not peak shape. Hold out
+      LBER buildings with measured electricity, estimate them as if
+      unmeasured, and check each band's hit rate: a band should contain
+      the measured value about as often as it claims. If not, recalibrate
+      before anything is shown in the app.
+- [ ] `docs(validate): find an open interval meter dataset for peak shape`
+      Look for an open dataset of interval meter readings to test the
+      peak-shape estimates. Building Data Genome 2 is a candidate: verify
+      its license and its coverage of comparable commercial buildings
+      first. If one is usable, test the shape estimates against it, with
+      any download done by a loader in `prospect/ingest/`. If none is
+      usable, record in docs/VALIDATION.md that shape is unvalidated.
+- [ ] `feat(validate): report cost sensitivity`
+      How rankings change between the low ($180,000) and middle ($260,000)
+      installed cost cases.
 - [ ] `docs(validate): generate validation report`
-      Metrics, sample sizes and a plain statement of limits.
+      Metrics, energy calibration, the peak shape result, cost
+      sensitivity, sample sizes and a plain statement of limits.
 
 ---
 
@@ -271,6 +382,8 @@ Done when: `make export` writes per-region files under 5 MB each that pass
 schema validation.
 
 - [ ] `feat(export): write ranked sites per region as GeoJSON and CSV`
+      Every site includes its model confidence, its band, and its
+      evidence flags.
 - [ ] `feat(export): include compact savings draws for the share slider`
       A small fixed number of draws per site so the browser can recompute
       host and operator shares exactly.
@@ -289,14 +402,25 @@ works on a phone.
 - [ ] `feat(web): scaffold Vite React TypeScript app with MapLibre`
       Pick a free basemap whose terms allow this use, and note it in docs.
 - [ ] `feat(web): show ranked list and map for a region`
+      Ranked by model confidence.
+- [ ] `feat(web): color sites by model confidence`
+      One scale: 90 to 100 green, 80 to 90 yellow, 70 to 80 orange, 50 to
+      70 deep orange, below 50 red. Always show the number and a short
+      label next to the color, never color alone. Red sites are hidden by
+      default and shown with one click, with the reason each is red.
 - [ ] `feat(web): add site panel with savings range and reasons`
+      Data quality appears as text labels from the evidence flags, not as
+      a second color scale.
 - [ ] `feat(web): add host share slider`
 - [ ] `feat(web): compare model ranking with size-only ranking`
       Toggle between the two and highlight the sites that move most.
 - [ ] `feat(web): add region CSV download`
 - [ ] `feat(web): make layout work on phones`
 - [ ] `feat(web): add assumptions and limits page`
-      Lists every placeholder in use.
+      Lists every placeholder in use. Shows the installed cost assumption
+      and says it is pending Powertown's confirmation. Explains model
+      confidence, and states that shape estimates are unvalidated until
+      real meter data tests them.
 - [ ] `test(web): add component tests and build check to CI`
 - [ ] `ci: deploy site to GitHub Pages`
 
@@ -311,13 +435,19 @@ Done when: the README follows that structure and every link works on a phone.
 - [ ] `docs: write layered README`
       Top: problem sentence, what it does, GIF, live link, "Start here" path.
       Middle: 2 minute walkthrough link. Bottom: method, validation, limits,
-      how to run.
+      how to run. Call the headline score model confidence. State the low
+      cost assumption and the cost sensitivity result, and that shape
+      estimates are unvalidated until real meter data tests them. List open
+      questions for Powertown: installed cost, ITC
+      eligibility, whether ConnectedSolutions stacks with peak shaving, the
+      savings split, and how their own meter data could replace the
+      type-based shape estimates.
 - [ ] `docs: add method, data and limits pages`
 - [ ] `docs: add guide for plugging in operator data`
       docs/POWERTOWN_DATA.md: where real block size, cost, tariffs, meter
       data and outcome labels would go.
 - [ ] `docs: add demo GIF and screenshots`
-- [ ] `docs: credit prior work and list open questions`
+- [ ] `docs: credit prior work`
 
 ---
 
@@ -331,3 +461,5 @@ Done when: the README follows that structure and every link works on a phone.
 - Statewide coverage beyond the pilot regions.
 - An outcomes table (contacted, qualified, signed, rejected with reason) so
   ranking quality can be measured with precision at k.
+- Learn building load shape from Powertown's real meter data where they
+  share it, replacing the type-based priors.
