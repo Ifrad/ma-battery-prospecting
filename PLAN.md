@@ -117,7 +117,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
 - [x] `feat(ingest): load building footprints and utility territories`
       Into `raw_footprints` and `raw_utility_territories`. Utilities are a
       per-town table, joined later on TOWN_ID.
-- [ ] `feat(ingest): load DOER large building energy data`
+- [x] `feat(ingest): load DOER large building energy data`
       Into `raw_lber`. The layer URL and reporting year live in config,
       since each October 31 release is likely a new layer. Record the
       reporting year on every row. Zero grid electricity is stored as

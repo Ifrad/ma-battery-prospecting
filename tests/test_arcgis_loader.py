@@ -94,6 +94,27 @@ def test_failed_load_resumes_after_last_stored_id(db):
     assert [r[0] for r in runs(db)] == ["succeeded"]
 
 
+def test_lber_zero_or_negative_electricity_is_missing(db):
+    field = "Total_Electricity_Use_Purchased_From_Grid__kBtu_"
+    features = [
+        {"type": "Feature", "id": i, "geometry": None, "properties": {field: kbtu}}
+        for i, kbtu in [(1, 0), (2, -41532.8), (3, 341214)]
+    ]
+    arcgis.load(
+        db,
+        client(FakeLayer(features)),
+        "lber",
+        URL,
+        "raw_lber",
+        "1=1",
+        {"reporting_year": 2024},
+    )
+    rows = db.execute(
+        "SELECT objectid, reporting_year, grid_kwh FROM raw_lber ORDER BY 1"
+    ).fetchall()
+    assert rows == [(1, 2024, None), (2, 2024, None), (3, 2024, pytest.approx(1e5))]
+
+
 def test_rows_gone_from_source_are_removed(db):
     load(db, FakeLayer(FEATURES))
     result = load(db, FakeLayer(FEATURES[:2]))
