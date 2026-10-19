@@ -110,7 +110,7 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
       config/regions.yaml mapping chamber name to towns, each with the URL
       the town list came from. Start with Brockton and Worcester only and
       add towns by hand from the chambers' own sites.
-- [ ] `feat(ingest): load MassGIS L3 parcels for pilot regions`
+- [x] `feat(ingest): load MassGIS L3 parcels for pilot regions`
       Paged feature service queries, resumable by object id, upsert into
       `raw_parcels`. Each load records its fetch date and row count in
       `ingest_runs`. Fixture-based tests for paging and idempotency.

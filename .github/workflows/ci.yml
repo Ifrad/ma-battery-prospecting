@@ -12,6 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UV_LOCKED: "1"
+      PROSPECT_REQUIRE_DB: "1"
+    services:
+      db:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: prospect
+          POSTGRES_PASSWORD: prospect
+          POSTGRES_DB: prospect
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U prospect -d prospect"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.0
