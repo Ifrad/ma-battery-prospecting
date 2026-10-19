@@ -20,30 +20,38 @@ range and the reasons, grouped by region.
 
 ## What "better than size ranking" means, measurably
 
-1. On buildings with reported energy use (DOER LBER statewide, BERDO in
-   Boston), the model's annual kWh estimate beats a size-only estimate on
-   Spearman correlation and median absolute percent error, with whole towns
-   held out.
+1. On buildings with reported grid electricity in DOER LBER, the model's
+   annual kWh estimate beats a size-only estimate on Spearman correlation
+   and median absolute percent error, with whole towns held out. Measured
+   statewide, with the pilot towns reported separately. Zero grid
+   electricity counts as missing, never as zero.
 2. Every site shows a P10 to P90 range, not a single score.
-3. Nonprofit hospitals are included rather than silently filtered out
-   (Boston code 979; the statewide equivalent is verified in Phase 2).
+3. Nonprofit hospitals are included rather than silently filtered out:
+   state code 955, 9550 or 955V, Boston code 979, or an owner name
+   containing HOSPITAL, MEDICAL CENTER or HEALTH.
 4. Every ranked site has an owner name and site address for outreach.
 
 ## Verified facts this plan relies on
 
 - MassGIS L3 parcels include owner1, site_addr, bld_area, year_built, ls_date
   and use_code, and are served as a hosted ArcGIS feature layer with a 2,000
-  record page size.
+  record page size. In the pilot towns about 30% of commercial parcels have
+  no bld_area, and Brockton has no year_built for any of them.
 - Boston's assessor code list has 305 for private taxable hospitals, 979 for
-  exempt hospitals and 414 for food processing plants.
+  exempt hospitals and 414 for food processing plants. Code 979 is used
+  only in Boston. Other towns use the state code 955 (or 9550, 955V) for
+  charitable hospitals.
 - DOER's Large Building Energy Reporting covers buildings of 20,000 sq ft or
   more statewide. Utilities report usage, DOER publishes by October 31 each
-  year, and the first release (calendar 2024) is incomplete.
-- BERDO covers non-residential buildings of 20,000 sq ft or more in Boston.
+  year, and the first release (calendar 2024) is incomplete: 74% of its
+  buildings report zero grid electricity.
+- MassGIS electric providers are listed per town, keyed by TOWN_ID. 18 towns
+  list more than one provider.
 - NREL's End-Use Load Profiles (ComStock) publish 15-minute profiles by
   commercial building type.
 
-Anything not on this list gets verified in Phase 1 before it is relied on.
+Checked in Phase 1 on 2026-10-19. Details are in docs/DATA.md. Anything not
+on this list gets verified before it is relied on.
 
 ## Pilot scope
 
@@ -104,14 +112,16 @@ run adds no duplicate rows, and `ingest_runs` shows row counts and hashes.
       add towns by hand from the chambers' own sites.
 - [ ] `feat(ingest): load MassGIS L3 parcels for pilot regions`
       Paged feature service queries, resumable by object id, upsert into
-      `raw_parcels`. Fixture-based tests for paging and idempotency.
+      `raw_parcels`. Each load records its fetch date and row count in
+      `ingest_runs`. Fixture-based tests for paging and idempotency.
 - [ ] `feat(ingest): load building footprints and utility territories`
-      Into `raw_footprints` and `raw_utility_territories`.
+      Into `raw_footprints` and `raw_utility_territories`. Utilities are a
+      per-town table, joined later on TOWN_ID.
 - [ ] `feat(ingest): load DOER large building energy data`
-      Into `raw_lber`. Record the reporting year on every row, since a new
-      release lands each October 31.
-- [ ] `feat(ingest): load Boston BERDO data for validation`
-      Into `raw_berdo`.
+      Into `raw_lber`. The layer URL and reporting year live in config,
+      since each October 31 release is likely a new layer. Record the
+      reporting year on every row. Zero grid electricity is stored as
+      missing.
 - [ ] `chore(ingest): add ingest summary report`
       `make ingest` prints rows per source and region and any failures.
 
@@ -132,18 +142,24 @@ is reported, and exempt hospitals appear.
 
 - [ ] `feat(config): add assessor use code classes`
       config/use_codes.yaml: 300 to 499 as commercial and industrial, plus
-      979 exempt hospitals, with each code's source. Mark codes not yet
-      checked against the statewide list as placeholders.
+      exempt hospitals (955, 9550, 955V statewide, 979 in Boston), with each
+      code's source. Normalize 4 character codes such as `9550` and `955V`.
+      Mark codes not yet checked against the statewide list as placeholders.
 - [ ] `feat(sites): build site table from parcels and footprints`
       SQL migration creating `sites` with area, year built, use code, owner,
-      site address and geometry.
+      site address and geometry. Where bld_area is missing, use footprint
+      area times stories, or footprint area alone if stories is missing, and
+      flag which one was used. Year built is optional.
 - [ ] `feat(sites): assign electric utility and flag municipal light plants`
-      Spatial join to utility territories in SQL.
-- [ ] `feat(sites): match sites to LBER and BERDO records`
-      Address normalization, match confidence, and a table of unmatched rows.
+      Join on TOWN_ID, no spatial join. Flag sites in multi-provider towns
+      as unknown utility.
+- [ ] `feat(sites): match sites to LBER records`
+      Point in parcel plus address normalization, match confidence, and a
+      table of unmatched rows.
 - [ ] `feat(sites): assign segments from use codes and owner text`
       Cold storage, food production, laundry, hospital, manufacturing,
-      warehouse, generic. Keyword rules in config with tests.
+      warehouse, generic. Keyword rules in config with tests. Hospital owner
+      keywords: HOSPITAL, MEDICAL CENTER, HEALTH.
 - [ ] `feat(sites): add tenure signal from last sale date`
       Years since last sale, as a rough proxy for a locally rooted business.
 - [ ] `docs(data): generate match rate report`
@@ -211,7 +227,8 @@ states where the model wins and where it does not.
       Rank by building area, matching the earlier prototype's behavior.
 - [ ] `feat(validate): compare energy estimates against LBER with town holdout`
       Spearman and median absolute percent error, model versus baseline.
-- [ ] `feat(validate): check estimates against BERDO in Boston`
+      Statewide, with the pilot towns reported separately. Buildings with
+      zero grid electricity are excluded as missing.
 - [ ] `docs(validate): generate validation report`
       Metrics, sample sizes and a plain statement of limits.
 
@@ -277,6 +294,9 @@ Done when: the README follows that structure and every link works on a phone.
 ## Later (not in v1)
 
 - Refresh with the LBER release due October 31 each year.
+- Boston BERDO as a second validation set. Its `Tax Parcel ID` joins to the
+  parcels' `PROP_ID` padded to 10 digits. The newest years are XLSX only,
+  so loading them needs openpyxl. See docs/DATA.md.
 - Utility hosting capacity layers as a grid feasibility signal.
 - Statewide coverage beyond the pilot regions.
 - An outcomes table (contacted, qualified, signed, rejected with reason) so
