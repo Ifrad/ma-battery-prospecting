@@ -16,8 +16,8 @@ Thresholds are placeholders in config/funnel.yaml.
 |---|---|---|---|
 | Candidate sites | 4,251 | 5,389 | 9,640 |
 | 1. ConnectedSolutions utility | 4,251 | 4,941 | 9,192 |
-| 2. Over the monthly kWh line | 837 | 839 | 1,676 |
-| 3. Estimated peak over the kW line | 106 | 145 | 251 |
+| 2. Over the monthly kWh line | 837 | 856 | 1,693 |
+| 3. Estimated peak over the kW line | 109 | 146 | 255 |
 
 ## By segment
 
@@ -25,8 +25,8 @@ Thresholds are placeholders in config/funnel.yaml.
 |---|---|---|---|---|---|---|---|---|---|
 | Candidate sites | 1 | 6 | 6,873 | 56 | 4 | 910 | 325 | 1,465 | 9,640 |
 | 1. ConnectedSolutions utility | 1 | 6 | 6,561 | 55 | 4 | 846 | 303 | 1,416 | 9,192 |
-| 2. Over the monthly kWh line | 1 | 4 | 926 | 31 | 1 | 356 | 110 | 247 | 1,676 |
-| 3. Estimated peak over the kW line | 1 | 3 | 111 | 16 | 0 | 62 | 14 | 44 | 251 |
+| 2. Over the monthly kWh line | 1 | 4 | 926 | 48 | 1 | 356 | 110 | 247 | 1,693 |
+| 3. Estimated peak over the kW line | 1 | 3 | 111 | 20 | 0 | 62 | 14 | 44 | 255 |
 
 ## Peak line
 
@@ -34,21 +34,22 @@ Sites past filter 2 with an estimated peak at or above each line:
 
 | Peak line | Sites | Tier 1 | Tier 2 |
 |---|---|---|---|
-| 150 kW | 347 | 180 | 167 |
-| 200 kW (used) | 251 | 149 | 102 |
-| 250 kW | 197 | 126 | 71 |
+| 150 kW | 354 | 180 | 174 |
+| 200 kW (used) | 255 | 149 | 106 |
+| 250 kW | 203 | 126 | 77 |
 
 ## Survivors
 
-251 sites pass all three filters: 149 in tier 1 (at least one building with LBER measured electricity) and 102 in tier 2 (estimated only, flagged). Sites with no usable estimate: 0.
+255 sites pass all three filters: 149 in tier 1 (at least one building with LBER measured electricity) and 106 in tier 2 (estimated only, flagged). Sites with no usable estimate: 0.
 
 Flags among survivors:
 
 | Flag | Sites |
 |---|---|
-| eversource_all_hours | 25 |
-| intensity: LBER statewide Healthcare, LBER floor area | 29 |
+| eversource_all_hours | 26 |
+| intensity: LBER statewide Healthcare, LBER floor area | 14 |
 | intensity: manufacturing (proxy, likely understates) | 2 |
+| intensity: pilot measured, our area, only 13 buildings | 19 |
 | no_open_profile | 66 |
 | placeholder_mix | 38 |
 

@@ -483,8 +483,11 @@ placeholders and each sourced value names its source.
       buildings with measured grid electricity count. `make intensity`
       writes config/intensity.yaml: per segment, the measured count, p10,
       median and p90 on our area and on LBER floor area, and the prior to
-      use. Segments under 30 are flagged. Hospital and other_healthcare
-      use LBER's statewide Healthcare rows; food production, cold storage
+      use. Segments under 30 are flagged. Hospital uses the median of its
+      13 measured pilot buildings (20.96 kWh per sq ft, a placeholder; the
+      statewide Healthcare rows, 9.83, mix in clinics), changed in Phase 4;
+      other_healthcare uses LBER's statewide Healthcare rows; food
+      production, cold storage
       and laundry borrow the manufacturing spread ("proxy, likely
       understates"). The implausible low tail (p10 under 1 kWh per sq ft)
       is flagged, not floored; it does not shrink on LBER's floor area, so
