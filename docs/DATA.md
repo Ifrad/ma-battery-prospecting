@@ -26,7 +26,7 @@ before the loaders are written. They are listed at the end under
 |---|---|
 | L3 parcels have owner1, site_addr, bld_area, year_built, ls_date, use_code | True. Field names are upper case. |
 | L3 parcels are a hosted ArcGIS feature layer with 2,000 record pages | True. The layer is `Massachusetts_Property_Tax_Parcels`. An older name found online, `L3_TAXPAR_POLY_ASSESS_gdb`, no longer exists. |
-| 305 private hospital, 979 exempt hospital, 414 food processing | True for Boston only. All 189 parcels coded 979 are in Boston. Other towns use the state DOR code 955 (or 9550, 955V) for charitable hospitals, 584 parcels statewide. |
+| 305 private hospital, 979 exempt hospital, 414 food processing | True for Boston only. All 189 parcels coded 979 are in Boston. Other towns use the state DOR code 955 (or 9550) for charitable hospitals, 522 parcels statewide (584 with `955V`, which is vacant land, not a hospital). |
 | LBER covers buildings of 20,000 sq ft or more, first release is incomplete | True, and the gap is large. See lber below. |
 | BERDO covers non-residential buildings of 20,000 sq ft or more | True. It also covers residential buildings with 15 or more units. |
 | ComStock publishes 15 minute profiles | Not checked. It is a Phase 3 source. |
