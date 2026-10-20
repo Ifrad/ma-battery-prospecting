@@ -218,6 +218,11 @@ Evidence flags, per building and per site:
       manufacturing, warehouse, generic. Keyword rules in config with
       tests, and a flag for how each segment was assigned. Hospital owner
       keywords: HOSPITAL, MEDICAL CENTER. HEALTH goes to other_healthcare.
+- [x] `fix(sites): constrain owner keyword classifications`
+      Whole words and explicit variants, veterinary exclusions on the hospital
+      keyword rule only, and food keywords requiring 4xx use or 20,000 sq ft
+      of site area (placeholder). No distributor word exclusions. Keyword
+      hospital labels remain unverified.
 - [x] `feat(sites): add local owner and tenure signals`
       Local owner: the owner mailing address is in the same town, P.O.
       boxes included. Tenure: years since the last sale, ignoring nominal

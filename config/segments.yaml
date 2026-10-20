@@ -4,8 +4,8 @@
 # a parcel no rule covers is generic.
 #
 # Use codes match on the first three characters, like the classes. Owner
-# keywords match the owner name in upper case with punctuation removed, at
-# the start of a word, so FOOD also matches FOODS.
+# keywords match whole words or phrases after punctuation is removed.
+# Plurals and variants are explicit; these lists do not infer operating use.
 
 order:
   status: placeholder
@@ -28,21 +28,27 @@ rules:
     status: sourced
     source: City of Boston assessor code list, 979 exempt hospital.
   - segment: hospital
-    owner_keywords: [HOSPITAL, MEDICAL CENTER]
+    owner_keywords: [HOSPITAL, HOSPITALS, MEDICAL CENTER, MEDICAL CENTERS, MEDICAL CENTRE, MEDICAL CENTRES]
+    exclude_owner_keywords: [VETERINARY, VETERINARIAN, VETERINARIANS]
     status: placeholder
-    note: Owner name keywords from the plan, for hospitals under other codes.
+    note: >-
+      Unverified owner-name inference, including medical offices. Whole words
+      exclude HOSPITALITY. Veterinary exclusions apply only to this keyword
+      rule, never to a hospital use code. Remaining keyword hospitals need review.
   - segment: cold_storage
-    owner_keywords: [COLD STORAGE, REFRIGERAT, FREEZER, FROZEN]
+    owner_keywords: [COLD STORAGE, COLD STORAGES, REFRIGERATED, REFRIGERATION, REFRIGERATING, REFRIGERATOR, REFRIGERATORS, FREEZER, FREEZERS, FROZEN]
     status: placeholder
     note: No DOR code for cold storage; owner names only.
   - segment: food_production
-    owner_keywords: [FOOD, BAKERY, BAKING, DAIRY, CREAMERY, BREWING, BREWERY, MEATS, SEAFOOD, CHOCOLATE, CANDY]
+    owner_keywords: [FOOD, FOODS, FOODSERVICE, FOODSERVICES, FOOD SERVICE, FOOD SERVICES, BAKERY, BAKERIES, BAKING, DAIRY, DAIRIES, CREAMERY, CREAMERIES, BREWING, BREWERY, BREWERIES, MEAT, MEATS, SEAFOOD, SEAFOODS, CHOCOLATE, CHOCOLATES, CANDY, CANDIES]
     status: placeholder
     note: >-
       No statewide DOR code for food processing (Boston's 414 is a city
-      code); owner names only. Will also catch some food distributors.
+      code). Requires a 4xx industrial use code or site area at least the
+      placeholder in sites.yaml. Can still catch distributors; no distributor
+      exclusions. Size and owner text do not verify production activity.
   - segment: laundry
-    owner_keywords: [LAUNDRY, LAUNDROMAT, CLEANERS, LINEN, UNIFORM]
+    owner_keywords: [LAUNDRY, LAUNDRIES, LAUNDROMAT, LAUNDROMATS, CLEANER, CLEANERS, LINEN, LINENS, UNIFORM, UNIFORMS]
     status: placeholder
     note: No DOR code for laundries; owner names only.
   - segment: other_healthcare
@@ -65,6 +71,6 @@ rules:
       402 Office Building and 403 Land, both part of a manufacturing
       operation.
   - segment: other_healthcare
-    owner_keywords: [HEALTH]
+    owner_keywords: [HEALTH, HEALTHCARE, HEALTH CARE]
     status: placeholder
     note: From the plan. Also catches nursing homes and health agencies.
