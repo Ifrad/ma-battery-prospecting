@@ -324,9 +324,18 @@ as a placeholder.
 Done when: `prospect priors --list-placeholders` prints the remaining
 placeholders and each sourced value names its source.
 
-- [ ] `feat(config): add National Grid demand rate from its tariff`
+- [x] `feat(config): add National Grid demand rate from its tariff`
       Read the demand charge in dollars per kW-month from National Grid's
       filed Massachusetts tariff. It serves 45 of the 53 pilot towns.
+      config/rates.yaml holds a list of schedules per utility, each with
+      eligibility, demand charge, dates, tariff number and source. National
+      Grid has three: G-1 (no demand charge), G-2 ($15.24 per kW-month,
+      billed on the all hours peak) and G-3 ($10.61, billed on the peak in
+      the weekday 8 a.m. to 9 p.m. window, nine holidays excluded). G-1
+      versus G-2 is the 10,000 kWh a month line, G-2 versus G-3 is 200 kW.
+      The optional G-3 transmission coincident peak charge ($21.91 per kW)
+      is recorded and not modeled. Demand is modeled in kW only; the
+      tariff's 90 percent of kVA rule is a placeholder note.
 - [ ] `feat(priors): add config loader with sourced and placeholder status`
       Loader, schema checks and a CLI that lists placeholders.
 - [ ] `docs(method): generate assumptions page`
@@ -378,8 +387,10 @@ placeholders and each sourced value names its source.
       Read the downloaded profiles from local files. Simulate one battery
       block within its power and energy limits, and record the
       distribution of monthly peak reduction as a share of peak, per
-      building type. Load factor is a secondary output. Write both to
-      config with source notes.
+      building type, twice: for the peak over all hours (G-2) and for the
+      peak in the G-3 peak window only. Also record peak-to-average ratio
+      and load factor per building type. Write them to config with source
+      notes, labeled as simulated.
 - [ ] `feat(config): add ConnectedSolutions assumptions`
       $200 per kW-season (vendor source), a performance factor
       (placeholder), and an overlap factor (placeholder) for event days
@@ -421,6 +432,11 @@ blocks and top drivers, and model tests pass.
       have BLD_AREA, so the real error on parcels missing it may be larger.
 - [ ] `feat(model): size whole battery blocks and compute demand savings`
       Block from config/battery.yaml, count cap from config (placeholder).
+      Rate schedule per building from config/rates.yaml: G-1 versus G-2
+      from the estimated monthly kWh, G-2 versus G-3 from the estimated
+      peak. Buildings with an estimated peak of about 150 to 250 kW are
+      weighted across G-2 and G-3 (band as a placeholder). G-2 savings use
+      the all hours reduction and G-3 savings the peak window reduction.
       Peak shaving respects both the power limit and the energy limit, so
       long spikes are only partly shaved, using the Phase 3 simulation.
       Tests: flat load gives zero, higher rate never lowers savings, a

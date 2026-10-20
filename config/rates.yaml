@@ -1,0 +1,123 @@
+# Demand charges by electric utility and rate schedule, read from filed
+# tariffs. Utility names match sites.utility (the MassGIS ELEC field).
+#
+# Each schedule has its eligibility from the tariff text, its demand charge
+# in dollars per kW-month from the utility's rate summary, the dates of both,
+# and where they were read. Which schedule a building is on is estimated in
+# Phase 4 from its estimated monthly kWh and peak kW.
+
+demand_basis:
+  value: kW
+  status: placeholder
+  note: >-
+    National Grid G-2 and G-3 bill the greater of the kW peak and 90 percent
+    of the kVA peak (on G-2 only where the kW peak exceeds 75 kW). We have
+    no power factor data, so the model uses the kW peak only. Where power
+    factor is below 0.9, this understates billed demand.
+
+utilities:
+  National Grid (Massachusetts Electric):
+    read: 2026-10-20
+    refresh: >-
+      Rates were read on 2026-10-20 and need a refresh. Recheck the Summary
+      of Electric Delivery Service Rates (meco_delivery.pdf), which changed
+      the G-2 and G-3 demand charges on 2026-10-01, and the G-1, G-2 and G-3
+      tariffs when they are refiled.
+    schedules:
+      - name: G-1
+        title: General Service
+        tariff: M.D.P.U. No. 1546, effective 2024-10-01
+        # New customers whose average use will not exceed 10,000 kWh a
+        # month or 200 kW of demand.
+        eligibility: {max_kwh_per_month: 10000, max_kw: 200}
+        demand_charge_per_kw_month: 0
+        rates_effective: 2026-10-01
+        status: sourced
+        source: >-
+          National Grid, Massachusetts Electric Company tariff M.D.P.U. No.
+          1546, General Service G-1,
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_g1.pdf,
+          and Summary of Electric Delivery Service Rates M.D.P.U. No. 1-26-I
+          (no demand charge on G-1),
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_delivery.pdf,
+          both read 2026-10-20.
+      - name: G-2
+        title: General Service - Demand
+        tariff: M.D.P.U. No. 1547, effective 2024-10-01
+        # New customers whose average use will exceed 10,000 kWh a month
+        # but not 200 kW of demand.
+        eligibility: {min_kwh_per_month: 10000, max_kw: 200}
+        # Billed demand: the greatest 15-minute peak in all hours.
+        demand_window: all_hours
+        demand_charge_per_kw_month: 15.24
+        rates_effective: 2026-10-01
+        status: sourced
+        source: >-
+          National Grid, Massachusetts Electric Company tariff M.D.P.U. No.
+          1547, General Service - Demand G-2,
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_g2.pdf,
+          and Summary of Electric Delivery Service Rates M.D.P.U. No. 1-26-I,
+          effective 2026-10-01, sheet 3, G-2 demand,
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_delivery.pdf,
+          both read 2026-10-20.
+        note: >-
+          The whole demand charge is net distribution; no other part of the
+          delivery price is billed per kW. It was $15.06 in the summaries
+          effective 2026-02-01 and 2026-07-01 (M.D.P.U. No. 1-26-C and 1-26-G).
+      - name: G-3
+        title: Time-of-Use
+        tariff: M.D.P.U. No. 1591, effective 2025-03-31
+        # New customers whose average use will exceed 200 kW of demand.
+        eligibility: {min_kw: 200}
+        # Billed demand: the greatest 15-minute peak in the peak window.
+        demand_window: peak_window
+        demand_charge_per_kw_month: 10.61
+        rates_effective: 2026-10-01
+        status: sourced
+        source: >-
+          National Grid, Massachusetts Electric Company tariff M.D.P.U. No.
+          1591, Time-of-Use G-3,
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_g3.pdf,
+          and Summary of Electric Delivery Service Rates M.D.P.U. No. 1-26-I,
+          effective 2026-10-01, sheet 3, G-3 demand,
+          https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_delivery.pdf,
+          both read 2026-10-20.
+        note: >-
+          The whole demand charge is net distribution. It was $10.48 in the
+          summaries effective 2026-02-01 and 2026-07-01 (M.D.P.U. No. 1-26-C
+          and 1-26-G). A customer can
+          leave G-3 after 3 months under 180 kW.
+        peak_window:
+          days: weekdays
+          start: "08:00"
+          end: "21:00"
+          # Nationally observed days.
+          holidays:
+            - New Year's Day
+            - Presidents' Day
+            - Memorial Day
+            - Independence Day
+            - Columbus Day
+            - Labor Day
+            - Veterans Day
+            - Thanksgiving Day
+            - Christmas Day
+          status: sourced
+          source: >-
+            National Grid tariff M.D.P.U. No. 1591, Time-of-Use G-3,
+            Peak and Off-Peak Periods,
+            https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_g3.pdf,
+            read 2026-10-20.
+        optional_transmission_coincident_peak:
+          demand_charge_per_kw_month: 21.91
+          modeled: false
+          status: sourced
+          source: >-
+            Summary of Electric Delivery Service Rates M.D.P.U. No. 1-26-I,
+            effective 2026-10-01, sheet 3, and tariff M.D.P.U. No. 1591,
+            https://www.nationalgridus.com/media/pdfs/billing-payments/tariffs/mae/meco_delivery.pdf,
+            read 2026-10-20.
+          note: >-
+            Optional. A G-3 customer may elect to pay transmission on its
+            60-minute demand at the ISO New England monthly peak instead of
+            per kWh, for at least 12 months. Not modeled.
