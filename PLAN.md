@@ -213,7 +213,7 @@ Evidence flags, per building and per site:
       or unknown for multi-provider towns. In the pilot, six towns have a
       municipal light plant: Boylston, Holden, Paxton, Princeton, Sterling
       and West Boylston.
-- [ ] `feat(sites): assign segments from use codes and owner text`
+- [x] `feat(sites): assign segments from use codes and owner text`
       Cold storage, food production, laundry, hospital, other_healthcare,
       manufacturing, warehouse, generic. Keyword rules in config with
       tests, and a flag for how each segment was assigned. Hospital owner
