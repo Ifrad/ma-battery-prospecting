@@ -13,7 +13,9 @@ by region so someone preparing for a local chamber of commerce event knows
 which buildings to talk to.
 
 It uses public data only. It is not affiliated with Powertown and does not use
-Powertown's data.
+Powertown's data. An operator can supply optional files, such as a customer
+status list, which the report reads locally in the reader's browser and which
+are never committed.
 
 ## How to work
 
@@ -41,7 +43,7 @@ Conventional Commits, imperative mood:
     or decisions a reviewer would want to know.
 
 Types: feat, fix, test, docs, refactor, perf, chore, ci.
-Scopes: ingest, db, sites, priors, model, validate, export, web, config, data, method.
+Scopes: ingest, db, sites, priors, model, validate, export, report, config, data, method.
 
 Never use messages like "wip", "fix stuff", "update", or "changes".
 
@@ -72,16 +74,18 @@ Never rewrite history on main.
   `data/README.md` is tracked.
 - Secrets, `.env`, credentials, API keys.
 - Notebook outputs.
-- Generated web data larger than 5 MB per file. Exported files under
-  `web/public/data` are committed, since CI cannot reach the data sources to
+- Export files larger than 5 MB. The per-region files written by
+  `make export` are committed, since CI cannot reach the data sources to
   regenerate them, so each must stay at or under 5 MB.
+- Operator files such as customer status lists (`customer_status*.csv`).
+  Only `docs/customer_status.example.csv`, with fake rows, is tracked.
 
 ## Numbers and honesty rules
 
 - Never invent a number. Every constant that is not from a cited source lives
   in `config/` with `status: placeholder` and a note. Sourced values carry
   `status: sourced` and a `source:` line.
-- The CLI and the web app must show which placeholders are in use.
+- The CLI and the report must show which placeholders are in use.
 - Never describe outputs as accurate unless a validation metric in
   `docs/VALIDATION.md` supports it.
 - Peak shape is unvalidated until real interval meter data tests it.
@@ -109,9 +113,11 @@ Never rewrite history on main.
   pytest, ruff.
 - Postgres 16 with PostGIS, run locally with docker compose. Spatial joins
   happen in SQL, not in Python.
-- Web: React, TypeScript, Vite, MapLibre GL JS, Vitest. No backend. The app
-  reads precomputed static JSON so the public demo cannot go down.
-- Deploy: GitHub Pages via GitHub Actions.
+- Report: one self-contained report.html written by a Python script under
+  `prospect/report/` from the export, with data, CSS and JS inline and no
+  external scripts, fonts or images. It opens by double click, with no
+  network, backend or install.
+- Deliverable: a brief, a CSV and report.html. No deployed website.
 
 ## Layout
 
@@ -122,10 +128,10 @@ Never rewrite history on main.
       model/             Monte Carlo economics
       validate/          baseline and metrics
       export/            static JSON and CSV export
+      report/            single-file HTML report
     sql/migrations/      numbered SQL migrations
     config/              YAML config with sourced and placeholder status
     tests/               pytest tests and fixtures
-    web/                 React app
     docs/                METHOD, DATA, VALIDATION, LIMITS, MATCH_RATES,
                          POWERTOWN_DATA
     data/                ignored by git
@@ -139,8 +145,8 @@ Never rewrite history on main.
     make priors       derive priors from public data
     make score        run the model and store results
     make validate     write docs/VALIDATION.md
-    make export       write web/public/data
-    make web-dev      run the app locally
+    make export       write the per-region export files
+    make report       write report.html from the export
     make check        lint and test everything
 
 ## Writing style for docs and UI text

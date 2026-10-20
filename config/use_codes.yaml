@@ -62,7 +62,9 @@ classes:
       Retired code, described in L3 as "formerly Charitable Organizations
       (private hospitals, etc...). Removed June 2009." Still on about 100
       pilot parcels, some owned by hospitals. Not counted as a hospital by
-      code; the segment task's owner keywords decide.
+      code. Parcels under this code are not candidates, so a hospital that
+      still sits under 905 is not ranked. This is a known limitation, not
+      tested.
 
 # Open decision for the owner: municipal property (DOR 9xx government
 # codes) is not covered by any class yet. Whether to add a municipal class
