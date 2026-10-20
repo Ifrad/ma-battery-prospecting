@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score validate sensitivity
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score validate sensitivity enernoc
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -65,6 +65,11 @@ validate:
 # writes data/validate/sensitivity.json for make validate. About 10 minutes.
 sensitivity:
 	$(PY) -m prospect.validate.sensitivity
+
+# Download the EnerNOC open interval data (CC BY-NC 3.0) into data/enernoc/,
+# for the out-of-sample peak shape test only. Never committed.
+enernoc:
+	$(PY) -m prospect.ingest.enernoc
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:

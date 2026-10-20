@@ -17,6 +17,7 @@ from prospect.validate import (
     calibration,
     energy,
     limits,
+    meters,
     sensitivity,
     stability,
     stress,
@@ -35,6 +36,27 @@ def wins(part: dict) -> tuple[list[str], list[str]]:
             continue
         (better if v["model"]["mdape"] < v["size"]["mdape"] else not_better).append(g)
     return better, not_better
+
+
+def meter_lines(m: dict | None) -> list[str]:
+    """One summary line per EnerNOC group with measures mostly outside the
+    model's range (under 70 percent inside)."""
+    if m is None:
+        return ["- EnerNOC meter check not run on this machine (make enernoc)."]
+    out = []
+    for group, v in m.items():
+        off = [
+            f"{meters.LABELS[k].lower()} (only {v[k]['inside']:.0%} inside, median"
+            f" {v[k]['median']:.2f} against {v[k]['low']:.2f} to {v[k]['high']:.2f})"
+            for k in meters.MEASURES
+            if v[k]["inside"] < 0.7
+        ]
+        if off:
+            out.append(
+                f"- EnerNOC {group} sites ({v['sites']}) often fall outside the"
+                f" model's range: {'; '.join(off)}. Config is not changed."
+            )
+    return out or ["- EnerNOC meter sites fall mostly inside the model's ranges."]
 
 
 def summary(r: dict, cfg: dict) -> list[str]:
@@ -72,6 +94,7 @@ def summary(r: dict, cfg: dict) -> list[str]:
         "- Peak shape is unvalidated, only stress-tested: with the reduction"
         f" share cut, Metro South keeps {st['metro_south']['top15_kept']} of its"
         f" top 15 and Worcester {st['worcester']['top15_kept']}.",
+        *meter_lines(r.get("meters")),
         "- Value per block has no accuracy number. It is simulated, gross,"
         " before the host share, and unvalidated.",
     ]
@@ -93,6 +116,7 @@ def render(r: dict, cfg: dict) -> str:
         stability.section(r["stability"]),
         stress.section(r["stress"]),
         limits.PEAK_SHAPE,
+        meters.section(r["meters"]),
         sensitivity.section(),
         limits.UNVALIDATED,
         limits.LIMITS,
@@ -110,6 +134,7 @@ def main() -> None:
             "calibration": calibration.results(conn, cfg),
             "stability": stability.results(conn, cfg),
             "stress": stress.results(conn, cfg),
+            "meters": meters.results(cfg),
         }
     PAGE.write_text(render(r, cfg))
     print(f"wrote {PAGE.relative_to(ROOT)}")
