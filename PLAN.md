@@ -729,11 +729,13 @@ was validated, and what is unvalidated.
       buildings, within the 5 point tolerance (placeholder,
       config/validate.yaml), so the widths are not recalibrated and the
       scores do not move. Groups under 30 buildings are too few to judge.
-- [ ] `feat(validate): measure rank stability`
+- [x] `feat(validate): measure rank stability`
       From the stored draws, the probability that each scored site is in
       the top 15 and top 50 of its region by value per block. Report how
       many sites have a probability above 50 percent, and say plainly
-      where the ranking is a tier and not an order. No new draws.
+      where the ranking is a tier and not an order. No new draws. Draw i
+      of every site in a region is one joint outcome; sites vary
+      independently, since each site's draws are seeded on their own.
 - [ ] `docs(validate): find an open interval meter dataset for peak shape`
       One pass. Candidate: Building Data Genome 2. Check its license,
       number of buildings, building types, climate and location, and

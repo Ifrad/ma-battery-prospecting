@@ -74,3 +74,55 @@ This tests the annual energy estimate only, not peak shape. Each pilot LBER buil
 | warehouse | 211 | 80% | 10% | 10% |  |
 
 Overall the band holds the measured value 79% of the time against the 80 percent it claims, within 5%, so the widths are not recalibrated. Groups under 30 buildings are too small to judge on their own.
+
+## Rank stability
+
+From the stored draws of the latest score run, with ConnectedSolutions: draw i of every site in a region is one joint outcome, sites ranked by value per block in each. Simulated values, so this is stability under the model's own uncertainty, not accuracy.
+
+| Region | Scored sites | P(top 15) over 50% | P(top 50) over 50% | P(top 15) over 90% | P(top 50) over 90% |
+|---|---|---|---|---|---|
+| Metro South | 156 | 12 | 38 | 3 | 8 |
+| Worcester | 198 | 0 | 30 | 0 | 0 |
+
+- Metro South: 3 sites are in the top 15 in more than 90 percent of draws and 12 in more than half, so the head of the list is an order; below it the ranking is a tier: 38 sites are more likely than not in the top 50, and their order inside that group is not meaningful.
+- Worcester: no site is in the top 15 in more than 90 percent of draws (0 in more than half), so the ranking is a tier, not an order: 30 sites are more likely than not in the top 50, and their order inside that group is not meaningful.
+
+Metro South, the 15 sites with the highest P50, with the 80 percent range of their rank across draws:
+
+| Rank by P50 | Owner | P(top 15) | P(top 50) | Rank P10 to P90 |
+|---|---|---|---|---|
+| 1 | SARNAFIL INC | 96% | 100% | 2 to 13 |
+| 2 | 1200 SHARON, LLC | 90% | 98% | 1 to 16 |
+| 3 | NBPIV DAN LLC | 88% | 98% | 2 to 17 |
+| 4 | DAN ROAD ASSOCIATES LLC | 94% | 100% | 2 to 13 |
+| 5 | BUILT BY NATURE GROUP LLC | 89% | 98% | 3 to 16 |
+| 6 | MEDICAL INFORMATION TECH INC | 90% | 100% | 3 to 15 |
+| 7 | EMERGENT BIODEFENSE OPERATIONS | 84% | 99% | 2 to 21 |
+| 8 | 480 NEPONSET LLC | 72% | 86% | 2 to 69 |
+| 9 | BOSTON MUTUAL BLDG RLTY TR | 84% | 99% | 3 to 19 |
+| 10 | ARMSTRONG PHARMACEUTICALS | 64% | 85% | 5 to 61 |
+| 11 | CAMPANELLI TRIGATE ROYALL | 62% | 84% | 4 to 66 |
+| 12 | TURNPIKE REAL ESTATE LLC | 55% | 88% | 6 to 58 |
+| 13 | JUMBO CAPITAL PF SHARON LLC | 39% | 72% | 8 to 77 |
+| 14 | ATLANTA REAL ESTATE HOLDINGS L.L.C. | 44% | 57% | 3 to 150 |
+| 15 | BP HAZEL LLC | 39% | 58% | 7 to 140 |
+
+Worcester, the 15 sites with the highest P50, with the 80 percent range of their rank across draws:
+
+| Rank by P50 | Owner | P(top 15) | P(top 50) | Rank P10 to P90 |
+|---|---|---|---|---|
+| 1 | WORCESTER HAHNEMANN HOSPITAL | 26% | 71% | 12 to 85 |
+| 2 | OFS FITEL LLC | 46% | 72% | 1 to 77 |
+| 3 | COORSTEK INC | 39% | 67% | 8 to 82 |
+| 4 | VERIZON | 42% | 65% | 7 to 91 |
+| 5 | HARRINGTON HOSPITAL CORP | 39% | 63% | 2 to 92 |
+| 6 | SOUTHBRIDGE ASSOCIATES LLC | 35% | 66% | 3 to 84 |
+| 7 | SOUTHBRIDGE ASSOCIATES II, LLC | 37% | 64% | 3 to 83 |
+| 8 | RK WORCESTER CROSSING LLC | 26% | 62% | 12 to 92 |
+| 9 | SAINT-GOBAIN PERFORMANCE PLASTCIS | 7% | 65% | 16 to 87 |
+| 10 | AGRAND REALTY CORP | 23% | 64% | 12 to 84 |
+| 11 | NBPIV GARDNER LLC | 34% | 62% | 7 to 84 |
+| 12 | O C S MILLBURY LLC | 10% | 58% | 15 to 95 |
+| 13 | MCI TELECOMMUNICATIONS CORP | 35% | 59% | 4 to 97 |
+| 14 | THE COMMERCE INSURANCE COMPANY | 30% | 62% | 6 to 76 |
+| 15 | NEW GARDEN PARK INC | 30% | 58% | 9 to 96 |
