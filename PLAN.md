@@ -557,7 +557,7 @@ stays a config placeholder.
       Monte Carlo draws per building, seeded per building id so results
       never depend on row order. Tests: determinism, known kWh narrows the
       range.
-- [ ] `feat(model): widen or narrow uncertainty from evidence flags`
+- [x] `feat(model): widen or narrow uncertainty from evidence flags`
       Each evidence flag from Phase 2 sets how wide the draws are: measured
       electricity narrows them, an estimated area, a weak LBER match or
       an unknown utility widens them. Widths live in config as
