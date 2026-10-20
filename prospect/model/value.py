@@ -33,3 +33,15 @@ def summary(x: dict) -> dict:
         "total": pct(x["total"]),
         "blocks": float(np.mean(x["blocks"])),
     }
+
+
+STREAMS = {"demand": "demand_usd", "connected_solutions": "grid_usd"}
+
+
+def by_stream(x: dict) -> dict:
+    """P50 per block of each stream and its share of their sum."""
+    p50 = {k: float(np.median(x[col])) for k, col in STREAMS.items()}
+    total = sum(p50.values())
+    return {
+        k: {"p50": v, "share": v / total if total > 0 else 0.0} for k, v in p50.items()
+    }
