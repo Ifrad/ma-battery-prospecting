@@ -10,7 +10,7 @@ from datetime import date
 from pathlib import Path
 
 from prospect.db import connect
-from prospect.validate import baseline
+from prospect.validate import baseline, energy
 
 ROOT = Path(__file__).resolve().parents[2]
 PAGE = ROOT / "docs" / "VALIDATION.md"
@@ -31,7 +31,10 @@ def render(sections: list[list[str]]) -> str:
 
 def main() -> None:
     with connect() as conn:
-        sections = [baseline.section(baseline.results(conn))]
+        sections = [
+            baseline.section(baseline.results(conn)),
+            energy.section(energy.results(conn)),
+        ]
     PAGE.write_text(render(sections))
     print(f"wrote {PAGE.relative_to(ROOT)}")
 

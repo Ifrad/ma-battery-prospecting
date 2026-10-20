@@ -705,7 +705,7 @@ was validated, and what is unvalidated.
       ranks by size alone. `make validate` writes the section, against all
       candidate sites and against scored sites only, with why the size
       top 50 sites that were not scored dropped out.
-- [ ] `feat(validate): compare energy estimates against LBER with town holdout`
+- [x] `feat(validate): compare energy estimates against LBER with town holdout`
       For LBER buildings with measured grid electricity (zero or negative
       is missing), estimate annual kWh as if unmeasured, with the Phase 3
       priors recomputed leaving out the held-out town. Spearman and median
@@ -713,6 +713,10 @@ was validated, and what is unvalidated.
       times one global kWh per sq ft), by segment, for the pilot towns and
       statewide, with sample sizes. LBER covers only buildings of about
       20,000 sq ft and up, so this says nothing about smaller buildings.
+      Statewide rows have no segment or area of ours, so the statewide line
+      tests the same method on LBER property types and floor areas. Within
+      a segment both estimates rank alike (area times a constant), so the
+      model can only rank better across segments.
 - [ ] `feat(validate): check calibration of the annual energy estimate`
       This tests the annual energy estimate only, not peak shape. Hold out
       LBER buildings with measured electricity, estimate them as if
