@@ -34,8 +34,8 @@ a minimum yearly benefit, with a band and the reasons, grouped by region.
    tests it.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
-   HOSPITAL or MEDICAL CENTER. Vacant land (`955V`) is not a
-   hospital.
+   the whole word HOSPITAL or MEDICAL CENTER and not VETERINARY. Vacant
+   land (`955V`) is not a hospital.
 4. Every ranked site has an owner name and site address for outreach.
 
 ## Verified facts this plan relies on
@@ -146,23 +146,34 @@ Kickoff prompt:
 Goal: collect evidence, no scoring. Two levels: buildings (MassGIS
 footprints) are the unit for energy and peak estimates, and outreach sites
 group buildings on touching parcels with the same normalized owner, within
-one town. Every building and site carries evidence flags that say how much
-of its data is measured and how much is estimated.
+one town. Building area is set per site, after grouping. Every building
+and site carries evidence flags that say how much of its data is measured
+and how much is estimated.
 Done when: buildings and sites exist for both pilot regions with their
 evidence flags, the LBER match rate is reported by method (UBID exact match
-first), exempt hospitals appear, and the footprint area error is recorded
-in docs/DATA.md.
+first) in docs/MATCH_RATES.md, exempt hospitals appear, and the footprint
+area error is recorded in docs/DATA.md.
+
+`make sites` rebuilds the tables `use_code_classes`, `pilot_towns`,
+`parcels`, `buildings`, `sites`, `lber_matches` and `lber_unmatched` in
+one transaction. The views `building_evidence` and `site_evidence` read
+from them.
 
 Evidence flags, per building and per site:
 
-- electricity source: measured (LBER) or estimated
-- area source: assessor, footprint_x_stories or footprint_only
+- electricity source: measured only through a matched LBER row with
+  usable grid electricity, from its latest reporting year, otherwise
+  estimated
+- area source: assessor, assessor_below_footprint,
+  assessor_above_footprint, footprint_x_stories or footprint_only
 - LBER match method and confidence
-- utility: known, municipal, or unknown (multi-provider towns)
-- segment, and how it was assigned (use code or owner keyword)
-- local owner: owner mailing address in the same town, P.O. boxes included
+- utility: known, municipal, or unknown (multi-provider towns, none in
+  the pilot)
+- segment, and how it was assigned (use code, owner keyword or default)
+- local owner: owner mailing state MA (or blank) and owner city equal to
+  the parcel's town, or the same ZIP; P.O. boxes count like any address
 - mixed residential and C&I parcel
-- tenure, ignoring nominal sales
+- tenure, missing when the latest sale is nominal
 
 - [x] `feat(db): keep LBER reporting years side by side`
       `raw_lber` holds one release today and is keyed on object id alone.
@@ -175,25 +186,43 @@ Evidence flags, per building and per site:
       character `V` means vacant land (`955V` is "EXEMPT VACANT LAND"), so
       those codes are never a hospital, even when the owner name matches.
       Mark codes not yet checked against the statewide list as placeholders.
+      Two placeholder classes were added: mixed_commercial_industrial for
+      the multiple-use codes 03x and 04x, a candidate class because
+      Worcester's largest hospital parcel is coded 049C, and
+      charitable_former for the retired 905 code, which is not a
+      candidate. So a hospital still under 905 is not ranked: a known
+      limitation, not tested.
       Municipal sites are not covered by these classes yet. Whether to add
       a municipal class is an open decision for the owner.
 - [x] `feat(sites): build the building table from footprints and parcels`
-      SQL migration creating `buildings`: one row per footprint, linked to
-      the parcel it sits in, with owner, site address, use code, year built
-      (optional) and geometry. Building area comes from `BLD_AREA`, never
+      SQL migration creating `parcels`, one row per polygon, and
+      `buildings`, one row per footprint, linked to the smallest parcel
+      containing its interior point (363 lie in no parcel), with owner,
+      site address, use code, year built (optional) and geometry. Parcels
+      with several records (3,391 in the pilot) take owner, address, use
+      code, stories and year built from the record with the largest
+      `BLD_AREA`, and sum `BLD_AREA` unless every nonzero value is the
+      same. 50 polygons that mix residential and C&I records are flagged;
+      the Phase 1 count of 52 included vacant land and missed two
+      multi-use codes (docs/DATA.md). Area comes from `BLD_AREA`, never
       `RES_AREA`, otherwise footprint area times stories, otherwise
-      footprint area alone, with the area source flag. Parcels with several
-      records (3,391 in the pilot) follow one documented rule, and the 52
-      that mix residential and C&I records are flagged. No size floor: keep
-      every building and let the model decide.
+      footprint area alone. The area allocation fix below moved this to
+      the site level with five area sources. No size floor: keep every
+      building and let the model decide.
 - [x] `feat(sites): group buildings into outreach sites`
       A site is the buildings on touching parcels with the same normalized
       owner, within one town, for every owner, not only hospitals.
-      Normalize owner names first (punctuation, INC, CORP, CO, THE, and
-      names cut off at about 30 characters), since one owner appears as
-      `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. This also joins
-      cases like 1129 Auburn St, Whitman: two touching parcels, one owner,
-      one address. Scattered parcels of one owner stay separate sites.
+      Touching is measured in Massachusetts State Plane meters
+      (EPSG:26986), with a 1 m tolerance (placeholder, `touch_tolerance_m`
+      in config/sites.yaml). Normalize owner names first: punctuation is
+      removed and the company words in config/sites.yaml are dropped (THE,
+      INC, CORP, CO, COMPANY, LLC, LTD and long forms), since one owner
+      appears as `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. A
+      name within one character of the longest owner name in its town is
+      treated as cut off: its last word is dropped and it may join a
+      longer name that starts with it. This also joins cases like 1129
+      Auburn St, Whitman: two touching parcels, one owner, one address.
+      Scattered parcels of one owner stay separate sites.
 - [x] `feat(sites): compute UBIDs for footprints`
       Unique Building Identifiers from the MassGIS footprints, so LBER's
       `UBID` field can be matched exactly. Computed with
@@ -201,55 +230,90 @@ Evidence flags, per building and per site:
       specification, not PNNL's buildingid package: it reproduces DOER's
       UBIDs on the pilot data (92.7% of pilot LBER rows match a footprint
       exactly) and agrees with buildingid 2.3.0 on 4,019 of 4,019 sampled
-      footprints. Feasibility check and match detail in docs/DATA.md.
+      footprints. buildingid was not added because it brings in shapely,
+      pyqtree, click, click-log, tldm and pandas 3, none of which the
+      encoder needs, and it gives the same UBIDs. Feasibility check and
+      match detail in docs/DATA.md.
 - [x] `feat(sites): match buildings to LBER records`
+      An LBER row is in the pilot when its point lies inside a pilot
+      town's polygon (3,952 rows), and it matches once per reporting year.
       In order, stopping at the first that works: (1) exact UBID match,
       (2) LBER point inside a footprint, (3) point inside a parcel,
-      (4) normalized address. Record the method and a confidence for every
-      match, and keep a table of unmatched LBER rows. Report the UBID exact
-      match rate first. Matched buildings get electricity source measured.
+      (4) normalized address. When a method finds several buildings, the
+      largest footprint is used and the match is flagged ambiguous, so one
+      row never gives kWh to two buildings. Record the method and a
+      confidence (placeholder labels) for every match, and keep a table
+      of unmatched LBER rows. Report the UBID exact match rate first. Only
+      rows with usable grid electricity make a building measured.
 - [x] `feat(sites): assign electric utility and flag municipal light plants`
       Join on TOWN_ID, no spatial join. Utility flag is known, municipal,
       or unknown for multi-provider towns. In the pilot, six towns have a
       municipal light plant: Boylston, Holden, Paxton, Princeton, Sterling
-      and West Boylston.
+      and West Boylston. No pilot town lists several providers, so no
+      pilot site is unknown.
 - [x] `feat(sites): assign segments from use codes and owner text`
       Cold storage, food production, laundry, hospital, other_healthcare,
       manufacturing, warehouse, generic. Keyword rules in config with
       tests, and a flag for how each segment was assigned. Hospital owner
       keywords: HOSPITAL, MEDICAL CENTER. HEALTH goes to other_healthcare.
+      A site takes the segment of its candidate building with the most
+      area.
 - [x] `fix(sites): constrain owner keyword classifications`
-      Whole words and explicit variants, veterinary exclusions on the hospital
-      keyword rule only, and food keywords requiring 4xx use or 20,000 sq ft
-      of site area (placeholder). No distributor word exclusions. Keyword
-      hospital labels remain unverified.
+      Keywords match whole words, with plural and variant forms listed in
+      config. A VETERINARY exclusion applies to the hospital keyword rule
+      only, never to a hospital use code. A food keyword needs a 4xx use
+      code or at least 20,000 sq ft of site area (placeholder). No
+      distributor exclusions. The 4 remaining keyword hospital sites are
+      unverified.
 - [x] `feat(sites): add local owner and tenure signals`
-      Local owner: the owner mailing address is in the same town, P.O.
-      boxes included. Tenure: years since the last sale, ignoring nominal
-      sales ($1, $100 and similar), as a rough proxy for a locally rooted
-      business.
+      Local owner: the owner mailing state is MA (or blank) and the owner
+      city is the parcel's town, or the owner ZIP is the parcel ZIP. P.O.
+      boxes count like any address. Tenure: years since the latest sale,
+      as a rough proxy for a locally rooted business. L3 keeps only the
+      latest sale, so tenure is missing when that sale is nominal (under
+      $1,000 or no price, placeholder). Sale dates before 1900 are filler.
 - [x] `feat(sites): collect evidence flags per building and per site`
-      One place to read every flag listed above, for both levels. A site's
-      flags summarize its buildings (for example, how many have measured
+      One place to read every flag listed above, for both levels: the
+      views `building_evidence` and `site_evidence`. A site's flags
+      summarize its buildings (for example, how many have measured
       electricity).
 - [x] `docs(data): measure footprint area error`
-      Compare footprint-based area with `BLD_AREA`, and with LBER
-      `Gross_Floor_Area` for matched buildings: median and 90th percentile
-      error for footprint_x_stories and footprint_only. Measure on all
-      parcels with known `BLD_AREA` and stories, and report candidate
-      parcels separately, since few candidate buildings use footprint
-      times stories. Record it in
-      docs/DATA.md, then stop and show the owner before deciding how
-      estimated areas are used.
+      Compare footprint-based area with `BLD_AREA` at parcel level, and
+      with LBER `Gross_Floor_Area` for matched buildings: median and 90th
+      percentile error for footprint_x_stories and footprint_only, on all
+      parcels with known `BLD_AREA` and stories and on candidates
+      separately. docs/DATA.md also records the direction of the error, a
+      use code ratio estimate that was tested and not adopted, the error at
+      site level after pooling, and the decision: all five area sources
+      stay, every source other than assessor is flagged as estimated, and
+      the measured error sets the Phase 4 width.
 - [x] `docs(data): generate match rate report`
-      docs/MATCH_RATES.md with counts by region, segment and match method.
-      Review by hand and record the results: 20 owner groups for false
-      merges, about 10 sites per segment for keyword precision, where
-      LBER points land (C&I parcel, residential parcel, none), a sample of
-      multi-record polygons where identical `BLD_AREA` values were counted
-      once, the 1 m touch tolerance, the 979 parcel count claim in
-      config/use_codes.yaml against docs/DATA.md, and that the `049C`
-      parcel is in the Worcester Memorial site.
+      docs/MATCH_RATES.md, written by `make match-rates`, with counts by
+      region, segment and match method, where LBER points land, the gaps
+      behind the 1 m touch tolerance, the 979 parcel count and the `049C`
+      parcel in the Worcester Memorial site. The hand review sample in
+      `data/review/` was 5 owner groups, up to 3 sites per segment (22
+      rows) and 5 multi-record parcels whose identical `BLD_AREA` values
+      were counted once: 32 rows. Only 2 of the 32 were reviewed. The
+      report's Hand review section comes from docs/HAND_REVIEW.md.
+
+Phase 2 deviations:
+
+- Planar meters (`fix(sites): measure parcel touching in planar meters`).
+  The geography version of the 1 m touch test called 168 pilot parcel
+  pairs touching that are 3 to 315 m apart, and two rebuilds gave
+  different sites. Distance is now planar in Massachusetts State Plane
+  meters.
+- Area allocation (`fix(sites): pool assessor area per site and check it
+  against footprints`). Assessor area shared within one parcel gave a
+  footprint that straddles a parcel line the wrong parcel's area, and
+  spread tiny `BLD_AREA` values over large roofs. Area is now pooled per
+  site, with a floor check (0.5) and a ceiling check (3 times the site's
+  highest stories, or 10), both placeholders in config/sites.yaml.
+- Segment keyword fix (`fix(sites): constrain owner keyword
+  classifications`). Matching at the start of a word made HOSPITALITY
+  owners hospitals and small eateries food production. It changed 14 of
+  9,640 candidate sites.
 
 ---
 
@@ -269,8 +333,8 @@ placeholders and each sourced value names its source.
       docs/ASSUMPTIONS.md, generated by `make assumptions` from config
       status and notes. For each assumption: what it is, why, how it gets
       tested, and what would replace it. Covers data rules (touch
-      tolerance, the 905 and 03x/04x classes, area fallbacks, owner name
-      cutoffs) and the battery and cost inputs. Parcels under the retired
+      tolerance, the 905 and 03x/04x classes, the area checks and
+      fallbacks, the food keyword size gate, owner name cutoffs) and the battery and cost inputs. Parcels under the retired
       905 code are not candidates, so a hospital that still sits under 905
       is not ranked: a known limitation, not tested.
 - [ ] `feat(config): add remaining utility demand rates with sources`
@@ -547,3 +611,9 @@ Done when: the README follows that structure and every link works on a phone.
 - Learn building load shape from Powertown's real meter data where they
   share it, replacing the type-based priors.
 - A host share slider in the report.
+- Phase 4, if area uncertainty is too wide: test floors derived from
+  building height, and the Overture buildings probe for multi-story types.
+- The building parcel overlap allocation is parked on
+  `wip/building-parcel-overlap`. It needs wiring into `make sites`, its
+  config value, a TRUNCATE CASCADE fix and a remeasured area error.
+  Revisit only if area uncertainty is too wide.
