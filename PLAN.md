@@ -745,6 +745,10 @@ was validated, and what is unvalidated.
       `prospect/ingest/` and compare peak-to-average ratio, load factor
       and monthly peak reduction share with the ComStock-based estimates
       by building type. If not, record that peak shape is unvalidated.
+      Building Data Genome 2 was assessed and not used (hourly,
+      campus-heavy, no New England site, CC BY-SA 4.0), as recorded in
+      docs/VALIDATION.md. The EnerNOC open dataset is assessed; the owner
+      decides whether to download it.
 - [x] `feat(validate): stress-test peak shape`
       Peak shape is unvalidated, so rescore with the simulated peak
       reduction share cut by 30 percent for all sites and by 50 percent for
@@ -887,9 +891,9 @@ Done when: the README follows that structure and every link works on a phone.
       walkthrough link. Bottom: method, validation, limits, how to run.
       The headline is value per block; use model confidence only for the
       optional view. State the break-even comparison with the owner's cost
-      estimates (docs/SCORES.md), that values are gross before any host share and not
-      profit, and that shape estimates are unvalidated
-      until real meter data tests them. List open questions for Powertown:
+      estimates (docs/SCORES.md), that values are gross before any host
+      share and not profit, and that shape estimates are unvalidated until
+      real meter data tests them. List open questions for Powertown:
       how they find sites today, a list of current and contacted sites,
       installed cost, ITC eligibility, whether ConnectedSolutions stacks
       with peak shaving, the savings split, and how their own meter data
