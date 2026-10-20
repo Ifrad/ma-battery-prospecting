@@ -1,0 +1,33 @@
+# ComStock building load profiles: a sample of simulated 15-minute
+# electricity profiles for Massachusetts commercial building types, used
+# only for the battery simulation. Downloaded by make comstock into
+# data/comstock/ (not committed).
+
+dataset:
+  base_url: https://oedi-data-lake.s3.amazonaws.com/nrel-pds-building-stock/end-use-load-profiles-for-us-building-stock
+  release: 2025/comstock_amy2018_release_3
+  state: MA
+  upgrade: 0
+  weather_year: 2018
+  status: sourced
+  source: >-
+    NREL (now the National Laboratory of the Rockies, NLR), End-Use Load
+    Profiles for the U.S. Building Stock, ComStock 2025 release 3, baseline
+    (upgrade 0), README.pdf in the release folder, read 2026-10-20.
+    https://data.openei.org/submissions/4520
+  note: >-
+    Simulated buildings with 2018 weather, not measured meters. License:
+    the ComStock License (BSD style), https://github.com/NREL/ComStock/blob/main/LICENSE.txt.
+
+sample:
+  per_type: 30
+  seed: 20261020
+  status: placeholder
+  note: >-
+    About 30 buildings per ComStock building type, spread across floor area,
+    instead of all 2,285 Massachusetts buildings (4.1 GB), to keep the
+    download near 1 GB. Types with fewer buildings are taken whole.
+  test: >-
+    Rerun the simulation with another seed and compare the per-type results.
+  replace: >-
+    All Massachusetts buildings, if the per-type results move with the seed.

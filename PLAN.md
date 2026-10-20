@@ -399,11 +399,17 @@ placeholders and each sourced value names its source.
       Phase 4 hurdle. A placeholder with status and a note until Powertown
       gives a real figure. In config/costs.yaml with no value yet, since
       no figure has been given; one is needed before Phase 4 scores.
-- [ ] `feat(ingest): download ComStock profiles for Massachusetts`
+- [x] `feat(ingest): download ComStock profiles for Massachusetts`
       A loader in `prospect/ingest/` that fetches 15-minute ComStock
       profiles for each building type in Massachusetts and saves them
       under `data/`, with an `ingest_runs` row for provenance. This is the
-      only step in this work that uses the network.
+      only step in this work that uses the network. `make comstock` reads
+      the 14 county metadata files of ComStock 2025 release 3 and takes a
+      sample, not all 2,285 buildings: per building type, one building
+      from each of 30 equal floor area groups, seed 20261020 (429
+      buildings, 803 MB, 9 hospitals). It checks the first profile for
+      15-minute steps before fetching the rest. Adds pyarrow and numpy,
+      pinned.
 - [ ] `feat(priors): simulate the battery block on ComStock profiles`
       Read the downloaded profiles from local files. Simulate one battery
       block within its power and energy limits, and record the

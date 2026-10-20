@@ -109,7 +109,8 @@ Never rewrite history on main.
 
 - Python 3.11+, packaged with pyproject.toml. Use uv if installed, otherwise
   venv and pip.
-- Python libraries: httpx, tenacity, psycopg (v3), pandas, numpy, pyyaml,
+- Python libraries: httpx, tenacity, psycopg (v3), pandas, numpy (pinned
+  2.4.6), pyarrow (pinned 26.0.0, to read ComStock Parquet), pyyaml,
   openlocationcode (pinned 1.0.1, for UBIDs), pytest, ruff.
 - Postgres 16 with PostGIS, run locally with docker compose. Spatial joins
   happen in SQL, not in Python.
