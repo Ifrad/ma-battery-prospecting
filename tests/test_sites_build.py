@@ -78,6 +78,15 @@ def test_footprint_outside_any_parcel_keeps_footprint_area(db, raw):
     assert building_rows(db, None) == [(750, "footprint_only")]
 
 
+def test_every_building_gets_a_ubid(db, raw):
+    parcel, footprint = raw
+    parcel("A", 0, 0, USE_CODE="316", BLD_AREA=10000)
+    footprint(0.0001, 0.0001, 600)
+    build(db)
+    (ubid,) = db.execute("SELECT ubid FROM buildings").fetchone()
+    assert ubid.startswith("87JC") and ubid.count("-") == 4
+
+
 def test_rebuild_gives_same_rows(db, raw):
     parcel, footprint = raw
     parcel("A", 0, 0, USE_CODE="316", BLD_AREA=10000)

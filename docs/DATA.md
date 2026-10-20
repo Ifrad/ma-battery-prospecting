@@ -300,3 +300,41 @@ Ten decoded boxes and the footprint each matched within one cell:
 | 87JC3X7R+57R-22-12-22-8 | 42.062425, -71.009625, 42.063550, -71.008969 | 4952163 |
 | 87JC54QV+6GJ-9-7-9-6 | 42.187850, -71.856438, 42.188325, -71.856000 | 2926908 |
 | 87JC7692+828-14-15-13-18 | 42.267950, -71.800500, 42.268650, -71.799437 | 3452114 |
+
+### UBID encoder and match detail
+
+The project encodes UBIDs with `openlocationcode==1.0.1` (Google, Apache
+2.0, no dependencies) and its own encoder, `prospect/sites/ubid.py`,
+which follows PNNL's specification and reference code. The package is
+an sdist from 2019; uv builds it cleanly on Python 3.11 and 3.14, and the
+OLC and UBID specifications it implements are stable. In a throwaway
+environment the encoder gave the same UBID as PNNL's `buildingid==2.3.0`
+for 4,019 of 4,019 pilot footprints, including all 19 multipolygons. So
+the mismatches below are in the data, not the encoder.
+
+Every building gets a UBID in `make sites`. Exact match rate of pilot
+LBER rows against those UBIDs:
+
+| Region | Pilot LBER rows | Exact | Rows with grid electricity | Exact among them |
+|---|---|---|---|---|
+| Metro South | 1,950 | 1,816 (93.1%) | 608 | 556 (91.4%) |
+| Worcester | 2,002 | 1,848 (92.3%) | 558 | 519 (93.0%) |
+| Both | 3,952 | 3,664 (92.7%) | 1,166 | 1,075 (92.2%) |
+
+Why the other 288 rows do not match exactly:
+
+| Cause | Metro South | Worcester | Both | With grid electricity |
+|---|---|---|---|---|
+| One-cell offset: a footprint's box is within one grid cell on every edge, but a corner or the centroid falls in the next cell | 72 | 81 | 153 | 51 |
+| Different footprint: footprints nearby, none within one cell (edited, split or merged since DOER encoded it) | 59 | 64 | 123 | 39 |
+| No footprint nearby | 3 | 9 | 12 | 1 |
+
+The point-in-footprint and point-in-parcel methods cover these rows.
+
+Pilot rule, rechecked: the town polygon rule adds 50 rows whose `City`
+is not a pilot town and drops 5 whose `City` is, a net 45. The 50 are
+mostly villages of pilot towns (South Easton 22, North Easton 12,
+Whitinsville 3, North and South Grafton 4, North Oxford 2), a few
+neighboring town names (Plympton 2, Bellingham, New Braintree,
+Weymouth) and two wrong ones (Andover, and Shrewsbury on a point in
+Metro South). The point location is more reliable than the `City` text.
