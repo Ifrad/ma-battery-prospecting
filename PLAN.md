@@ -756,7 +756,12 @@ was validated, and what is unvalidated.
       factor, summer 3 to 8 pm mean over peak), at 15 minutes: light
       industrial against the no-profile range, grocers and schools against
       ComStock. The block's peak reduction share by size bin depends on
-      real kW and cannot be tested with it. It has no warehouses.
+      real kW and cannot be tested directly. As the owner asked, it is
+      tested on shape given an assumed peak: each light industrial and
+      grocery profile is scaled to each bin's midpoint (100, 350, 750 kW;
+      for 1,000 kW and up, the median peak of the ComStock sample buildings
+      there) and run through the same dispatch, against the no-profile
+      range and ComStock Grocery. It has no warehouses.
 - [x] `feat(validate): stress-test peak shape`
       Peak shape is unvalidated, so rescore with the simulated peak
       reduction share cut by 30 percent for all sites and by 50 percent for

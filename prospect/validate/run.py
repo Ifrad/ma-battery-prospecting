@@ -59,6 +59,21 @@ def meter_lines(m: dict | None) -> list[str]:
     return out or ["- EnerNOC meter sites fall mostly inside the model's ranges."]
 
 
+def rescale_lines(x: dict | None) -> list[str]:
+    """The industrial cut share at assumed peaks, against the middle of the
+    no-profile range the model draws uniformly from."""
+    if x is None:
+        return []
+    meds = " / ".join(f"{v['median']:.2f}" for v in x["industrial"].values())
+    peaks = " / ".join(f"{p:,.0f}" for p in x["targets"].values())
+    return [
+        f"- With assumed peaks of {peaks} kW, EnerNOC light industrial sites cut"
+        f" a median {meds} of their monthly peak with one block; see the rescale"
+        " table for where that sits in the no-profile range the model draws"
+        " from. This tests shape at an assumed peak, not real kW."
+    ]
+
+
 def summary(r: dict, cfg: dict) -> list[str]:
     e = r["energy"]["pilot"]["all"]
     s = r["energy"]["statewide"]["all"]
@@ -95,6 +110,7 @@ def summary(r: dict, cfg: dict) -> list[str]:
         f" share cut, Metro South keeps {st['metro_south']['top15_kept']} of its"
         f" top 15 and Worcester {st['worcester']['top15_kept']}.",
         *meter_lines(r.get("meters")),
+        *rescale_lines(r.get("rescale")),
         "- Value per block has no accuracy number. It is simulated, gross,"
         " before the host share, and unvalidated.",
     ]
@@ -117,6 +133,7 @@ def render(r: dict, cfg: dict) -> str:
         stress.section(r["stress"]),
         limits.PEAK_SHAPE,
         meters.section(r["meters"]),
+        meters.rescale_section(r["rescale"]),
         sensitivity.section(),
         limits.UNVALIDATED,
         limits.LIMITS,
@@ -135,6 +152,7 @@ def main() -> None:
             "stability": stability.results(conn, cfg),
             "stress": stress.results(conn, cfg),
             "meters": meters.results(cfg),
+            "rescale": meters.rescale_results(cfg),
         }
     PAGE.write_text(render(r, cfg))
     print(f"wrote {PAGE.relative_to(ROOT)}")

@@ -34,3 +34,27 @@ def test_compare_counts_inside_below_above():
         {m: (0.2, 0.8) for m in meters.MEASURES},
     )["load_factor"]
     assert (out["inside"], out["below"], out["above"]) == (0.5, 0.25, 0.25)
+
+
+def test_bin_targets_use_midpoints_and_the_sample_median_for_the_top_bin(
+    tmp_path, monkeypatch
+):
+    sim = tmp_path / "simulation.csv"
+    sim.write_text("bldg_id,annual_peak_kw\n1,1200\n2,1800\n3,500\n")
+    monkeypatch.setattr(meters, "COMSTOCK_SIM", sim)
+    cfg = {"simulation": {"bins_kw": {"a": [0, 200], "b": [1000, None]}}}
+    assert meters.bin_targets(cfg) == {"a": 100.0, "b": 1500.0}
+
+
+def test_monthly_shares_scale_the_peak_and_cut_a_spike():
+    from prospect.priors.simulate import battery
+
+    starts = [
+        datetime(2012, 3, 1) + i * (datetime(2012, 3, 1, 0, 15) - datetime(2012, 3, 1))
+        for i in range(96 * 31)
+    ]
+    flat = (np.full(96 * 31, 7.0), starts)
+    spiky = (np.where(np.arange(96 * 31) % 96 == 60, 2.0, 1.0), starts)
+    shares = meters.monthly_shares([flat, spiky], 1000.0, battery())
+    assert shares[0] == pytest.approx(0.0, abs=1e-6)  # flat load, nothing to cut
+    assert 0.2 < shares[1] <= 0.5  # 1,000 kW spikes over 500 kW base: power-limited

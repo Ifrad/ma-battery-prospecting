@@ -25,8 +25,9 @@ UNVALIDATED = [
     "- Peak shape: the monthly peak reduction share, load factor and event-window"
     " load all come from ComStock simulation (one weather year, 2018, perfect"
     " foresight reduced by a placeholder realization factor). Stress-tested,"
-    " and its unit-free measures checked against EnerNOC meters, but the"
-    " share of a block's cut was never compared with real meters.",
+    " its unit-free measures checked against EnerNOC meters, and the share of"
+    " a block's cut checked on EnerNOC shapes at assumed peaks only, since"
+    " the dataset hides real kW.",
     "- ConnectedSolutions delivery: the rate and terms are sourced from the"
     " program documents, but what a block actually delivers in events (the"
     " performance factor, the overlap with the building's own peaks, and"
