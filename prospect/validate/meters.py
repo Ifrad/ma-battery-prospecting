@@ -230,3 +230,142 @@ def section(r: dict | None) -> list[str]:
             ),
         ]
     return out
+
+
+# Rescale test: shape given an assumed peak, not real kW.
+RESCALE_GROUPS = {"industrial": "Light Industrial", "grocery": "Food Sales & Storage"}
+COMSTOCK_SIM = ROOT / "data" / "comstock" / "simulation.csv"
+
+
+def bin_targets(cfg: dict) -> dict:
+    """The assumed annual peak per size bin: the bin's midpoint, or for the
+    open top bin the median annual peak of the ComStock sample buildings in
+    it (data/comstock/simulation.csv)."""
+    out = {}
+    for label, (lo, hi) in cfg["simulation"]["bins_kw"].items():
+        if hi is not None:
+            out[label] = (lo + hi) / 2
+            continue
+        with COMSTOCK_SIM.open() as f:
+            peaks = {
+                r["bldg_id"]: float(r["annual_peak_kw"]) for r in csv.DictReader(f)
+            }
+        out[label] = float(np.median([p for p in peaks.values() if p >= lo]))
+    return out
+
+
+def monthly_shares(profiles: list, peak_kw: float, b: dict) -> np.ndarray:
+    """All-hours monthly peak cut share of one block for each site-month, with
+    every profile scaled so its annual peak is peak_kw."""
+    from prospect.priors.simulate import by_month, lowest_peak
+
+    loads, valids = [], []
+    for kw, starts in profiles:
+        scaled = kw * peak_kw / kw.max()
+        index, valid = by_month(scaled, starts)
+        loads.append(np.where(valid, scaled[index], 0.0))
+        valids.append(valid)
+    load, valid = np.concatenate(loads), np.concatenate(valids)
+    keep = valid.any(axis=1)
+    load, valid = load[keep], valid[keep]
+    peak = np.where(valid, load, 0.0).max(axis=1)
+    held = lowest_peak(load, valid, b)
+    return (peak - held) / peak
+
+
+def rescale_results(cfg: dict) -> dict | None:
+    if not (DATA / "csv").exists() or not COMSTOCK_SIM.exists():
+        return None
+    from prospect.model.savings import bin_envelope
+    from prospect.priors.simulate import battery
+
+    b = battery()
+    targets = bin_targets(cfg)
+    meta = sites()
+    grocery_cells = cfg["simulation"]["types"]["Grocery"]["bins"]
+    out = {"targets": targets}
+    for group, industry in RESCALE_GROUPS.items():
+        members = [s for s in meta if s["INDUSTRY"] == industry]
+        profiles = [
+            fifteen_minute(DATA / "csv" / f"{s['SITE_ID']}.csv", s["TIME_ZONE"])
+            for s in members
+        ]
+        rows = {}
+        for label, peak in targets.items():
+            x = monthly_shares(profiles, peak, b)
+            if group == "industrial":
+                lo, hi = bin_envelope(label, "all_hours", cfg)
+                model = f"{lo:.2f} to {hi:.2f} (no-profile range)"
+            else:
+                c = grocery_cells[label]
+                lo, hi = c["all_hours"]["p10"], c["all_hours"]["p90"]
+                model = f"{lo:.2f} to {hi:.2f}" + (
+                    " (pooled, under 10 ComStock grocers)"
+                    if c["pooled_fallback"]
+                    else ""
+                )
+            p10, med, p90 = np.percentile(x, [10, 50, 90])
+            rows[label] = {
+                "sites": len(members),
+                "site_months": int(len(x)),
+                "p10": float(p10),
+                "median": float(med),
+                "p90": float(p90),
+                "model": model,
+                "inside": float(np.mean((x >= lo) & (x <= hi))),
+            }
+        out[group] = rows
+    return out
+
+
+def rescale_section(r: dict | None) -> list[str]:
+    head = [
+        "### Peak cut share with an assumed peak",
+        "",
+        "This tests load shape given an assumed peak, not real kW: each light"
+        " industrial and grocery profile is scaled so its annual peak equals the"
+        " midpoint of a Phase 3 size bin (100, 350 and 750 kW; for 1,000 kW and"
+        " up, which has no midpoint, the median annual peak of the ComStock"
+        " sample buildings in that bin), and the same dispatch as the ComStock"
+        " simulation (250 kW, 522 kWh block, perfect foresight) gives the"
+        " all-hours monthly peak cut share. The license limits above apply; no"
+        " config value comes from it.",
+    ]
+    if r is None:
+        return [
+            *head,
+            "",
+            "Not run on this machine: run `make enernoc` and `make simulate`.",
+        ]
+    out = head
+    names = {"industrial": "Light industrial", "grocery": "Grocers"}
+    for group, label in names.items():
+        out += [
+            "",
+            f"{label}:",
+            "",
+            table(
+                [
+                    "Size bin",
+                    "Assumed peak kW",
+                    "Sites",
+                    "Site-months",
+                    "Share p10 / median / p90",
+                    "Model range (p10 to p90)",
+                    "Inside",
+                ],
+                [
+                    [
+                        b,
+                        f"{r['targets'][b]:,.0f}",
+                        v["sites"],
+                        v["site_months"],
+                        f"{v['p10']:.2f} / {v['median']:.2f} / {v['p90']:.2f}",
+                        v["model"],
+                        f"{v['inside']:.0%}",
+                    ]
+                    for b, v in r[group].items()
+                ],
+            ),
+        ]
+    return out
