@@ -579,7 +579,7 @@ stays a config placeholder.
       long spikes are only partly shaved, using the Phase 3 simulation.
       Tests: flat load gives zero, higher rate never lowers savings, a
       longer spike never raises the shaved share.
-- [ ] `feat(model): add grid program revenue`
+- [x] `feat(model): add grid program revenue`
       ConnectedSolutions only where the utility is eligible, scaled by the
       performance factor and discounted by the overlap factor. Tests:
       municipal sites get none.
