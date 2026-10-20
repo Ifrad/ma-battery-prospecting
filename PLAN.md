@@ -366,7 +366,7 @@ placeholders and each sourced value names its source.
       Commercial $8.66 per kW-month above 6,000 kWh a month. Holden,
       Sterling, Paxton, Princeton and Boylston: no schedule found online,
       so their demand charge is a placeholder with no value.
-- [ ] `feat(config): add battery block specification`
+- [x] `feat(config): add battery block specification`
       config/battery.yaml for the standard deployment, one battery block:
       250 kW, 522 kWh and 97.5 percent PCS efficiency, status sourced, from
       the manufacturer's product page
@@ -378,7 +378,9 @@ placeholders and each sourced value names its source.
       stays a placeholder: the page does not state it. That gives about
       1.8 hours at full power. In config, `source:` lines say
       "manufacturer product page, see docs/METHOD.md", since the Powertown
-      name appears only in docs.
+      name appears only in docs. The page renders with JavaScript, so an
+      automated recheck on 2026-10-20 could not read it; the values are
+      as read by the owner on 2026-10-19.
 - [ ] `feat(config): add cost assumptions`
       Each with status and source. Installed cost $180,000 (low case) and
       $260,000 (middle case): both the owner's own estimates, unverified,
