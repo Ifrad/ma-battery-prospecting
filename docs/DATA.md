@@ -242,17 +242,41 @@ often with different owners):
 
 Buildings, one row per footprint (359,301 in the pilot). Each is linked to
 the smallest parcel containing its interior point; 363 lie in no parcel.
-Area, in order:
+Sites group buildings on touching parcels of one owner: 246,364 sites, of
+which 9,640 are candidates.
 
-| Area source | Rule | Pilot buildings | On candidate parcels |
-|---|---|---|---|
-| assessor | parcel `BLD_AREA`, shared by footprint area | 322,938 | 14,746 |
-| footprint_x_stories | footprint area times stories | 27,685 | 31 |
-| footprint_only | footprint area alone | 8,678 | 873 |
+Area is set per site, after grouping (`sql/sites/03_area.sql`):
 
-Candidate parcels are those with a commercial, industrial, hospital or
-multi-use commercial class. How estimated areas are used is decided after
-the footprint area error is measured.
+1. Pooled assessor area: the sum of `bld_area` over the site's parcels that
+   have it, each parcel's `bld_area` following the multi-record rule above.
+   Pooled footprint area: the sum of footprint area on those same parcels.
+2. If pooled assessor area is below pooled footprint area times 0.5, those
+   buildings get `assessor_below_footprint`.
+3. If it is above pooled footprint area times 3 times the site's highest
+   recorded stories, or times 10 when no parcel in the site records
+   stories, they get `assessor_above_footprint`.
+4. Otherwise they get `assessor`: pooled assessor area shared across those
+   footprints in proportion to footprint area. The site's assessor total
+   does not change (checked exactly on 219,050 sites).
+5. Buildings in step 2 or 3, buildings on parcels with no `BLD_AREA`, and
+   buildings on no parcel use footprint area times the parcel's stories,
+   or footprint area alone. Steps 2 and 3 keep their flag as the area
+   source; the others get `footprint_x_stories` or `footprint_only`.
+
+The 0.5, 3 and 10 are placeholders in `config/sites.yaml` (`area_checks`).
+178 sites (33 candidates) have `BLD_AREA` only on parcels with no
+footprint, so their assessor area is not used.
+
+| Area source | Pilot buildings | Candidate buildings |
+|---|---|---|
+| assessor | 308,035 | 12,202 |
+| assessor_below_footprint | 14,225 | 2,491 |
+| assessor_above_footprint | 678 | 53 |
+| footprint_x_stories | 27,685 | 31 |
+| footprint_only | 8,678 | 873 |
+
+Candidate buildings are those on parcels with a commercial, industrial,
+hospital or multi-use commercial class.
 
 ## LBER UBID feasibility
 
@@ -368,7 +392,7 @@ address abbreviations are placeholders in `config/sites.yaml`.
 ## Footprint area error
 
 Measured on 2026-10-19 to decide how estimated building areas are used.
-The decision is still open. Error is the absolute percent difference
+The decision is at the end of this section. Error is the absolute percent difference
 between the estimate and the reference.
 
 Against assessor `BLD_AREA`, at parcel level, since assessor area is
@@ -406,3 +430,121 @@ is the parcel's `BLD_AREA` share on that building, for reference.
   some commercial parcels.
 - Against LBER, the assessor share is closest at the median (5% on
   candidates), and both footprint estimates are clearly worse.
+
+### Fields that could hold height, stories or type
+
+The footprints carry no height, stories or floors. Their fields describe
+source and editing only; one comment out of 359,301 mentions height. They
+are roof outlines (`SOURCETYPE` ROOFPRINT 157,600 and ROOFPRINT_SHIFTED
+200,994) except 707 true footprints, so they include roof overhangs.
+
+Parcel fields, records with a usable value:
+
+| Field | All records (326,015) | Candidate primary records (14,207) |
+|---|---|---|
+| `STORIES` (above 0) | 248,999 (76%) | 8,885 (63%) |
+| `STYLE` (building style text) | 303,794 (93%) | 10,943 (77%) |
+| `NUM_ROOMS` | 252,207 (77%) | 357 (3%) |
+| `UNITS` | 72,253 (22%) | 919 (6%) |
+| `BLD_AREA` | 255,713 (78%) | 10,184 (72%) |
+| `RES_AREA` (never used for area) | 276,394 (85%) | 9,107 (64%) |
+| `YEAR_BUILT` | 277,153 (85%) | 9,141 (64%) |
+| `USE_CODE`, `USE_DESC` | 324,297 (99%) | 14,207 (100%) |
+
+`STORIES` is the only height field. `STYLE` and the use code describe
+building type.
+
+### Direction of the error
+
+Same parcel-level comparison as above. The ratio is estimate divided by
+`BLD_AREA`; below 1 means the estimate is too low. Error is the absolute
+percent difference.
+
+| Parcels | n x stories | Ratio median | Error median | p90 | n footprint only | Ratio median | Error median | p90 |
+|---|---|---|---|---|---|---|---|---|
+| All with `BLD_AREA` and a footprint | 218,105 | 0.84 | 31% | 66% | 224,944 | 0.56 | 46% | 66% |
+| Candidates | 8,439 | 1.03 | 17% | 98% | 9,642 | 0.98 | 22% | 72% |
+| Candidates, commercial_industrial | 7,360 | 1.03 | 15% | 86% | 8,501 | 0.99 | 18% | 69% |
+| Candidates, hospital | 35 | 0.97 | 28% | 84% | 48 | 0.41 | 60% | 73% |
+| Candidates, mixed_commercial_industrial | 1,044 | 1.12 | 32% | 231% | 1,093 | 0.63 | 51% | 119% |
+| Candidates, 1 footprint | 6,265 | 1.00 | 13% | 53% | 7,237 | 0.95 | 17% | 63% |
+| Candidates, 2 to 3 footprints | 1,747 | 1.25 | 32% | 194% | 1,940 | 1.06 | 33% | 145% |
+| Candidates, 4 or more footprints | 427 | 2.50 | 150% | 1057% | 465 | 1.96 | 96% | 879% |
+| Candidates with no stories | | | | | 1,203 | 0.96 | 21% | 67% |
+
+On all parcels, mostly homes, both estimates run low. On candidates they
+are centered, and close for single-footprint parcels. Parcels with several
+footprints run far too high: the next part shows why.
+
+Of the 20 worst candidate mismatches (`data/area_review.csv`, not
+committed, with satellite links), 11 involved a footprint straddling a
+parcel line, 8 a tiny or partial `BLD_AREA` (84 to 1,702 sq ft on large
+buildings) and 1 neither. Across all 15,650 candidate buildings, 569
+overlap a second parcel by more than 20% of their footprint (607 pairs:
+186 in the same site, 421 across sites). That led to the site pooling and
+area checks in "Site table rules".
+
+### Use code ratios, towns held out
+
+A third estimate was tested and not adopted: footprint area times the
+median `BLD_AREA` to footprint ratio of the parcel's use code (first three
+characters), or of its use class when the code has under 30 parcels,
+learned only on other towns (each town held out in turn). Candidate parcels
+with `BLD_AREA`:
+
+| Parcels | n | Ratio estimate median | p90 | Footprint only median | p90 | n with stories | x stories median | p90 |
+|---|---|---|---|---|---|---|---|---|
+| All candidates | 9,642 | 20% | 86% | 22% | 72% | 8,439 | 17% | 98% |
+| commercial_industrial | 8,501 | 17% | 76% | 18% | 69% | 7,360 | 15% | 86% |
+| hospital | 48 | 38% | 127% | 60% | 73% | 35 | 28% | 91% |
+| mixed_commercial_industrial | 1,093 | 39% | 261% | 51% | 120% | 1,044 | 32% | 232% |
+| Use code 340 (offices) | 948 | 33% | 99% | 46% | 69% | 788 | 24% | 59% |
+| Use code 316 (warehouses) | 827 | 11% | 95% | 12% | 97% | 729 | 11% | 134% |
+| Use code 400 (manufacturing) | 833 | 10% | 65% | 9% | 64% | 722 | 9% | 92% |
+
+Against LBER `Gross_Floor_Area` (2,111 matched candidate buildings): ratio
+estimate 25% median, 67% p90; footprint only 32%, 68%; footprint x stories
+(1,797 with stories) 17%, 77%. No clear gain over the two existing
+estimates, so it is recorded only.
+
+### After site pooling and the area checks
+
+Site level (summed footprints on the site's `BLD_AREA` parcels against
+pooled `BLD_AREA`), next to the parcel-level numbers above:
+
+| Sites | Estimate | Parcel level n | Median | p90 | Site level n | Median | p90 |
+|---|---|---|---|---|---|---|---|
+| Candidates | footprint_x_stories | 8,439 | 17% | 98% | 8,119 | 17% | 93% |
+| Candidates | footprint_only | 9,642 | 22% | 72% | 9,284 | 23% | 71% |
+| All | footprint_x_stories | 218,105 | 31% | 66% | 215,803 | 31% | 66% |
+| All | footprint_only | 224,944 | 46% | 66% | 222,529 | 46% | 66% |
+
+Building level, each building's stored area against LBER
+`Gross_Floor_Area`, before and after (UBID or point matches with a single
+candidate):
+
+| Buildings | Before n | Median | p90 | After n | Median | p90 |
+|---|---|---|---|---|---|---|
+| Candidates, any area source | 2,111 | 5% | 77% | 2,111 | 6% | 66% |
+| Candidates, assessor source | 2,068 | 5% | 77% | 1,916 | 4% | 63% |
+| All matched, any area source | 3,891 | 22% | 92% | 3,891 | 17% | 71% |
+| All matched, assessor source | 3,721 | 19% | 92% | 3,165 | 10% | 70% |
+
+For the 148 matched candidate buildings now flagged
+`assessor_below_footprint`, the footprint fallback is closer to LBER than
+the old assessor share for 133 (median error 50% against 88%). Of the 20
+worst mismatches, 15 are now flagged (10 below, 5 above) and 5 are fixed by
+pooling within their site.
+
+### Area decision
+
+Decided on 2026-10-19:
+
+- All area sources stay: assessor, assessor_below_footprint,
+  assessor_above_footprint, footprint_x_stories and footprint_only.
+  Everything other than assessor is flagged as estimated.
+- The measured error of each estimated source is carried into the model as
+  wider uncertainty (PLAN.md, Phase 4). The widths go in config as measured
+  values from this section, not as placeholders.
+- The error was measured only on parcels that have `BLD_AREA`. The real
+  error on parcels missing it may be larger.

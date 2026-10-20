@@ -343,9 +343,13 @@ blocks and top drivers, and model tests pass.
       range.
 - [ ] `feat(model): widen or narrow uncertainty from evidence flags`
       Each evidence flag from Phase 2 sets how wide the draws are: measured
-      electricity narrows them, footprint_only area, a weak LBER match or
+      electricity narrows them, an estimated area, a weak LBER match or
       an unknown utility widens them. Widths live in config as
-      placeholders.
+      placeholders, except area: all area sources stay, every source other
+      than assessor is flagged as estimated, and its width is the measured
+      error from docs/DATA.md ("Footprint area error"), stored in config
+      as a measured value. That error was measured only on parcels that
+      have BLD_AREA, so the real error on parcels missing it may be larger.
 - [ ] `feat(model): size whole battery blocks and compute demand savings`
       Block from config/battery.yaml, count cap from config (placeholder).
       Peak shaving respects both the power limit and the energy limit, so
