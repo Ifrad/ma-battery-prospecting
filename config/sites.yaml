@@ -1,6 +1,17 @@
 # How buildings are grouped into outreach sites: buildings on touching
 # parcels with the same normalized owner, within one town.
 
+food_keyword_min_area_sqft:
+  value: 20000
+  status: placeholder
+  note: >-
+    Owner-approved screening rule, not proof of food production. A food
+    keyword needs a 4xx industrial use code or at least this much site area.
+    On the 2026-10-20 baseline, 8 of 14 keyword food sites fall back at
+    20,000 sq ft and 9 at 50,000. JJ's Creamery falls back to generic.
+    Performance Food Group remains food production: code 400, 105,770 sq ft.
+    That row has conflicting evidence, not a verified classification error.
+
 owner_normalization:
   # Removed after punctuation is turned into spaces.
   drop_words: [THE, INC, INCORPORATED, CORP, CORPORATION, CO, COMPANY, LLC, LTD]

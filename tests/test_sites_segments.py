@@ -80,3 +80,58 @@ def test_site_takes_segment_of_its_largest_candidate_building(db, raw):
     assert db.execute("SELECT segment, segment_source FROM sites").fetchall() == [
         ("warehouse", "use_code")
     ]
+
+
+@pytest.mark.parametrize(
+    "code,owner,expected",
+    [
+        ("3000", "AUBURN HOSPITALITY", ("generic", "default")),
+        ("3420", "HOLDEN VETERINARY HOSPITAL", ("other_healthcare", "use_code")),
+        ("955", "VETERINARY HOSPITAL", ("hospital", "use_code")),
+        ("340", "REGIONAL HOSPITALS", ("hospital", "owner_keyword")),
+        ("340", "REGIONAL MEDICAL CENTRES", ("hospital", "owner_keyword")),
+        ("316", "ACME REFRIGERATION", ("cold_storage", "owner_keyword")),
+        ("325", "ACME LAUNDRIES", ("laundry", "owner_keyword")),
+        ("340", "FIRST CLASS HEALTHCARE", ("other_healthcare", "owner_keyword")),
+        ("340", "HEALTHY INVESTMENTS", ("generic", "default")),
+    ],
+)
+def test_whole_words_variants_and_veterinary_exclusion(code, owner, expected):
+    assert segment(code, owner, WORCESTER, CONFIG) == expected
+
+
+@pytest.mark.parametrize(
+    "code,owner,area,expected",
+    [
+        ("326", "JJ'S CREAMERY", 1640, ("generic", "default")),
+        ("316", "ACME FOODS DISTRIBUTOR", 19999, ("warehouse", "use_code")),
+        ("316", "ACME FOODS", 20000, ("food_production", "owner_keyword")),
+        ("400", "LIBERTY BAKERY", 17911, ("food_production", "owner_keyword")),
+        ("400", "PERFORMANCE FOOD GROUP", 105770, ("food_production", "owner_keyword")),
+        ("340", "ACME FOODS", None, ("generic", "default")),
+        ("400", "ACME DAIRIES", None, ("food_production", "owner_keyword")),
+    ],
+)
+def test_food_requires_industrial_code_or_site_area(code, owner, area, expected):
+    assert (
+        segment(
+            code,
+            owner,
+            WORCESTER,
+            CONFIG,
+            site_area_sqft=area,
+            food_min_area_sqft=20000,
+        )
+        == expected
+    )
+
+
+def test_food_threshold_uses_whole_site_area(db, raw):
+    parcel, footprint = raw
+    parcel("Z", 0.05, 0, OWNER1="A MUCH LONGER OWNER NAME FOR WIDTH")
+    parcel("A", 0, 0, USE_CODE="316", OWNER1="ACME FOODS", BLD_AREA=12000)
+    parcel("B", 0.001, 0, USE_CODE="316", OWNER1="ACME FOODS", BLD_AREA=12000)
+    footprint(0.0001, 0.0001, 12000)
+    footprint(0.0011, 0.0001, 12000)
+    build(db)
+    assert db.execute("SELECT segment FROM sites").fetchall() == [("food_production",)]

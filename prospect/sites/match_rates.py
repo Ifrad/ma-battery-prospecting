@@ -16,6 +16,7 @@ from prospect.sites.segments import CANDIDATE_CLASSES
 
 ROOT = Path(__file__).resolve().parents[2]
 REPORT = ROOT / "docs" / "MATCH_RATES.md"
+HAND_REVIEW = ROOT / "docs" / "HAND_REVIEW.md"
 REVIEW = ROOT / "data" / "review"
 SEED = 20261019
 REGIONS = ("metro_south", "worcester")
@@ -473,8 +474,6 @@ def main() -> None:
         "",
         "## Hand review",
         "",
-        "Pending review.",
-        "",
         f"Review sheets are written to `data/review/` (not committed), drawn with"
         f" random seed {SEED}, alternating between the two regions:",
         "",
@@ -493,6 +492,8 @@ def main() -> None:
                 ],
             ],
         ),
+        "",
+        HAND_REVIEW.read_text().strip(),
     ]
     REPORT.write_text("\n".join(parts) + "\n")
     print(f"wrote {REPORT.relative_to(ROOT)} and {len(sizes)} sheets in data/review/")
