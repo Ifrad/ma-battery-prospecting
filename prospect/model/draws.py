@@ -11,6 +11,7 @@ import hashlib
 import numpy as np
 
 Z90 = 1.2815515655446004  # 90th percentile of the standard normal
+Z95 = 1.6448536269514722  # 95th, for a two-sided 90 percent band
 HOURS = 8760
 
 
@@ -46,7 +47,14 @@ def building_kwh(b: dict, cfg: dict, n: int) -> np.ndarray:
         if not is_weak(b["lber_confidence"], cfg):
             return np.full(n, float(b["grid_kwh"]))
         return b["grid_kwh"] * from_spread(prior, z) / prior["median"]
-    return b["area_sqft"] * from_spread(prior, z)
+    return area(b, cfg, n) * from_spread(prior, z)
+
+
+def area(b: dict, cfg: dict, n: int) -> np.ndarray:
+    """Floor area draws, as wide as the measured error of the area source."""
+    p90 = cfg["model"]["area_error"]["p90"][b["area_source"]]
+    sigma = np.log1p(p90) / Z95
+    return b["area_sqft"] * np.exp(sigma * rng(b["building_id"], 2).standard_normal(n))
 
 
 def load_factor(site: dict, cfg: dict, n: int) -> np.ndarray:

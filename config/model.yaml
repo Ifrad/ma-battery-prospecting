@@ -29,3 +29,29 @@ measured_kwh:
     release is loaded.
   replace: >-
     A width measured from year-to-year LBER changes.
+
+area_error:
+  # The 90th percentile absolute error of each area source.
+  p90:
+    assessor: 0.63
+    assessor_below_footprint: 0.93
+    assessor_above_footprint: 0.93
+    footprint_x_stories: 0.93
+    footprint_only: 0.71
+  status: sourced
+  source: >-
+    docs/DATA.md, Footprint area error, "After site pooling and the area
+    checks", measured 2026-10-19 on pilot candidates: the assessor source
+    against LBER floor area (1,916 buildings, p90 63 percent), and
+    footprint_x_stories (8,119 sites, 93) and footprint_only (9,284 sites,
+    71) at site level against BLD_AREA.
+  note: >-
+    An estimated building's area is drawn as a lognormal around its stored
+    area with sigma = ln(1 + p90 error) / 1.645, so about 90 percent of
+    draws fall within the measured error. Sites flagged
+    assessor_below_footprint or assessor_above_footprint use a footprint
+    fallback, so they take the wider footprint_x_stories error. The error
+    was measured only where BLD_AREA exists, so the real error on parcels
+    missing it may be larger. Buildings with measured electricity get no
+    area draw. No pilot site has an unknown utility; such a site would not
+    be scored.
