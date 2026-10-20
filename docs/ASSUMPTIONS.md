@@ -44,7 +44,7 @@ Every model input is either sourced, with the document it was read from, or a pl
 ### costs.yaml: installed_cost_usd
 
 - Value: low=180000, middle=260000
-- What and why: The owner's own estimates for one block, installed, unverified and pending the operator's real number. Not a model input: sites are ranked by value per block, and these two figures are only reference points beside the break-even installed cost and example costs for the optional model confidence. Phase 5 counts the sites whose break-even cost clears each.
+- What and why: The owner's own estimates for one block, installed, unverified and pending the operator's real number. Not a model input: sites are ranked by value per block, and these two figures are only reference points beside the break-even installed cost and example costs for the optional model confidence. docs/SCORES.md counts the sites whose break-even cost clears each.
 - How it gets tested: Compare with a real installed cost from the operator or from public bids for similar systems.
 - What would replace it: The operator's installed cost for the standard deployment.
 

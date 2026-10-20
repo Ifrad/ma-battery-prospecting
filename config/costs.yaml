@@ -13,8 +13,8 @@ installed_cost_usd:
     pending the operator's real number. Not a model input: sites are
     ranked by value per block, and these two figures are only reference
     points beside the break-even installed cost and example costs for the
-    optional model confidence. Phase 5 counts the sites whose break-even
-    cost clears each.
+    optional model confidence. docs/SCORES.md counts the sites whose
+    break-even cost clears each.
   test: >-
     Compare with a real installed cost from the operator or from public
     bids for similar systems.
