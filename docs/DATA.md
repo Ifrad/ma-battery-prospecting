@@ -364,3 +364,45 @@ address abbreviations are placeholders in `config/sites.yaml`.
   with grid electricity, from its latest reporting year. 1,165 of the
   1,166 pilot rows with grid electricity are matched, each to a different
   building.
+
+## Footprint area error
+
+Measured on 2026-10-19 to decide how estimated building areas are used.
+The decision is still open. Error is the absolute percent difference
+between the estimate and the reference.
+
+Against assessor `BLD_AREA`, at parcel level, since assessor area is
+shared across a parcel's footprints: footprint_x_stories is the sum of
+the parcel's footprint areas times its stories; footprint_only is that
+sum alone. Parcels with known `BLD_AREA`, known stories and at least one
+footprint.
+
+| Parcels | n | footprint_x_stories median | p90 | footprint_only median | p90 |
+|---|---|---|---|---|---|
+| All | 218,105 | 31% | 66% | 46% | 66% |
+| Candidate | 8,439 | 17% | 98% | 22% | 73% |
+| Candidate, Metro South | 3,238 | 15% | 88% | 18% | 67% |
+| Candidate, Worcester | 5,201 | 19% | 104% | 26% | 75% |
+
+Another 6,839 parcels (1,203 candidates) have `BLD_AREA` and a footprint
+but no stories, so only footprint_only could apply to them.
+
+Against LBER `Gross_Floor_Area`, at building level, for buildings matched
+by UBID or point in footprint with a single candidate. The assessor row
+is the parcel's `BLD_AREA` share on that building, for reference.
+
+| Matched buildings | Estimate | n | Median | p90 |
+|---|---|---|---|---|
+| All | footprint_x_stories | 3,144 | 20% | 78% |
+| All | footprint_only | 3,891 | 50% | 75% |
+| All | assessor share | 3,721 | 19% | 92% |
+| Candidate | footprint_x_stories | 1,797 | 17% | 77% |
+| Candidate | footprint_only | 2,111 | 32% | 68% |
+| Candidate | assessor share | 2,068 | 5% | 77% |
+
+- On candidates, footprint_x_stories has the lower median but a long
+  tail: its 90th percentile (98% against `BLD_AREA`) is worse than
+  footprint_only (73%), which points to unreliable stories values on
+  some commercial parcels.
+- Against LBER, the assessor share is closest at the median (5% on
+  candidates), and both footprint estimates are clearly worse.
