@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 from prospect.db import connect
+from prospect.model import grid
 from prospect.model.report import rank_key
 from prospect.model.run import config_hash
 from prospect.priors import config
@@ -91,7 +92,22 @@ def scenario_block(r: dict) -> dict:
     }
 
 
-def sites(conn, run_id: int) -> list[dict]:
+def draws_block(r: dict) -> dict:
+    """Per draw, in physical units per block per year: kW-months of billed
+    peak cut under G-2 and G-3 (realization factor applied), whole blocks,
+    the drawn site peak in kW and whether the draw is billed on G-3."""
+    if r["peak_kw"] is None:
+        raise SystemExit("the latest score run has no peak draws; run make score")
+    return {
+        "kwm_g2": [round(float(v), 1) for v in r["kwm_g2"]],
+        "kwm_g3": [round(float(v), 1) for v in r["kwm_g3"]],
+        "blocks": [int(v) for v in r["blocks_draws"]],
+        "peak_kw": [round(float(v), 1) for v in r["peak_kw"]],
+        "g3": [int(v) for v in r["g3_draws"]],
+    }
+
+
+def sites(conn, run_id: int, cfg: dict) -> list[dict]:
     rows = fetch(conn, SCORES, (run_id,))
     size_rank = dict(conn.execute(SIZE_RANK).fetchall())
     by_site: dict[str, dict] = {}
@@ -124,6 +140,9 @@ def sites(conn, run_id: int) -> list[dict]:
         )
         s["flags"] = sorted(set(s["flags"]) | set(r["flags"]))
         s["scenarios"][r["scenario"]] = scenario_block(r)
+        if r["scenario"] == "with_connected_solutions":
+            s["draws"] = draws_block(r)
+            s["event_window"] = grid.event_ratios({"profile": r["profile"]}, cfg)
     out = list(by_site.values())
     ids = [s["site_id"] for s in out]
     parcels, buildings = {}, {}
@@ -239,15 +258,71 @@ def csv_rows(region_sites: list[dict]) -> list[dict]:
     return rows
 
 
+def manifest(cfg: dict, every: list[dict]) -> dict:
+    """The model inputs the report needs to recompute value per block,
+    break-even cost and model confidence from the draws. Installed cost and
+    the minimum host benefit are left empty: the reader supplies them."""
+    cs = cfg["connected_solutions"]
+    costs = cfg["costs"]
+    block = cfg["battery"]["block"]
+    utilities = sorted({s["utility"] for s in every})
+    factor = lambda c: {"value": c["value"], **c.get("range", {})}  # noqa: E731
+    return {
+        "draws": cfg["model"]["draws"]["value"],
+        "battery_block": {
+            "power_kw": block["power_kw"],
+            "energy_kwh": block["energy_kwh"],
+        },
+        "demand_rates_usd_per_kw_month": {
+            u: {
+                s["name"]: s["demand_charge_per_kw_month"]
+                for s in cfg["rates"]["utilities"][u]["schedules"]
+                if s["name"] in ("G-2", "G-3")
+            }
+            for u in utilities
+        },
+        "realization_factor": factor(cfg["profiles"]["realization_factor"]),
+        "connected_solutions": {
+            "usd_per_kw_season": cs["daily_dispatch_usd_per_kw_season"]["value"],
+            "eligible_utilities": cs["eligible_utilities"]["value"],
+            "performance_factor": factor(cs["performance_factor"]),
+            "overlap_factor": factor(cs["overlap_factor"]),
+            "site_exports": cs["site_exports"]["value"],
+            "export_cap_share_of_site_peak": cs["export_cap_share_of_site_peak"][
+                "value"
+            ],
+        },
+        "costs": {
+            "life_years": costs["life_years"]["value"],
+            "financing_rate": costs["financing_rate"]["value"],
+            "om_usd_per_year": costs["om_usd_per_year"]["value"],
+            "itc": {
+                "rate": costs["itc"]["rate"],
+                "default_on": costs["itc"]["default_on"],
+                "max_capacity_kw": costs["itc"]["max_capacity_kw"],
+            },
+            "installed_cost_usd_per_block": None,
+            "min_host_benefit_usd_per_year": None,
+            "installed_cost_reference_usd": {
+                k: costs["installed_cost_usd"][k] for k in ("low", "middle")
+            },
+        },
+        "placeholders": [
+            {"file": f, "path": p, "value": v, "note": n}
+            for f, p, v, n in config.placeholders(config.load_all())
+        ],
+    }
+
+
 def write(conn, out: Path = OUT) -> dict:
     run = latest_run(conn)
     if run["config_hash"] != config_hash():
         raise SystemExit(
             "config/ changed since the latest score run; run make score first"
         )
-    config.load()  # the export must not ship a config that fails its checks
     out.mkdir(exist_ok=True)
-    every = sites(conn, run["run_id"])
+    cfg = config.load()
+    every = sites(conn, run["run_id"], cfg)
     written = {}
     for region in REGIONS:
         rs = [s for s in every if s["region"] == region]
@@ -258,6 +333,7 @@ def write(conn, out: Path = OUT) -> dict:
             w.writeheader()
             w.writerows(csv_rows(rs))
         written[region] = len(rs)
+    (out / "manifest.json").write_text(json.dumps(manifest(cfg, every), indent=1))
     return {"run_id": run["run_id"], "sites": written}
 
 

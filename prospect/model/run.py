@@ -43,7 +43,8 @@ COLUMNS = (
     " least_certain, flags, blocks, value_p10, value_p50, value_p90, total_p10,"
     " total_p50, total_p90, break_even_p50, break_even_p10, break_even_p50_itc,"
     " break_even_p10_itc, itc_applies, demand_p50, grid_p50, demand_share,"
-    " grid_share, top_drivers, kwm_g2, kwm_g3, blocks_draws, grid_kw"
+    " grid_share, top_drivers, kwm_g2, kwm_g3, blocks_draws, grid_kw, peak_kw,"
+    " g3_draws"
 )
 
 
@@ -108,6 +109,8 @@ def row(run_id: int, site: dict, r: dict) -> list:
         x["kwm_g3"].astype(np.float32).tolist(),
         x["blocks"].astype(int).tolist(),
         x["grid_kw"].astype(np.float32).tolist(),
+        x["peak_kw"].astype(np.float32).tolist(),
+        (np.asarray(x["g3_weight"]) > 0.5).tolist(),
     ]
 
 

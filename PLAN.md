@@ -821,13 +821,21 @@ list.
       model rank and the size-only rank among all candidate sites) and
       export/<region>.csv (one row per site and scenario). It refuses to
       run if config/ changed since the latest score run.
-- [ ] `feat(export): include compact draws per site`
+- [x] `feat(export): include compact draws per site`
       A small fixed number of draws per site, split into demand savings
       and grid revenue in physical units (kW-months of peak reduction and
       eligible grid-program kW). The manifest carries the config values the
       report needs: demand rate, life, financing, O&M, ITC and the
       ConnectedSolutions factors. Installed cost and minimum host benefit
-      are left empty.
+      are left empty. Built: all 1,000 stored draws per site, which fit
+      the budget (Worcester 4.55 MB, Metro South 3.54 MB), so the report
+      reproduces the stored P50s exactly: kW-months under G-2 and G-3,
+      whole blocks, the drawn site peak and whether the draw is on G-3
+      (both stored by make score since migration 0019), plus each site's
+      event-window ratios, so the report can recompute the event-window
+      and export caps. export/manifest.json also carries the block,
+      realization factor, ConnectedSolutions terms and the placeholder
+      list.
 - [ ] `test(export): validate export schema and size budget`
       Includes a parity test: model confidence recomputed from the export
       at a given installed cost and host benefit matches the Python
