@@ -626,12 +626,13 @@ stays a config placeholder.
       --min-host-benefit Y [--itc]` reprices the latest run's stored draws
       into model confidence. `make db-check` flags scores for sites no
       longer in scope.
-- [ ] `docs(method): check the payback claim`
+- [x] `docs(method): check the payback claim`
       Powertown says it recovers costs in 2 to 3 years. Across the scored
       sites, report the median P50 yearly value and the installed cost per
       block implied by a 2 and a 3 year simple payback at that value. This
       is a consistency check on the owner's cost estimates, not evidence
-      for or against the claim.
+      for or against the claim. The figures are generated in
+      docs/SCORES.md; docs/METHOD.md explains the check.
 
 ---
 
