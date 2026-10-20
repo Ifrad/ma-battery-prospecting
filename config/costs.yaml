@@ -1,0 +1,72 @@
+# Cost of one battery block (config/battery.yaml), annualized in Phase 4 as
+# installed cost over life at the financing rate, plus O&M.
+#
+# Not inputs: the manufacturer product page also claims "1 to 3 months off
+# your bill" and recovering costs "by year two or three". Neither is used.
+
+installed_cost_usd:
+  low: 180000
+  middle: 260000
+  status: placeholder
+  note: >-
+    The owner's own estimates for one block, installed, unverified and
+    pending the operator's real number. Phase 5 reports how rankings change
+    between the two cases.
+  test: >-
+    Compare with a real installed cost from the operator or from public
+    bids for similar systems.
+  replace: >-
+    The operator's installed cost for the standard deployment.
+
+life_years:
+  value: 10
+  status: sourced
+  source: manufacturer product page, see docs/METHOD.md
+  note: >-
+    The stated warranty, read by the owner on 2026-10-19. The page's claim
+    of a 15 to 20 year life is a sensitivity case, not an input.
+
+life_sensitivity_years:
+  low: 15
+  high: 20
+  status: sourced
+  source: manufacturer product page, see docs/METHOD.md
+  note: >-
+    The page's claimed life, read by the owner on 2026-10-19. Used only as
+    a sensitivity case, never as the default life.
+
+financing_rate:
+  value: 0.08
+  status: placeholder
+  note: >-
+    Yearly rate used to annualize the installed cost. Not from a source.
+  test: >-
+    Rerun the ranking at other rates and see which sites move.
+  replace: >-
+    The operator's cost of capital for these projects.
+
+om_usd_per_year:
+  value: 4000
+  status: placeholder
+  note: >-
+    Operations and maintenance for one block. An unverified estimate.
+  test: >-
+    Compare with the operator's service costs or a public O&M benchmark
+    for small commercial batteries.
+  replace: >-
+    The operator's O&M cost per block.
+
+itc:
+  rate: 0.30
+  default_on: false
+  status: placeholder
+  note: >-
+    The federal investment tax credit as a scenario setting, off by
+    default. 30 percent is the plan's scenario value and was not read from
+    IRS guidance. FEOC (foreign entity of concern) sourcing rules decide
+    whether a given battery qualifies.
+  test: >-
+    Read the current IRS guidance and check the battery's sourcing
+    against the FEOC rules.
+  replace: >-
+    The credit the operator actually claims for the standard deployment.
