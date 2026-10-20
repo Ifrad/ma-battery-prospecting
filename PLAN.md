@@ -609,7 +609,7 @@ stays a config placeholder.
       ConnectedSolutions. The ITC is a cost-side toggle, used only in the
       break-even column and the confidence option. Every score names its
       scenario.
-- [ ] `feat(model): report value by revenue stream`
+- [x] `feat(model): report value by revenue stream`
       Per site and scenario, keep demand savings, ConnectedSolutions
       revenue and any modeled optional stream separate, and show each
       stream's share of P50 value.

@@ -19,6 +19,7 @@ def score_site(site: dict, buildings: list[dict], cfg: dict) -> list[dict]:
                 "break_even": cost.break_even_summary(
                     x["value_per_block"], s["blocks"], cfg
                 ),
+                "streams": value.by_stream(x),
                 "draws": x,
             }
         )
