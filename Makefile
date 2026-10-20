@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -39,6 +39,10 @@ comstock:
 # Simulate the battery block on the ComStock sample; writes config/simulation.yaml.
 simulate:
 	$(PY) -m prospect.priors.simulate
+
+# Derive kWh per sq ft priors from LBER; writes config/intensity.yaml.
+intensity:
+	$(PY) -m prospect.priors.intensity
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:
