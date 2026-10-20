@@ -381,7 +381,7 @@ placeholders and each sourced value names its source.
       name appears only in docs. The page renders with JavaScript, so an
       automated recheck on 2026-10-20 could not read it; the values are
       as read by the owner on 2026-10-19.
-- [ ] `feat(config): add cost assumptions`
+- [x] `feat(config): add cost assumptions`
       Each with status and source. Installed cost $180,000 (low case) and
       $260,000 (middle case): both the owner's own estimates, unverified,
       pending Powertown's real number. Life 10 years: sourced, the stated
@@ -391,7 +391,8 @@ placeholders and each sourced value names its source.
       ITC is a scenario setting, default off, with a note that FEOC
       sourcing rules decide eligibility. The page's claims of "1 to 3
       months off your bill" and recovering costs "by year two or three"
-      are not inputs.
+      are not inputs. In config/costs.yaml; the ITC rate is a placeholder
+      too, since it was not read from IRS guidance.
 - [ ] `feat(config): add minimum host benefit`
       The minimum yearly benefit a host must get for the deal to be worth
       offering, in dollars a year, added to the annualized cost in the
