@@ -31,6 +31,23 @@ def bin_label(peak_kw: np.ndarray, cfg: dict) -> np.ndarray:
     return labels
 
 
+def bin_envelope(label: str, case: str, cfg: dict) -> tuple[float, float]:
+    """Widest simulated share range in one size bin: the lowest p10 and the
+    highest p90 over all types with their own cell there and the pooled cell.
+    Used for sites with no open profile, so a large factory never takes a
+    share only small buildings reach."""
+    sim = cfg["simulation"]
+    cells = [sim["pooled"]["bins"][label]] + [
+        t["bins"][label]
+        for t in sim["types"].values()
+        if not t["bins"][label]["pooled_fallback"]
+    ]
+    return (
+        min(c[case]["p10"] for c in cells),
+        max(c[case]["p90"] for c in cells),
+    )
+
+
 def reduction_share(site: dict, peak_per_block: np.ndarray, case: str, cfg: dict):
     """Monthly peak reduction share per draw, before the realization factor.
 
@@ -40,8 +57,14 @@ def reduction_share(site: dict, peak_per_block: np.ndarray, case: str, cfg: dict
     sim = cfg["simulation"]
     g = rng(site["site_id"], 3)
     if site["profile"] == "no open profile":
-        env = sim["no_open_profile"][case]
-        return g.uniform(env["low"], env["high"], peak_per_block.shape)
+        labels = bin_label(peak_per_block, cfg)
+        u = g.uniform(0.0, 1.0, peak_per_block.shape)
+        share = np.zeros(peak_per_block.shape)
+        for label in np.unique(labels):
+            low, high = bin_envelope(label, case, cfg)
+            mask = labels == label
+            share[mask] = low + (high - low) * u[mask]
+        return share
     if site["profile"] == "placeholder mix":
         cells = sim["pooled"]["bins"]
     else:
@@ -96,6 +119,10 @@ def demand_savings(site: dict, d: dict, cfg: dict) -> dict:
     power = cfg["battery"]["block"]["power_kw"]
     kwm_g2 = 12 * w2 * np.minimum(share_g2 * per_block, power) * real
     kwm_g3 = 12 * w3 * np.minimum(share_g3 * per_block, power) * real
+    # A draw is capped when the cut it would make under its schedule reaches
+    # the block's power.
+    cut = np.where(w3 > w2, share_g3, share_g2) * per_block
+    capped = (w2 + w3 > 0) & (cut >= power)
     rates = schedule_rates(site["utility"], cfg)
     usd = kwm_g2 * rates["G-2"] + kwm_g3 * rates.get("G-3", 0.0)
     return {
@@ -104,4 +131,5 @@ def demand_savings(site: dict, d: dict, cfg: dict) -> dict:
         "kwm_g2": kwm_g2,
         "kwm_g3": kwm_g3,
         "demand_usd": usd,
+        "capped": capped,
     }

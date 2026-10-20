@@ -74,3 +74,20 @@ def test_kw_cut_per_block_never_exceeds_block_power():
     out = savings.demand_savings(site, draws(1999.0), CFG)  # one block, 1,999 kW
     monthly = (out["kwm_g2"] + out["kwm_g3"]) / 12
     assert monthly.max() <= power * real + 1e-9
+
+
+def test_no_profile_share_stays_inside_its_size_bin_range():
+    site = {"site_id": "S3", "utility": NG, "profile": "no open profile"}
+    low, high = savings.bin_envelope("1000_up", "all_hours", CFG)
+    share = savings.reduction_share(site, np.full(500, 1500.0), "all_hours", CFG)
+    assert low <= share.min() and share.max() <= high
+    small_high = savings.bin_envelope("under_200", "all_hours", CFG)[1]
+    assert high < small_high  # large buildings never take a small one's share
+
+
+def test_capped_marks_draws_whose_cut_reaches_block_power():
+    site = {"site_id": "S4", "utility": NG, "profile": "no open profile"}
+    big = savings.demand_savings(site, draws(5000.0), CFG)  # one block per 1,000 kW
+    small = savings.demand_savings(site, draws(160.0), CFG)
+    assert not small["capped"].any()
+    assert big["capped"].dtype == bool

@@ -39,3 +39,27 @@ def test_stream_shares_sum_to_one_and_demand_only_has_no_grid_share():
     assert both["connected_solutions"]["p50"] > 0
     alone = rows["demand_savings"]["streams"]
     assert alone["connected_solutions"]["share"] == 0
+
+
+def test_eversource_sites_are_flagged_rate_area_unconfirmed():
+    site = {**SITE, "utility": score.EVERSOURCE}
+    x = {"capped": np.zeros(10, dtype=bool)}
+    assert "rate_area_unconfirmed" in score.flags(site, x)
+    assert score.flags(SITE, {"capped": np.ones(10, dtype=bool)})[-1] == "capped"
+
+
+def test_ranking_breaks_ties_by_blocks_then_total():
+    from prospect.model import report
+
+    rows = [
+        {"site_id": "a", "value_p50": 1.0, "blocks": 1.0, "total_p50": 1.0},
+        {"site_id": "b", "value_p50": 1.0, "blocks": 2.0, "total_p50": 2.0},
+        {"site_id": "c", "value_p50": 1.0, "blocks": 2.0, "total_p50": 3.0},
+        {"site_id": "d", "value_p50": 2.0, "blocks": 1.0, "total_p50": 2.0},
+    ]
+    assert [r["site_id"] for r in sorted(rows, key=report.rank_key)] == [
+        "d",
+        "c",
+        "b",
+        "a",
+    ]
