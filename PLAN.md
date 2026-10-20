@@ -585,7 +585,10 @@ stays a config placeholder.
       (its tests cover a flat load and long spikes). One block per 1,000 kW
       of estimated peak, at least one (placeholder); the share comes from
       the size bin of the peak per block, times the realization factor,
-      and the kW cut per block is capped at the block's 250 kW. Eversource
+      and the kW cut per block is capped at the block's 250 kW. Sites with
+      no open profile draw the share uniformly from the widest range in
+      their size bin. A site whose cut reaches 250 kW in most draws is
+      flagged capped. Eversource
       sites use G-2 with the all-hours reduction, flagged. Tests: G-1
       sites get nothing, higher rate never lowers savings, savings scale
       with the realization factor, the cut never exceeds block power.
@@ -601,7 +604,9 @@ stays a config placeholder.
       Per site and scenario: value per block per year (demand savings plus
       ConnectedSolutions revenue, gross, before any host share) at P10,
       P50 and P90, the expected number of blocks, and the total (value per
-      block times blocks). Sites are ranked by P50 value per block.
+      block times blocks). Sites are ranked by P50 value per block, ties
+      broken by expected blocks, then P50 total. Eversource sites in Canton
+      and Sharon are flagged rate area unconfirmed.
 - [x] `feat(model): compute break-even installed cost`
       Per site and scenario, the highest installed cost per block at which
       P50 value per block equals the annualized cost (life, financing and
