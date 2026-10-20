@@ -753,11 +753,15 @@ was validated, and what is unvalidated.
       region, the change in value per block, and which sites drop out.
       VALIDATION.md states that peak shape is unvalidated and was only
       stress-tested.
-- [ ] `feat(validate): run data assumption sensitivity`
+- [x] `feat(validate): run data assumption sensitivity`
       In a separate throwaway database, rerun the pipeline twice: touch
       tolerance 5 m instead of 1 m, and the 03x and 04x classes removed.
       Report how the top 50 per region move (overlap and rank changes)
       and how many scored sites change. The real tables are never changed.
+      `make sensitivity` copies the database to a throwaway one per case
+      (CREATE DATABASE ... TEMPLATE), overrides the assumption in memory,
+      recomputes priors and funnel in memory, and writes
+      data/validate/sensitivity.json, which `make validate` reads.
 - [ ] `docs(validate): generate validation report`
       `make validate` writes docs/VALIDATION.md: where the model beats
       size-only and where it does not, the energy comparison,
