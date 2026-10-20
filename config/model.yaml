@@ -55,3 +55,34 @@ area_error:
     missing it may be larger. Buildings with measured electricity get no
     area draw. No pilot site has an unknown utility; such a site would not
     be scored.
+
+rate_band_kw:
+  g2_below: 150
+  g3_above: 250
+  status: placeholder
+  note: >-
+    National Grid moves a customer from G-2 to G-3 at 200 kW (tariff), but
+    the peak here is an estimate, so a site whose estimated peak is between
+    these two values is weighted linearly between G-2 and G-3. Owner's
+    band, 2026-10-20.
+  test: >-
+    Check the schedule on bills of sites with estimated peaks near 200 kW.
+  replace: >-
+    The site's actual rate schedule from its bill.
+
+blocks:
+  peak_kw_per_block: 1000
+  max_blocks: null
+  status: placeholder
+  note: >-
+    One battery block per this many kW of estimated peak, at least one,
+    each block taking an equal share of the site's load. 1,000 kW is the
+    lower edge of the top size bin in config/simulation.yaml, where one
+    block cuts the most kW. Without the installed cost the count cannot be
+    optimized, so this is a sizing rule, not an optimum. Revenue scales per
+    block and installed cost is per block with no volume discount.
+    max_blocks has no value: no cap is applied.
+  test: >-
+    Compare with the block counts the operator installs at large sites.
+  replace: >-
+    The operator's sizing rule and block cap.

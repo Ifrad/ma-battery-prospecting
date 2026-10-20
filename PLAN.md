@@ -566,7 +566,7 @@ stays a config placeholder.
       error from docs/DATA.md ("Footprint area error"), stored in config
       as a measured value. That error was measured only on parcels that
       have BLD_AREA, so the real error on parcels missing it may be larger.
-- [ ] `feat(model): size whole battery blocks and compute demand savings`
+- [x] `feat(model): size whole battery blocks and compute demand savings`
       Block from config/battery.yaml, count cap from config (placeholder).
       Revenue scales per block and installed cost is per block, with no
       volume discount.
