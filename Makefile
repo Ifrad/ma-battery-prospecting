@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -47,6 +47,11 @@ intensity:
 # Count candidate sites through the funnel; rerun after make sites.
 funnel:
 	$(PY) -m prospect.priors.funnel
+
+# Check that derived tables agree with their sources; run after make sites
+# and make funnel.
+db-check:
+	$(PY) -m prospect.sites.checks
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:

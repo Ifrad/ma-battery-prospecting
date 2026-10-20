@@ -1,6 +1,7 @@
 -- One row per site with at least one building. Owner and address come from
--- the site's parcel with the most building area.
-TRUNCATE sites;
+-- the site's parcel with the most building area. DELETE, not TRUNCATE:
+-- parcels.site_id references sites (checked at commit).
+DELETE FROM sites;
 
 INSERT INTO sites (
     site_id, town_id, owner, owner_norm, site_addr, parcels, buildings,
@@ -52,3 +53,9 @@ SELECT
 FROM totals t
 JOIN main_parcel m USING (site_id)
 JOIN centre c USING (site_id);
+
+-- A group of parcels with no building is not a site, so its parcels keep
+-- no site_id.
+UPDATE parcels p SET site_id = NULL
+WHERE site_id IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sites s WHERE s.site_id = p.site_id);

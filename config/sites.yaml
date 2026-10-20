@@ -40,6 +40,20 @@ owner_normalization:
   replace: >-
     Owner names matched to a business registry.
 
+near_duplicate_overlap:
+  value: 0.9
+  status: placeholder
+  note: >-
+    Two footprints whose overlap is more than this share of the smaller one
+    are near-duplicates: the higher building id gets near_duplicate_of. The
+    flag does not change area. Exact duplicates (same shape) are dropped
+    instead. Chosen by hand; the 2026-10-20 schema review found 7 such pilot
+    pairs, overlapping 93 to 99 percent.
+  test: >-
+    Look at the flagged pairs on aerial photos.
+  replace: >-
+    A MassGIS rule or field marking duplicate footprints, if one exists.
+
 touch_tolerance_m:
   value: 1.0
   status: placeholder

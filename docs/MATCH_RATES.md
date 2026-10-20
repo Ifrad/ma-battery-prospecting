@@ -64,7 +64,7 @@ Candidates are buildings on parcels with a commercial, industrial, hospital or m
 
 |  | Metro South | Worcester | Both |
 |---|---|---|---|
-| candidate buildings | 6,453 | 9,197 | 15,650 |
+| candidate buildings | 6,452 | 9,197 | 15,649 |
 | candidate sites | 4,251 | 5,389 | 9,640 |
 
 By segment:
@@ -78,7 +78,7 @@ By segment:
 | laundry | 4 | 1 | 3 | 1 |
 | manufacturing | 614 | 853 | 417 | 493 |
 | other_healthcare | 195 | 232 | 146 | 179 |
-| warehouse | 1,068 | 1,328 | 695 | 770 |
+| warehouse | 1,067 | 1,328 | 695 | 770 |
 
 By how the segment was set:
 
@@ -86,7 +86,7 @@ By how the segment was set:
 |---|---|---|---|---|
 | default | 4,537 | 6,698 | 2,975 | 3,898 |
 | owner_keyword | 16 | 22 | 13 | 8 |
-| use_code | 1,900 | 2,477 | 1,263 | 1,483 |
+| use_code | 1,899 | 2,477 | 1,263 | 1,483 |
 
 Candidate buildings by LBER match method:
 
@@ -95,30 +95,30 @@ Candidate buildings by LBER match method:
 | ubid | 1,014 | 972 | 1,986 |
 | point_in_footprint | 64 | 63 | 127 |
 | point_in_parcel | 4 | 5 | 9 |
-| not matched | 5,371 | 8,157 | 13,528 |
+| not matched | 5,370 | 8,157 | 13,527 |
 
 Candidate buildings by area source:
 
 | Area source | Metro South | Worcester | Both |
 |---|---|---|---|
 | assessor | 5,354 | 6,848 | 12,202 |
-| assessor_below_footprint | 754 | 1,737 | 2,491 |
+| assessor_below_footprint | 753 | 1,737 | 2,490 |
 | assessor_above_footprint | 26 | 27 | 53 |
 | footprint_x_stories | 4 | 27 | 31 |
 | footprint_only | 315 | 558 | 873 |
 
 ## Touch tolerance
 
-Pairs of parcels in one town with the same normalized owner, by the planar gap between them (Massachusetts State Plane meters). Pairs up to 1 m apart count as touching and join one site; owner names cut off at the field width can also join by prefix, which this table leaves out.
+Pairs of parcels in one town with the same normalized owner, by the planar gap between them (Massachusetts State Plane meters). Pairs up to 1 m apart count as touching and join one site; owner names cut off at the field width can also join by prefix, which this table leaves out. Pairs of two parcels with no building (so no site) are left out.
 
 | Gap | Same site | Different sites |
 |---|---|---|
-| 0 (sharing a line) | 28,201 | 0 |
-| over 0 to 0.1 m | 7 | 0 |
-| over 0.1 to 0.5 m | 11 | 0 |
-| over 0.5 to 1 m | 12 | 0 |
-| over 1 to 2 m | 29 | 18 |
-| over 2 to 5 m | 170 | 126 |
+| 0 (sharing a line) | 18,915 | 0 |
+| over 0 to 0.1 m | 6 | 0 |
+| over 0.1 to 0.5 m | 5 | 0 |
+| over 0.5 to 1 m | 7 | 0 |
+| over 1 to 2 m | 21 | 9 |
+| over 2 to 5 m | 117 | 93 |
 
 ## Checks
 

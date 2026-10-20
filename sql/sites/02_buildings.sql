@@ -1,9 +1,11 @@
 -- One row per footprint. Its parcel is the smallest parcel containing the
 -- footprint's interior point. Area is set later, per site, by 03_area.sql;
--- until then it is the footprint area.
+-- until then it is the footprint area. A footprint with exactly the same
+-- shape as one with a lower object id is a duplicate in the source and is
+-- left out, so its area is not counted twice.
 INSERT INTO buildings (
-    building_id, struct_id, town_id, loc_id, footprint_sqft, area_sqft,
-    area_source, geom
+    building_id, struct_id, footprint_town_id, loc_id, footprint_sqft,
+    area_sqft, area_source, geom
 )
 WITH f AS (
     SELECT
@@ -24,6 +26,12 @@ WITH f AS (
         ) AS loc_id
     FROM raw_footprints f
     WHERE f.geom IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1 FROM raw_footprints g
+            WHERE g.objectid < f.objectid
+                AND g.geom && f.geom
+                AND ST_Equals(g.geom, f.geom)
+        )
 )
 SELECT
     objectid, struct_id, town_id, loc_id, footprint_sqft, footprint_sqft,

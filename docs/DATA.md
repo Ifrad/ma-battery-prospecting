@@ -240,7 +240,10 @@ often with different owners):
   (`452V`), and missed 2 with multi-use commercial codes (`035R`, `0370`).
 - `STORIES` is text. Its leading number is used, and 0 counts as missing.
 
-Buildings, one row per footprint (359,301 in the pilot). Each is linked to
+Buildings, one row per footprint (359,299 in the pilot: 359,301 footprints
+less 2 exact duplicates, same shape and struct id, which are dropped; 5
+near-duplicates overlapping another by more than 90 percent are flagged
+with near_duplicate_of and kept). Each is linked to
 the smallest parcel containing its interior point; 363 lie in no parcel.
 Sites group buildings on touching parcels of one owner: 246,364 sites, of
 which 9,640 are candidates.
@@ -269,8 +272,8 @@ footprint, so their assessor area is not used.
 
 | Area source | Pilot buildings | Candidate buildings |
 |---|---|---|
-| assessor | 308,035 | 12,202 |
-| assessor_below_footprint | 14,225 | 2,491 |
+| assessor | 308,034 | 12,202 |
+| assessor_below_footprint | 14,224 | 2,490 |
 | assessor_above_footprint | 678 | 53 |
 | footprint_x_stories | 27,685 | 31 |
 | footprint_only | 8,678 | 873 |

@@ -31,10 +31,32 @@ def area_checks(conn) -> None:
     conn.execute((SQL / "03_area.sql").read_text(), params)
 
 
+def flag_near_duplicates(conn) -> None:
+    """Set near_duplicate_of on footprints that mostly overlap a lower id."""
+    share = group.load_config()["near_duplicate_overlap"]["value"]
+    conn.execute(
+        """
+        UPDATE buildings b SET near_duplicate_of = d.other
+        FROM (
+            SELECT b2.building_id AS id, min(b1.building_id) AS other
+            FROM buildings b1
+            JOIN buildings b2
+                ON b1.building_id < b2.building_id AND b1.geom && b2.geom
+            WHERE ST_Area(ST_Intersection(b1.geom, b2.geom))
+                > %(share)s * least(ST_Area(b1.geom), ST_Area(b2.geom))
+            GROUP BY b2.building_id
+        ) d
+        WHERE d.id = b.building_id
+        """,
+        {"share": share},
+    )
+
+
 # In order. A string is a file in sql/sites/, a function takes the connection.
 STEPS = [
     "01_parcels.sql",
     "02_buildings.sql",
+    flag_near_duplicates,
     lambda conn: fill_ubids(conn),
     lambda conn: group.group(conn, group.load_config()),
     area_checks,
