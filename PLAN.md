@@ -471,7 +471,7 @@ placeholders and each sourced value names its source.
       has at least one building with LBER measured electricity, tier 2 is
       estimated and flagged. Spikiness is a Phase 4 score, not a filter.
       Survivors still carry unvalidated peak shape.
-- [ ] `docs(method): document priors and how to recalibrate`
+- [x] `docs(method): document priors and how to recalibrate`
       docs/METHOD.md section on priors, battery and cost assumptions,
       including what to rerun after each October 31 LBER release. Record
       the manufacturer product page URL

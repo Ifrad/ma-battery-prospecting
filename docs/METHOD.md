@@ -127,3 +127,47 @@ What it shows:
   Warehouses are flatter only above 200 kW, and offices are not flatter
   than retail or restaurants. Hospitals have too few buildings (9) to say.
   Factories, laundries, food plants and auto repair cannot be tested here.
+
+## Priors, battery and costs
+
+Every model input lives in config/ with a status: sourced, with its source,
+or placeholder, with what it is, how it gets tested and what would replace
+it. `prospect priors --list-placeholders` lists the placeholders, and
+docs/ASSUMPTIONS.md (`make assumptions`) explains each one.
+
+- Demand rates: config/rates.yaml, per utility and rate schedule, read
+  from filed tariffs on 2026-10-20. Five municipal plants publish no
+  schedule, so they have no rate yet.
+- Energy intensity: config/intensity.yaml (`make intensity`), yearly kWh
+  per sq ft by segment from LBER measured electricity. LBER covers
+  buildings of about 20,000 sq ft and up, so these may not fit smaller
+  buildings.
+- Load shape and peak reduction: config/simulation.yaml (`make
+  simulate`), simulated on ComStock, an upper bound, with
+  config/profiles.yaml mapping sites to building types.
+- Grid program: config/connected_solutions.yaml.
+- Battery block: config/battery.yaml, 250 kW, 522 kWh and 97.5 percent
+  efficiency from the Powertown product page
+  (https://www.powertownusa.com/product), read by the owner on
+  2026-10-19. Config `source:` lines name it "manufacturer product page"
+  and point here. The page renders with JavaScript, so a recheck on
+  2026-10-20 could not read it. Whether the ratings are per cabinet or per
+  pair, and the 90 percent usable depth, are placeholders.
+- Costs: config/costs.yaml. The 10 year life is the warranty on the same
+  page; the installed cost cases, financing rate, O&M, ITC rate and
+  minimum host benefit are placeholders.
+
+Values Phase 4 still needs: the minimum host benefit, the realization
+factor and the two ConnectedSolutions factors have no value yet.
+
+## After each October 31 LBER release
+
+1. Add the new layer URL and reporting year to config/lber.yaml, then
+   `make ingest` (the old year stays next to the new one).
+2. `make sites` to rematch buildings, then `make match-rates`.
+3. `make intensity` for new priors, then `make funnel`.
+4. `make assumptions` and `make check`, and review what moved.
+
+Rates also change through the year: recheck the rate summaries named in
+config/rates.yaml (each utility's `refresh` line). ComStock and the
+simulation change only with a new ComStock release.
