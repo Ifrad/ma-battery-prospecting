@@ -491,11 +491,34 @@ placeholders and each sourced value names its source.
 
 Goal: for each site, its model confidence that a standard battery
 deployment clears the profit hurdle (annualized cost plus the minimum host
-benefit), with a band, under each scenario.
+benefit), with a band, under each scenario, and the installed cost per
+block at which it would break even. Installed cost is the least known
+input, so it is never a hidden assumption: the model shows where the value
+comes from and what cost would make a site work.
 Done when: `make score` writes a scored row per site and scenario with the
 model confidence, P10, P50 and P90 of total value, expected
 blocks and top drivers, and model tests pass.
 
+Scoring scope: funnel survivors at the loosest reported peak line (150 kW),
+with a flag for those that pass 200 kW. Tier 1 and tier 2 are both scored;
+sites with no open profile are marked least certain. Sites the funnel
+dropped stay in the database and are not scored, and municipal plant sites
+are not scored.
+
+Multiple blocks: revenue scales per block, and installed cost is per block
+with no volume discount (a placeholder note in config). The block count cap
+stays a config placeholder.
+
+- [ ] `docs(method): research other revenue streams`
+      For each of the G-3 optional coincident peak transmission charge
+      ($21.91 per kW, recorded as unmodeled), ISO-NE capacity payments,
+      Massachusetts clean peak credits, and the ITC and depreciation, read
+      the primary source and write docs/REVENUE_STREAMS.md: what it pays,
+      eligibility for a behind-the-meter battery of our size, the per-kW
+      value with date and source, and what a model would need. A stream is
+      modeled only if a sourced per-kW value and an eligibility rule can be
+      read; otherwise it is recorded as unmodeled with what is missing. No
+      unread number goes into config.
 - [ ] `feat(model): estimate peak demand from annual energy and load factor`
       Monte Carlo draws per building, seeded per building id so results
       never depend on row order. Tests: determinism, known kWh narrows the
@@ -511,6 +534,8 @@ blocks and top drivers, and model tests pass.
       have BLD_AREA, so the real error on parcels missing it may be larger.
 - [ ] `feat(model): size whole battery blocks and compute demand savings`
       Block from config/battery.yaml, count cap from config (placeholder).
+      Revenue scales per block and installed cost is per block, with no
+      volume discount.
       Rate schedule per building from config/rates.yaml: G-1 versus G-2
       from the estimated monthly kWh, G-2 versus G-3 from the estimated
       peak. Buildings with an estimated peak of about 150 to 250 kW are
@@ -530,9 +555,20 @@ blocks and top drivers, and model tests pass.
       minimum yearly host benefit from config. It does not depend on the
       host share split. Tests: higher cost or a higher minimum host
       benefit never raises model confidence.
+- [ ] `feat(model): compute break-even installed cost`
+      Per site and scenario, the highest installed cost per block at which
+      P50 total value equals the annualized cost plus the minimum host
+      benefit (life, financing and O&M from config), and the same at P10.
+      A headline number next to model confidence, since installed cost is
+      the least known input. Tests: break-even is higher for higher value,
+      and a site with zero value has break-even zero.
 - [ ] `feat(model): run scenarios`
-      With and without ITC, and with and without ConnectedSolutions. Every
-      score names its scenario.
+      A staged revenue ladder: demand savings only, plus
+      ConnectedSolutions, plus ITC. Every score names its scenario.
+- [ ] `feat(model): report value by revenue stream`
+      Per site and scenario, keep demand savings, ConnectedSolutions
+      revenue and any modeled optional stream separate, and show each
+      stream's share of P50 value.
 - [ ] `feat(model): split savings between host and operator`
       Host share as a parameter. It only changes the site detail numbers
       (host share, operator share minus annualized cost), never model
@@ -544,6 +580,12 @@ blocks and top drivers, and model tests pass.
       Keep demand savings and grid revenue draws separate, in physical
       units (kW-months of peak reduction and eligible grid-program kW), so
       the report can recompute value when settings change.
+- [ ] `docs(method): check the payback claim`
+      Powertown says it recovers costs in 2 to 3 years. Across the scored
+      sites, report the median P50 yearly value and the installed cost per
+      block implied by a 2 and a 3 year simple payback at that value. This
+      is a consistency check on the owner's cost estimates, not evidence
+      for or against the claim.
 
 ---
 
@@ -595,8 +637,9 @@ Done when: `make export` writes per-region files under 5 MB each that pass
 schema validation.
 
 - [ ] `feat(export): write ranked sites per region as GeoJSON and CSV`
-      Every site includes its model confidence, its band, and its
-      evidence flags.
+      Every site includes its model confidence, its band, its break-even
+      installed cost per block (P50 and P10), its value split by revenue
+      stream, and its evidence flags.
 - [ ] `feat(export): include compact draws per site`
       A small fixed number of draws per site, split into demand savings
       and grid revenue in physical units (kW-months of peak reduction and
@@ -625,9 +668,11 @@ list.
       and JS inline and no external scripts, fonts or images. A region
       switch (Metro South, Worcester) and a sortable ranked table: owner,
       address, town, segment, model confidence with color, number and
-      short label, the P10 to P90 yearly value range, data quality as text
-      from the evidence flags, and the size-only rank next to the model
-      rank. Color scale: 90 and above green, 80 to under 90 yellow, 70 to
+      short label, the P10 to P90 yearly value range, the break-even
+      installed cost per block, the share of value from each revenue
+      stream, data quality as text from the evidence flags, and the
+      size-only rank next to the model rank. The table can sort by
+      break-even cost. Color scale: 90 and above green, 80 to under 90 yellow, 70 to
       under 80 orange, 50 to under 70 deep orange, under 50 red. Red sites
       are hidden by default and shown with one click, with the reason each
       is red. Basic responsive CSS.
