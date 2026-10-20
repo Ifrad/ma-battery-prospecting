@@ -126,3 +126,16 @@ Worcester, the 15 sites with the highest P50, with the 80 percent range of their
 | 13 | MCI TELECOMMUNICATIONS CORP | 35% | 59% | 4 to 97 |
 | 14 | THE COMMERCE INSURANCE COMPANY | 30% | 62% | 6 to 76 |
 | 15 | NEW GARDEN PARK INC | 30% | 58% | 9 to 96 |
+
+## Peak shape stress test
+
+Peak shape is unvalidated: it was only stress-tested. Every site is rescored with the simulated monthly peak reduction share cut by 30%, and sites with no open profile by 50% instead (owner's stress values, config/validate.yaml). Only demand savings change. Value per block with ConnectedSolutions, simulated.
+
+| Region | Scored sites | Median change in P50 value per block | Top 15 kept | Top 50 kept | No-profile sites in top 15, before to after |
+|---|---|---|---|---|---|
+| Metro South | 156 | -14% | 14 of 15 | 47 of 50 | 4 to 4 |
+| Worcester | 198 | -13% | 8 of 15 | 45 of 50 | 7 to 0 |
+
+Metro South, dropped out of the top 15: BP HAZEL LLC.
+
+Worcester, dropped out of the top 15: OFS FITEL LLC; COORSTEK INC; SOUTHBRIDGE ASSOCIATES II, LLC; SAINT-GOBAIN PERFORMANCE PLASTCIS; AGRAND REALTY CORP; NBPIV GARDNER LLC; NEW GARDEN PARK INC.

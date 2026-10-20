@@ -13,3 +13,19 @@ calibration_tolerance:
   replace: >-
     A tolerance set from the sampling error of the hit rate at the sample
     size.
+
+peak_shape_stress:
+  all_sites: 0.7
+  no_open_profile: 0.5
+  status: placeholder
+  note: >-
+    Peak shape is unvalidated, so make validate rescores with the simulated
+    monthly peak reduction share multiplied by these factors (a cut of 30
+    percent for every site, 50 percent for sites with no open profile) and
+    reports which sites keep their place. The owner's stress values, not a
+    measured error.
+  test: >-
+    Replace with the error measured against real interval data, once a
+    usable dataset is found.
+  replace: >-
+    A measured bias of the simulated peak reduction share.
