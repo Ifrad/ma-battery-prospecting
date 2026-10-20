@@ -393,11 +393,12 @@ placeholders and each sourced value names its source.
       months off your bill" and recovering costs "by year two or three"
       are not inputs. In config/costs.yaml; the ITC rate is a placeholder
       too, since it was not read from IRS guidance.
-- [ ] `feat(config): add minimum host benefit`
+- [x] `feat(config): add minimum host benefit`
       The minimum yearly benefit a host must get for the deal to be worth
       offering, in dollars a year, added to the annualized cost in the
       Phase 4 hurdle. A placeholder with status and a note until Powertown
-      gives a real figure.
+      gives a real figure. In config/costs.yaml with no value yet, since
+      no figure has been given; one is needed before Phase 4 scores.
 - [ ] `feat(ingest): download ComStock profiles for Massachusetts`
       A loader in `prospect/ingest/` that fetches 15-minute ComStock
       profiles for each building type in Massachusetts and saves them

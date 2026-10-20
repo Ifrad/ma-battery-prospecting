@@ -70,3 +70,16 @@ itc:
     against the FEOC rules.
   replace: >-
     The credit the operator actually claims for the standard deployment.
+
+min_host_benefit_usd_per_year:
+  value: null
+  status: placeholder
+  note: >-
+    The minimum yearly benefit a host must get for the deal to be worth
+    offering, added to the annualized cost in the Phase 4 hurdle. No
+    figure has been given yet, so it has no value; Phase 4 cannot compute
+    model confidence until it does.
+  test: >-
+    Ask the operator what yearly saving a host needs before it signs.
+  replace: >-
+    The operator's real figure.
