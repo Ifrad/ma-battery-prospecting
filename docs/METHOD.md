@@ -17,14 +17,13 @@ The owner's starting guess:
 This is a hypothesis to test, not an input. Nothing in config ranks
 building types by spikiness, and the model does not use this list.
 
-How it gets tested: the battery simulation on the downloaded load profiles
-reports, for each building type, the peak-to-average ratio, the load
-factor and the monthly peak reduction as a share of peak, and the same
-split by building peak size. Building types are then ranked by peak
-reduction in dollars per year, using the sourced demand rates in
-config/rates.yaml, and the ranking is compared with the guess above. The
-result goes in this file. Whether the profiles cover every type in the
-guess is checked before they are downloaded.
+How it gets tested: the battery simulation reports, for each ComStock
+building type, the load factor and the monthly peak reduction as a share
+of peak, split by building peak size (next section but two). There is no
+dollar ranking by segment, because the open profiles cover none of the
+spikier types in the guess: ComStock models no factories, laundries, food
+plants or auto repair shops. Only the flatter half of the guess can be
+checked.
 
 The simulated profiles are not measured meter data, so the ranking is
 simulated, not validated. Peak shape stays unvalidated until real interval
@@ -87,3 +86,44 @@ Peak reduction is the month's original billed peak minus the new peak, in
 kW and as a share of the original peak. Load factor is a month's average
 load divided by its peak; the peak-to-average ratio is a building's annual
 peak divided by its annual average load.
+
+## Simulated peak reduction by building size
+
+Median monthly peak reduction as a share of the all-hours peak, from
+config/simulation.yaml. Simulated, one weather year (2018), perfect
+foresight: an upper bound, unvalidated. Building count in brackets;
+"pooled" marks a cell with fewer than 10 buildings, which uses all types
+pooled in that size bin. Load factor is the median monthly load factor.
+
+| Building type | Load factor | Under 200 kW | 200 to 500 kW | 500 to 1,000 kW | 1,000 kW and up |
+|---|---|---|---|---|---|
+| SecondarySchool | 0.30 | 0.44 (7) pooled | 0.32 (7) pooled | 0.21 (9) pooled | 0.15 (7) pooled |
+| PrimarySchool | 0.32 | 0.49 (13) | 0.39 (15) | 0.21 (1) pooled | 0.15 (1) pooled |
+| SmallOffice | 0.36 | 0.51 (27) | 0.32 (3) pooled | 0.21 (0) pooled | 0.15 (0) pooled |
+| Outpatient | 0.38 | 0.46 (14) | 0.32 (10) | 0.21 (5) pooled | 0.15 (1) pooled |
+| RetailStandalone | 0.39 | 0.50 (23) | 0.32 (4) pooled | 0.21 (2) pooled | 0.15 (1) pooled |
+| RetailStripmall | 0.42 | 0.52 (11) | 0.34 (10) | 0.21 (5) pooled | 0.15 (4) pooled |
+| LargeOffice | 0.43 | 0.44 (5) pooled | 0.32 (5) pooled | 0.21 (9) pooled | 0.13 (11) |
+| Warehouse | 0.45 | 0.41 (17) | 0.26 (11) | 0.21 (1) pooled | 0.15 (1) pooled |
+| MediumOffice | 0.45 | 0.42 (19) | 0.34 (10) | 0.21 (1) pooled | 0.15 (0) pooled |
+| Hospital | 0.45 | 0.44 (0) pooled | 0.32 (1) pooled | 0.21 (2) pooled | 0.15 (6) pooled |
+| FullServiceRestaurant | 0.46 | 0.45 (21) | 0.32 (8) pooled | 0.21 (1) pooled | 0.15 (0) pooled |
+| QuickServiceRestaurant | 0.47 | 0.44 (30) | 0.32 (0) pooled | 0.21 (0) pooled | 0.15 (0) pooled |
+| LargeHotel | 0.56 | 0.44 (9) pooled | 0.32 (6) pooled | 0.22 (10) | 0.15 (5) pooled |
+| SmallHotel | 0.62 | 0.27 (28) | 0.32 (2) pooled | 0.21 (0) pooled | 0.15 (0) pooled |
+| Grocery | 0.69 | 0.44 (0) pooled | 0.17 (13) | 0.15 (15) | 0.15 (2) pooled |
+| All types pooled | 0.44 | 0.44 (224) | 0.32 (105) | 0.21 (61) | 0.15 (39) |
+
+What it shows:
+
+- Size matters more than type. A 250 kW battery cuts a larger share of a
+  small building's peak: the pooled median falls from 0.44 under 200 kW to
+  0.15 at 1,000 kW and up, while the kW cut grows.
+- Within a size bin most types are close. The flattest types cut less:
+  grocery (load factor 0.69) 0.17 at 200 to 500 kW against 0.32 pooled,
+  small hotels 0.27 under 200 kW against 0.44, warehouses 0.26 at 200 to
+  500 kW.
+- On the guess: grocery and hotels come out flatter, as expected.
+  Warehouses are flatter only above 200 kW, and offices are not flatter
+  than retail or restaurants. Hospitals have too few buildings (9) to say.
+  Factories, laundries, food plants and auto repair cannot be tested here.
