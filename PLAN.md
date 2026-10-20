@@ -745,6 +745,14 @@ was validated, and what is unvalidated.
       `prospect/ingest/` and compare peak-to-average ratio, load factor
       and monthly peak reduction share with the ComStock-based estimates
       by building type. If not, record that peak shape is unvalidated.
+- [x] `feat(validate): stress-test peak shape`
+      Peak shape is unvalidated, so rescore with the simulated peak
+      reduction share cut by 30 percent for all sites and by 50 percent for
+      sites with no open profile (owner's stress values, placeholders in
+      config/validate.yaml), and report top-15 and top-50 survival per
+      region, the change in value per block, and which sites drop out.
+      VALIDATION.md states that peak shape is unvalidated and was only
+      stress-tested.
 - [ ] `feat(validate): run data assumption sensitivity`
       In a separate throwaway database, rerun the pipeline twice: touch
       tolerance 5 m instead of 1 m, and the 03x and 04x classes removed.
