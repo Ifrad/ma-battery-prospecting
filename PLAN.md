@@ -566,6 +566,8 @@ stays a config placeholder.
       error from docs/DATA.md ("Footprint area error"), stored in config
       as a measured value. That error was measured only on parcels that
       have BLD_AREA, so the real error on parcels missing it may be larger.
+      No pilot site has an unknown utility, so that flag widens nothing; a
+      site with one would not be scored.
 - [x] `feat(model): size whole battery blocks and compute demand savings`
       Block from config/battery.yaml, count cap from config (placeholder).
       Revenue scales per block and installed cost is per block, with no
@@ -576,9 +578,14 @@ stays a config placeholder.
       weighted across G-2 and G-3 (band as a placeholder). G-2 savings use
       the all hours reduction and G-3 savings the peak window reduction.
       Peak shaving respects both the power limit and the energy limit, so
-      long spikes are only partly shaved, using the Phase 3 simulation.
-      Tests: flat load gives zero, higher rate never lowers savings, a
-      longer spike never raises the shaved share.
+      long spikes are only partly shaved, using the Phase 3 simulation
+      (its tests cover a flat load and long spikes). One block per 1,000 kW
+      of estimated peak, at least one (placeholder); the share comes from
+      the size bin of the peak per block, times the realization factor,
+      and the kW cut per block is capped at the block's 250 kW. Eversource
+      sites use G-2 with the all-hours reduction, flagged. Tests: G-1
+      sites get nothing, higher rate never lowers savings, savings scale
+      with the realization factor, the cut never exceeds block power.
 - [x] `feat(model): add grid program revenue`
       ConnectedSolutions only where the utility is eligible, scaled by the
       performance factor and discounted by the overlap factor. Tests:
