@@ -127,3 +127,221 @@ utilities:
             Optional. A G-3 customer may elect to pay transmission on its
             60-minute demand at the ISO New England monthly peak instead of
             per kWh, for at least 12 months. Not modeled.
+
+  Eversource Energy (NSTAR Electric):
+    read: 2026-10-20
+    refresh: >-
+      Rates were read on 2026-10-20 and need a refresh. Recheck the Summary
+      of Electric Service Delivery Rates (1-tariff-ma.pdf, M.D.P.U. No. 1),
+      which changes several times a year, and the rate 11, 13 and 15 tariffs
+      when they are refiled.
+    # Eversource tariffs differ by legacy service area. Canton and Sharon are
+    # its only pilot towns (384 candidate sites).
+    service_area:
+      value: Greater Boston
+      towns: [CANTON, SHARON]
+      status: placeholder
+      note: >-
+        Eversource prices by service area (Greater Boston; Cambridge; South
+        Shore, Cape Cod and Martha's Vineyard; Western Massachusetts). No
+        document read on 2026-10-20 says which area serves Canton and
+        Sharon; Eversource's community list does not group towns by area.
+        Greater Boston is assumed. If they are South Shore, G-2 is rate 30,
+        billed per kVA ($3.72 distribution plus $13.74 transmission).
+      test: >-
+        Read the service area or rate number on a Canton or Sharon C&I bill.
+      replace: >-
+        A town list by service area from Eversource or the DPU.
+    schedules:
+      - name: G-1
+        title: Small General Service, rate 11, Greater Boston
+        tariff: M.D.P.U. No. 11H, effective 2025-01-01
+        # Non-residential, service under 14,000 volts, load not over an
+        # average of 100 kW for 12 months.
+        eligibility: {max_kw: 100}
+        demand_charge_per_kw_month: 0
+        rates_effective: 2026-09-01
+        status: sourced
+        source: >-
+          Eversource (NSTAR Electric) tariff M.D.P.U. No. 11H, Small General
+          Service G-1, Greater Boston service area,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/11-tariff-ma.pdf,
+          and Summary of Electric Service Delivery Rates M.D.P.U. No. 1-26-F,
+          effective 2026-09-01,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/1-tariff-ma.pdf,
+          both read 2026-10-20.
+        note: >-
+          New customers get the Non-Demand Price Option unless they ask, so
+          the default has no demand charge. Customers above 10 kW may elect
+          the Demand Price Option. The summary's second rate 11 block
+          (customer charge $20, demand over 10 kW) reads as that option:
+          $22.31 distribution plus $19.34 transmission, $41.65 per kW-month
+          on the monthly 15-minute peak. Not modeled.
+      - name: G-2
+        title: Medium General Service, rate 15, Greater Boston
+        tariff: M.D.P.U. No. 15I, effective 2025-01-01
+        # Service under 14,000 volts and demand over an average of 100 kW
+        # for 12 months.
+        eligibility: {min_kw: 100}
+        # Billed demand: the greatest 15-minute demand in the month, with
+        # demand in off-peak hours reduced by 55 percent.
+        demand_window: peak_window
+        off_peak_demand_factor: 0.45
+        demand_charge_per_kw_month: 33.95
+        demand_charge_parts: {distribution: 20.21, transmission: 13.74}
+        rates_effective: 2026-09-01
+        status: sourced
+        source: >-
+          Eversource (NSTAR Electric) tariff M.D.P.U. No. 15I, Medium General
+          Service G-2, Greater Boston service area,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/15-tariff-ma.pdf,
+          and Summary of Electric Service Delivery Rates M.D.P.U. No. 1-26-F,
+          effective 2026-09-01, page 2, rate 15 demand,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/1-tariff-ma.pdf,
+          both read 2026-10-20.
+      - name: G-3
+        title: Large General Service, rate 13, Greater Boston
+        tariff: M.D.P.U. No. 13I, effective 2025-01-01
+        # Service metered at 14,000 volts or more, with customer-owned
+        # transformers. Chosen by service voltage, not by size.
+        eligibility: {min_service_volts: 14000}
+        demand_window: peak_window
+        off_peak_demand_factor: 0.30
+        demand_charge_per_kw_month: 30.05
+        demand_charge_parts: {distribution: 15.97, transmission: 14.08}
+        rates_effective: 2026-09-01
+        status: sourced
+        source: >-
+          Eversource (NSTAR Electric) tariff M.D.P.U. No. 13I, Large General
+          Service G-3, Greater Boston service area,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/13-tariff-ma.pdf,
+          and Summary of Electric Service Delivery Rates M.D.P.U. No. 1-26-F,
+          effective 2026-09-01, page 2, rate 13 demand,
+          https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/1-tariff-ma.pdf,
+          both read 2026-10-20.
+        note: >-
+          Public data cannot tell which buildings take primary service, so
+          the model uses G-2 for every Greater Boston building over 100 kW.
+          An optional coincident peak transmission charge ($22.39 per kW,
+          on 60-minute demand at the ISO New England monthly peak) is
+          recorded and not modeled.
+    # Peak window for G-2 and G-3. Off-peak demand counts at the reduced
+    # share above.
+    peak_window:
+      june_to_september: {days: weekdays, start: "09:00", end: "18:00"}
+      october_to_may: {days: weekdays, start: "08:00", end: "21:00"}
+      holidays:
+        - New Year's Day
+        - Martin Luther King Day
+        - Presidents' Day
+        - Patriots' Day
+        - Memorial Day
+        - Independence Day
+        - Labor Day
+        - Columbus Day
+        - Veterans Day
+        - Thanksgiving Day
+        - Day after Thanksgiving
+        - Christmas Day
+      status: sourced
+      source: >-
+        Eversource tariffs M.D.P.U. No. 15I and 13I, Billing, peak and
+        off-peak periods,
+        https://www.eversource.com/docs/default-source/rates-tariffs/ma-electric/15-tariff-ma.pdf,
+        read 2026-10-20.
+
+  West Boylston Municipal Lighting Plant:
+    read: 2026-10-20
+    refresh: >-
+      Rates were read on 2026-10-20 from the plant's rates page and need a
+      refresh. Recheck https://wbmlp.org/rates.html.
+    schedules:
+      - name: SC
+        title: Small Commercial
+        tariff: M.D.P.U. #294, effective 2026-01-01
+        # Averaging less than 6,000 kWh a month over the previous 12 months.
+        eligibility: {max_kwh_per_month: 6000}
+        demand_charge_per_kw_month: 0
+        rates_effective: 2026-01-01
+        status: sourced
+        source: >-
+          West Boylston Municipal Lighting Plant, Electric Rates page, Small
+          Commercial (SC), M.D.P.U. #294, https://wbmlp.org/rates.html,
+          read 2026-10-20.
+      - name: LC
+        title: Large Commercial
+        tariff: M.D.P.U. #295, effective 2026-01-01
+        # Commercial and industrial customers averaging over 6,000 kWh a
+        # month over the previous 12 months.
+        eligibility: {min_kwh_per_month: 6000}
+        # Billed demand: the highest 15-minute kW or kVA in the month.
+        demand_window: all_hours
+        demand_charge_per_kw_month: 8.66
+        rates_effective: 2026-01-01
+        status: sourced
+        source: >-
+          West Boylston Municipal Lighting Plant, Electric Rates page, Large
+          Commercial (LC), M.D.P.U. #295, https://wbmlp.org/rates.html,
+          read 2026-10-20.
+        note: >-
+          The Industrial schedule (M.D.P.U. #296), for the same customers
+          metered at high voltage, has the same $8.66 demand charge.
+
+  # The other five municipal light plants in the pilot. No rate schedule was
+  # read for them, so their demand charge has no value yet.
+  Holden Municipal Light Department:
+    demand_charge_per_kw_month:
+      value: null
+      status: placeholder
+      note: >-
+        No commercial rate schedule was read. Searches on 2026-10-20 found
+        none online; the town site says new general service rates took
+        effect 2025-05-01, but its rates page returned 404.
+      test: >-
+        Read the plant's General Service schedule.
+      replace: >-
+        The demand charge and eligibility from that schedule.
+  Sterling Municipal Light Department:
+    demand_charge_per_kw_month:
+      value: null
+      status: placeholder
+      note: >-
+        No commercial rate schedule was read. Searches on 2026-10-20 found
+        none online.
+      test: >-
+        Read the plant's commercial rate schedules.
+      replace: >-
+        The demand charge and eligibility from those schedules.
+  Paxton Municipal Light Department:
+    demand_charge_per_kw_month:
+      value: null
+      status: placeholder
+      note: >-
+        No commercial rate schedule was read. Searches on 2026-10-20 found
+        none online.
+      test: >-
+        Read the plant's commercial rate schedules.
+      replace: >-
+        The demand charge and eligibility from those schedules.
+  Princeton Municipal Light Department:
+    demand_charge_per_kw_month:
+      value: null
+      status: placeholder
+      note: >-
+        No commercial rate schedule was read. Searches on 2026-10-20 found
+        none online.
+      test: >-
+        Read the plant's commercial rate schedules.
+      replace: >-
+        The demand charge and eligibility from those schedules.
+  Boylston Municipal Light Department:
+    demand_charge_per_kw_month:
+      value: null
+      status: placeholder
+      note: >-
+        No commercial rate schedule was read. Searches on 2026-10-20 found
+        none online.
+      test: >-
+        Read the plant's commercial rate schedules.
+      replace: >-
+        The demand charge and eligibility from those schedules.
