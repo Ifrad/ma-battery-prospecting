@@ -792,12 +792,23 @@ was validated, and what is unvalidated.
 
 ---
 
-## Phase 6: Export  (branch `phase-6-export`, tag v0.6.0)
+## Phase 6: Export and report  (branch `phase-6-export-report`, tag v0.7.0)
 
-Goal: static files the report can load with no backend.
+Export and report were planned as two phases (6 and 7) and are built as one;
+there is no v0.6.0.
+
+Goal: static files the report can load with no backend, and one
+self-contained report.html that someone opens by double click, with no
+network, backend or install, to see which buildings to approach next,
+ranked by value per block.
 Done when: `make export` writes per-region files under 5 MB each that pass
-schema validation.
+schema validation, `make report` writes report.html from the export, it
+opens offline, and it lets a reader change the key assumptions and filter the
+list.
 
+- [x] `docs(plan): merge export and report phases`
+      Merge the Export and Report phases into this one phase, keeping every
+      task text from both.
 - [ ] `feat(export): write ranked sites per region as GeoJSON and CSV`
       Value per block first: P50 with the P10 to P90 band, expected
       blocks, total, break-even installed cost per block (with and without
@@ -818,18 +829,6 @@ schema validation.
       model.
 - [ ] `chore(export): add data manifest`
       Version, generated time, config hash, source reporting years.
-
----
-
-## Phase 7: Report  (branch `phase-7-report`, tag v0.7.0)
-
-Goal: one self-contained report.html that someone opens by double click, with
-no network, backend or install, to see which buildings to approach next,
-ranked by value per block.
-Done when: `make report` writes report.html from the Phase 6 export, it
-opens offline, and it lets a reader change the key assumptions and filter the
-list.
-
 - [ ] `feat(report): build single-file report from the export`
       A script under `prospect/report/` writes one HTML file with data, CSS
       and JS inline and no external scripts, fonts or images. A region
@@ -848,9 +847,11 @@ list.
       default and shown with one click, with the reason each is red.
       Both scenarios show side by side. The report says ConnectedSolutions
       is the same per block for every eligible site except those capped
-      by the program's export cap, and that about 64 percent of P50 value
-      rests on it (docs/SCORES.md). It shows the flags capped, rate area
-      unconfirmed and no open profile in plain words.
+      by the program's export cap. The report computes the
+      ConnectedSolutions share of P50 value from the export and states it,
+      never hardcoded (docs/SCORES.md currently shows 56 percent). It shows
+      the flags capped, rate area unconfirmed and no open profile in plain
+      words.
       Basic responsive CSS.
 - [ ] `feat(report): add site detail view`
       Evidence flags, top drivers, the buildings and parcels in the site,
@@ -897,7 +898,9 @@ Done when: the README follows that structure and every link works on a phone.
       block, with break-even cost as the translation), one worked
       example (Brockton Hospital: its evidence flags and why it ranks where
       it does), what is unvalidated, and the open questions. It can be
-      drafted and sent once Phase 5 gives a validation result.
+      drafted and sent once Phase 5 gives a validation result. Check that
+      Brockton Hospital is scored before using it as the worked example;
+      if it is not, stop and ask the owner.
 - [ ] `docs: write layered README`
       Top: problem sentence, what it does, a screenshot, and a "Start
       here" path to the brief and report.html. Middle: 2 minute
