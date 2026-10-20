@@ -1,0 +1,371 @@
+{
+ "draws": 1000,
+ "battery_block": {
+  "power_kw": 250,
+  "energy_kwh": 522
+ },
+ "demand_rates_usd_per_kw_month": {
+  "Eversource Energy (NSTAR Electric)": {
+   "G-2": 33.95,
+   "G-3": 30.05
+  },
+  "National Grid (Massachusetts Electric)": {
+   "G-2": 15.24,
+   "G-3": 10.61
+  }
+ },
+ "realization_factor": {
+  "value": 0.8,
+  "low": 0.6,
+  "high": 0.95
+ },
+ "connected_solutions": {
+  "usd_per_kw_season": 200,
+  "eligible_utilities": [
+   "National Grid (Massachusetts Electric)",
+   "Eversource Energy (NSTAR Electric)"
+  ],
+  "performance_factor": {
+   "value": 0.61,
+   "low": 0.61,
+   "high": 0.92
+  },
+  "overlap_factor": {
+   "value": 0.13,
+   "low": 0,
+   "high": 0.13
+  },
+  "site_exports": false,
+  "export_cap_share_of_site_peak": 1.5
+ },
+ "costs": {
+  "life_years": 10,
+  "financing_rate": 0.08,
+  "om_usd_per_year": 4000,
+  "itc": {
+   "rate": 0.3,
+   "default_on": false,
+   "max_capacity_kw": 1000
+  },
+  "installed_cost_usd_per_block": null,
+  "min_host_benefit_usd_per_year": null,
+  "installed_cost_reference_usd": {
+   "low": 180000,
+   "middle": 260000
+  }
+ },
+ "placeholders": [
+  {
+   "file": "battery",
+   "path": "per_pair",
+   "value": "True",
+   "note": "The page lists \"typical deployment: two cabinets in parallel\" with weight and dimensions per cabinet, and does not say whether 250 kW and 522 kWh are per cabinet or for the pair. We treat them as totals for the pair, so one block is two cabinets."
+  },
+  {
+   "file": "battery",
+   "path": "usable_depth_of_discharge",
+   "value": "0.9",
+   "note": "The share of rated energy the dispatch may use. The page does not state it; 90 percent is the plan's working value."
+  },
+  {
+   "file": "comstock",
+   "path": "sample",
+   "value": "per_type=30, seed=20261020",
+   "note": "About 30 buildings per ComStock building type, spread across floor area, instead of all 2,285 Massachusetts buildings (4.1 GB), to keep the download near 1 GB. Types with fewer buildings are taken whole."
+  },
+  {
+   "file": "connected_solutions",
+   "path": "site_exports",
+   "value": "False",
+   "note": "Whether a site's battery may export to the grid during events. Export needs an interconnection agreement, and then the 150 percent cap above applies. Without export, the kW curtailed cannot exceed the building's own load in the 3 to 8 p.m. event window, so the model counts per block the lesser of the block's average event output (power times the performance factor) and the building's mean summer weekday event-window load per block, from config/simulation.yaml (event_window, mean_over_peak, times the estimated annual peak). The default assumes no site exports."
+  },
+  {
+   "file": "connected_solutions",
+   "path": "event_window_no_profile",
+   "value": "from=pooled",
+   "note": "Sites with no open profile (factories, laundries, food plants, cold storage, auto repair) and the placeholder mix take the pooled median event-window ratios across all simulated ComStock buildings (config/simulation.yaml, pooled event_window: mean 0.368 and peak 0.894 of annual peak on the 2026-10-20 simulation). Nothing about their afternoon load is known."
+  },
+  {
+   "file": "connected_solutions",
+   "path": "performance_factor",
+   "value": "0.61 (range 0.61 to 0.92)",
+   "note": "The share of the battery's 250 kW it delivers on average across an event, since payment follows average kW curtailed. The range comes from the sourced 2 to 3 hour event length (daily_dispatch_terms): the block delivers about 458 kWh (469.8 usable x 0.975), which is 153 kW over a 3-hour event (0.61) and 229 kW over a 2-hour event (0.92). The default assumes 3-hour events. The factor itself is derived, not read."
+  },
+  {
+   "file": "connected_solutions",
+   "path": "overlap_factor",
+   "value": "0.13 (range 0 to 0.13)",
+   "note": "The share of event days that fall on the building's own monthly peak, when the same battery energy cannot serve both, so grid revenue is not double counted with peak shaving. An upper bound: a building has at most one monthly peak day in each of the 4 event months, and daily dispatch calls at least 30 events (sourced), so at most 4 / 30 = 0.13 of event revenue is at risk. ConnectedSolutions revenue is reduced by this share."
+  },
+  {
+   "file": "costs",
+   "path": "installed_cost_usd",
+   "value": "low=180000, middle=260000",
+   "note": "The owner's own estimates for one block, installed, unverified and pending the operator's real number. Not a model input: sites are ranked by value per block, and these two figures are only reference points beside the break-even installed cost and example costs for the optional model confidence. docs/SCORES.md counts the sites whose break-even cost clears each."
+  },
+  {
+   "file": "costs",
+   "path": "financing_rate",
+   "value": "0.08",
+   "note": "Yearly rate used to annualize the installed cost. Not from a source."
+  },
+  {
+   "file": "costs",
+   "path": "om_usd_per_year",
+   "value": "4000",
+   "note": "Operations and maintenance for one block. An unverified estimate."
+  },
+  {
+   "file": "costs",
+   "path": "min_host_benefit_usd_per_year",
+   "value": "None",
+   "note": "The minimum yearly benefit a host must get for the deal to be worth offering. Not used in scoring: it is added to the annualized cost only when a user asks for model confidence at a given cost and supplies a figure. No figure has been given, so it has no value."
+  },
+  {
+   "file": "funnel",
+   "path": "min_kwh_per_month",
+   "value": "10000",
+   "note": "The National Grid G-1 line: above 10,000 kWh a month a customer moves to G-2 and pays a demand charge (config/rates.yaml). Used here as a screen on estimated monthly use, which is itself uncertain."
+  },
+  {
+   "file": "funnel",
+   "path": "min_peak_kw",
+   "value": "200",
+   "note": "The National Grid G-2 versus G-3 line. Chosen over 150 and 250 kW, which docs/FUNNEL.md also counts; the peak is estimated from annual kWh and a simulated load factor, so it is uncertain."
+  },
+  {
+   "file": "funnel",
+   "path": "report_peak_kw",
+   "value": "[150, 200, 250]",
+   "note": "Peak thresholds counted side by side in docs/FUNNEL.md, around the 200 kW tariff line."
+  },
+  {
+   "file": "intensity",
+   "path": "hospital_prior",
+   "value": "segments: 1 items, from=pilot measured hospitals",
+   "note": "Hospital uses the median of its own measured pilot buildings (n 13, under 30) rather than LBER's statewide Healthcare rows (median 9.83), which mix clinics and offices in with hospitals. Owner's choice, 2026-10-20."
+  },
+  {
+   "file": "intensity",
+   "path": "proxy",
+   "value": "segments: 3 items, from=manufacturing, label=proxy, likely understates",
+   "note": "Food production, cold storage and laundry have 1 or 2 measured pilot buildings and no LBER property type that fits. They borrow the manufacturing spread, which is wide. Their few measured buildings sit above its median, so it likely understates them."
+  },
+  {
+   "file": "model",
+   "path": "draws",
+   "value": "1000",
+   "note": "Monte Carlo draws per site. A computation setting, not a property of any building. Each building's draws are seeded by its building id and each site's by its site id, so results never depend on row order."
+  },
+  {
+   "file": "model",
+   "path": "measured_kwh",
+   "value": "weak_confidences: 1 items, weak_ambiguous=True",
+   "note": "A building with LBER measured electricity uses its reported yearly kWh as is; year-to-year variation is not modeled. When the match is weak (by address, or ambiguous between several buildings), the kWh may belong to more than one building, so it gets its segment's intensity spread around the reported value instead."
+  },
+  {
+   "file": "model",
+   "path": "rate_band_kw",
+   "value": "g2_below=150, g3_above=250",
+   "note": "National Grid moves a customer from G-2 to G-3 at 200 kW (tariff), but the peak here is an estimate, so a site whose estimated peak is between these two values is weighted linearly between G-2 and G-3. Owner's band, 2026-10-20."
+  },
+  {
+   "file": "model",
+   "path": "blocks",
+   "value": "peak_kw_per_block=1000, max_blocks=None",
+   "note": "One battery block per this many kW of estimated peak, at least one, each block taking an equal share of the site's load. 1,000 kW is the lower edge of the top size bin in config/simulation.yaml, where one block cuts the most kW. Without the installed cost the count cannot be optimized, so this is a sizing rule, not an optimum. Revenue scales per block and installed cost is per block with no volume discount. max_blocks has no value: no cap is applied."
+  },
+  {
+   "file": "profiles",
+   "path": "comstock_types",
+   "value": "choose_by=floor_area",
+   "note": "Mapping approved by the owner on 2026-10-20. ComStock models no industrial buildings, so a use code or segment is matched to the nearest commercial type by judgment, not by a source."
+  },
+  {
+   "file": "profiles",
+   "path": "no_open_profile",
+   "value": "segments: 4 items, use_codes: 1 items, label=no open profile, unvalidated",
+   "note": "ComStock has no profile for factories, laundries, food plants, cold storage or auto repair. These sites are not simulated. Their peak reduction share is drawn uniformly from the widest range within the size bin of their peak per block: the lowest p10 to the highest p90 over the pooled cell and every type with its own cell in that bin, so a large factory never takes a share only small buildings reach. Their load factor takes the widest range across all simulated types (config/simulation.yaml, no_open_profile), since load factor is not binned. Nothing about their spikiness is assumed."
+  },
+  {
+   "file": "profiles",
+   "path": "placeholder_mix",
+   "value": "label=placeholder mix",
+   "note": "Generic sites whose use code is not listed above (031 mixed use, 334 gas stations, 330 auto sales and others) take all simulated types pooled in their size bin, flagged."
+  },
+  {
+   "file": "profiles",
+   "path": "eversource_peak_reduction",
+   "value": "all_hours",
+   "note": "Eversource G-2 and G-3 bill off-peak demand at a 55 or 70 percent discount with a seasonal peak window, which the simulation does not model. Eversource sites (Canton, Sharon) use the all-hours reduction, flagged."
+  },
+  {
+   "file": "profiles",
+   "path": "realization_factor",
+   "value": "0.8 (range 0.6 to 0.95)",
+   "note": "The simulation has perfect foresight over each month, so its peak reduction is an upper bound. Phase 4 multiplies the simulated reduction by this factor. A real controller that misses one 15-minute peak loses that month's saving, so the factor is below 1. 0.8 and the range are the owner's judgment (2026-10-20), not from a source."
+  },
+  {
+   "file": "rates",
+   "path": "demand_basis",
+   "value": "kW",
+   "note": "National Grid G-2 and G-3 bill the greater of the kW peak and 90 percent of the kVA peak (on G-2 only where the kW peak exceeds 75 kW). We have no power factor data, so the model uses the kW peak only. Where power factor is below 0.9, this understates billed demand."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Eversource Energy (NSTAR Electric).service_area",
+   "value": "Greater Boston",
+   "note": "Eversource prices by service area (Greater Boston; Cambridge; South Shore, Cape Cod and Martha's Vineyard; Western Massachusetts). No document read on 2026-10-20 says which area serves Canton and Sharon; Eversource's community list does not group towns by area. Greater Boston is assumed. If they are South Shore, G-2 is rate 30, billed per kVA ($3.72 distribution plus $13.74 transmission). Rechecked 2026-10-20 (Phase 5): the $33.95 G-2 charge is the \"BOST\" row of rate 15 in the Summary of Electric Service Delivery Rates, M.D.P.U. No. 1-26-F, effective 2026-09-01 ($20.21 distribution plus $13.74 transmission), and rate 15 (M.D.P.U. No. 15I) is the Greater Boston service area tariff, so the source and division are right. Neither the tariffs nor the Communities We Serve page, which tags every Massachusetts town \"NSTAR Electric, Eastern Massachusetts Electric\", lists the towns in each area, so Canton and Sharon stay flagged rate area unconfirmed."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Holden Municipal Light Department.demand_charge_per_kw_month",
+   "value": "None",
+   "note": "No commercial rate schedule was read. Searches on 2026-10-20 found none online; the town site says new general service rates took effect 2025-05-01, but its rates page returned 404."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Sterling Municipal Light Department.demand_charge_per_kw_month",
+   "value": "None",
+   "note": "No commercial rate schedule was read. Searches on 2026-10-20 found none online."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Paxton Municipal Light Department.demand_charge_per_kw_month",
+   "value": "None",
+   "note": "No commercial rate schedule was read. Searches on 2026-10-20 found none online."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Princeton Municipal Light Department.demand_charge_per_kw_month",
+   "value": "None",
+   "note": "No commercial rate schedule was read. Searches on 2026-10-20 found none online."
+  },
+  {
+   "file": "rates",
+   "path": "utilities.Boylston Municipal Light Department.demand_charge_per_kw_month",
+   "value": "None",
+   "note": "No commercial rate schedule was read. Searches on 2026-10-20 found none online."
+  },
+  {
+   "file": "segments",
+   "path": "order",
+   "value": "",
+   "note": "Hospital codes first, then hospital names, then the specific trades known only from owner names, then the other use codes, then HEALTH. Chosen by hand; check precision in the match rate report review."
+  },
+  {
+   "file": "segments",
+   "path": "rules[hospital]",
+   "value": "segment=hospital, owner_keywords: 6 items, exclude_owner_keywords: 3 items",
+   "note": "Unverified owner-name inference, including medical offices. Whole words exclude HOSPITALITY. Veterinary exclusions apply only to this keyword rule, never to a hospital use code. The 4 keyword hospital sites left on the pilot build are unverified, and 2 look like medical office buildings (VERNON MEDICAL CENTER II, HTA PEARL ST MEDICAL CENTER LLC). Precision and recall are not measured; see docs/MATCH_RATES.md."
+  },
+  {
+   "file": "segments",
+   "path": "rules[cold_storage]",
+   "value": "segment=cold_storage, owner_keywords: 10 items",
+   "note": "No DOR code for cold storage; owner names only."
+  },
+  {
+   "file": "segments",
+   "path": "rules[food_production]",
+   "value": "segment=food_production, owner_keywords: 24 items",
+   "note": "No statewide DOR code for food processing (Boston's 414 is a city code). Requires a 4xx industrial use code or site area at least the placeholder in sites.yaml. Can still catch distributors; no distributor exclusions. Size and owner text do not verify production activity. Known miss: PERFORMANCE FOOD GROUP, Brockton (code 400), which looks like a warehouse. Precision and recall are not measured; only 2 suspicious rows were hand reviewed."
+  },
+  {
+   "file": "segments",
+   "path": "rules[laundry]",
+   "value": "segment=laundry, owner_keywords: 10 items",
+   "note": "No DOR code for laundries; owner names only."
+  },
+  {
+   "file": "segments",
+   "path": "rules[other_healthcare]",
+   "value": "segment=other_healthcare, owner_keywords: 3 items",
+   "note": "From the plan. Also catches nursing homes and health agencies."
+  },
+  {
+   "file": "sites",
+   "path": "food_keyword_min_area_sqft",
+   "value": "20000",
+   "note": "Owner-approved screening rule, not proof of food production. A food keyword needs a 4xx industrial use code or at least this much site area. On the 2026-10-20 baseline, 8 of 14 keyword food sites fall back at 20,000 sq ft and 9 at 50,000. JJ's Creamery falls back to generic. Performance Food Group, Brockton, still gets food production (code 400, 105,770 sq ft) and is a known miss: it looks like a warehouse from the air and LBER says warehouse, though the company lists a meat cutting plant there. Only 2 of 32 sampled rows were reviewed, picked because they looked suspicious, so they do not estimate an error rate. Recall is not measured. See docs/MATCH_RATES.md, Hand review."
+  },
+  {
+   "file": "sites",
+   "path": "owner_normalization",
+   "value": "drop_words: 9 items, cutoff_within_chars=1",
+   "note": "Words the pilot data shows varying within one owner, for example BROCKTON HOSPITAL, BROCKTON HOSPITAL INC and BROCKTON HOSPITAL COMPANY THE. A name within cutoff_within_chars characters of the longest owner name in its town is treated as possibly cut off (8 pilot towns cap names at 29 or 30 characters, and a cut name can lose its trailing space). Its last word is dropped and it may match a longer name that starts with it. Check false merges in the match rate report review."
+  },
+  {
+   "file": "sites",
+   "path": "near_duplicate_overlap",
+   "value": "0.9",
+   "note": "Two footprints whose overlap is more than this share of the smaller one are near-duplicates: the higher building id gets near_duplicate_of. The flag does not change area. Exact duplicates (same shape) are dropped instead. Chosen by hand; the 2026-10-20 schema review found 7 such pilot pairs, overlapping 93 to 99 percent."
+  },
+  {
+   "file": "sites",
+   "path": "touch_tolerance_m",
+   "value": "1.0",
+   "note": "Parcels this close count as touching, to allow for small gaps where parcel lines were digitized separately. Not checked against the data."
+  },
+  {
+   "file": "sites",
+   "path": "lber_match",
+   "value": "confidence={ubid: high, point_in_footprint: high, point_in_parcel: medium, address: low}, address_words={STREET: ST, AVENUE: AVE, ROAD: RD, DRIVE: DR, BOULEVARD: BLVD, LANE: LN, COURT: CT, PLACE: PL, PARKWAY: PKWY, HIGHWAY: HWY, TERRACE: TER, CIRCLE: CIR, SQUARE: SQ, NORTH: N, SOUTH: S, EAST: E, WEST: W}",
+   "note": "Labels for how sure a single-building match is, by method. Chosen by hand from the UBID check in docs/DATA.md, not measured per method."
+  },
+  {
+   "file": "sites",
+   "path": "lber_match (address)",
+   "value": "",
+   "note": "Common USPS street suffix and direction abbreviations. Not checked against every pilot address."
+  },
+  {
+   "file": "sites",
+   "path": "local_owner",
+   "value": "city_words={W: WEST, N: NORTH, S: SOUTH, E: EAST}, zip_fallback=True",
+   "note": "On pilot candidate parcels the town name alone matches 43% of owner cities; the ZIP fallback adds about 146, mostly abbreviations, typos and villages. A ZIP can cross a town line, so a few may be wrong."
+  },
+  {
+   "file": "sites",
+   "path": "tenure",
+   "value": "nominal_price_below=1000, earliest_sale_year=1900",
+   "note": "Pilot candidate sales cluster at $0 (2,391), $1 (1,179), $10 (292), $99 (76) and $100 (1,648), with only 23 between $101 and $1,000, so any price under $1,000, or no price, counts as nominal. Sale dates before 1900 (as early as 1754) are treated as filler."
+  },
+  {
+   "file": "sites",
+   "path": "area_checks",
+   "value": "floor_tolerance=0.5, ceiling_stories_factor=3, ceiling_without_stories=10",
+   "note": "Chosen from trigger counts on 9,284 pilot candidate sites. Floor 0.5 flags 562 sites (0.8 would flag 1,346 and 1.0 would flag 3,975, since roof outlines include overhangs). Ceiling 3 x stories, or 10 without stories, flags 33 sites, no hospital or other healthcare site, and keeps all 15 sites of 9 or more stories (446 Main St, Worcester, 24 stories, has a ratio of 15.0). A factor of 2 would flag 230. Fallbacks, for flagged sites and for parcels with no BLD_AREA: footprint area times the parcel's stories, otherwise footprint area alone (roof outlines, so they include overhangs). The measured error of each fallback is in docs/DATA.md, Footprint area error."
+  },
+  {
+   "file": "use_codes",
+   "path": "normalize",
+   "value": "class_from=first 3 characters, vacant_suffix=V",
+   "note": "Inferred from the pilot data (USE_CODE and USE_DESC), not from a DOR document, which defines three digit codes only. Check if a town's fourth character turns out to mean something else."
+  },
+  {
+   "file": "use_codes",
+   "path": "classes.mixed_commercial_industrial",
+   "value": "prefixes: 2 items",
+   "note": "DOR multiple-use codes whose first class is commercial (03x, for example 031 \"primarily Commercial\") or industrial (04x). Not in the plan's classes; included as a placeholder because Worcester's largest hospital parcel is coded 049C. The owner decides whether these stay."
+  },
+  {
+   "file": "use_codes",
+   "path": "classes.charitable_former",
+   "value": "codes: 1 items",
+   "note": "Retired code, described in L3 as \"formerly Charitable Organizations (private hospitals, etc...). Removed June 2009.\" Still on about 100 pilot parcels, some owned by hospitals. Not counted as a hospital by code. Parcels under this code are not candidates, so a hospital that still sits under 905 is not ranked. This is a known limitation, not tested."
+  },
+  {
+   "file": "validate",
+   "path": "calibration_tolerance",
+   "value": "0.05",
+   "note": "How close the overall P10 to P90 hit rate must be to 80 percent for the annual energy band to count as calibrated; outside it, the band widths are recalibrated. Chosen by hand."
+  },
+  {
+   "file": "validate",
+   "path": "peak_shape_stress",
+   "value": "all_sites=0.7, no_open_profile=0.5",
+   "note": "Peak shape is unvalidated, so make validate rescores with the simulated monthly peak reduction share multiplied by these factors (a cut of 30 percent for every site, 50 percent for sites with no open profile) and reports which sites keep their place. The owner's stress values, not a measured error."
+  }
+ ]
+}

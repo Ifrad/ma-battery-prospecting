@@ -51,3 +51,35 @@ def test_csv_has_one_row_per_scenario_with_both_ranks():
     assert set(rows[0]) == set(build.CSV_COLUMNS)
     assert rows[0]["flags"] == "capped;no_open_profile"
     assert rows[0]["model_rank"] == 1 and rows[0]["size_rank"] == 9
+
+
+def test_draws_block_keeps_every_draw_in_physical_units():
+    r = {
+        "kwm_g2": [10.04, 0.0],
+        "kwm_g3": [0.0, 20.06],
+        "blocks_draws": [1, 2],
+        "peak_kw": [301.26, 1999.94],
+        "g3_draws": [False, True],
+    }
+    assert build.draws_block(r) == {
+        "kwm_g2": [10.0, 0.0],
+        "kwm_g3": [0.0, 20.1],
+        "blocks": [1, 2],
+        "peak_kw": [301.3, 1999.9],
+        "g3": [0, 1],
+    }
+
+
+def test_manifest_leaves_cost_and_host_benefit_empty():
+    from prospect.priors import config
+
+    m = build.manifest(
+        config.load(), [{"utility": "National Grid (Massachusetts Electric)"}]
+    )
+    assert m["costs"]["installed_cost_usd_per_block"] is None
+    assert m["costs"]["min_host_benefit_usd_per_year"] is None
+    assert m["demand_rates_usd_per_kw_month"] == {
+        "National Grid (Massachusetts Electric)": {"G-2": 15.24, "G-3": 10.61}
+    }
+    assert m["connected_solutions"]["site_exports"] is False
+    assert any(p["file"] == "costs" for p in m["placeholders"])
