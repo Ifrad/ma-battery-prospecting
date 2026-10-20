@@ -11,7 +11,7 @@ read; otherwise it is unmodeled, with what is missing.
 | G-3 optional coincident peak transmission | No | Value and eligibility read, but the net value needs the ISO-NE monthly peak hours, not yet read |
 | ISO-NE capacity payments | No | Price read; eligibility for one small behind-the-meter battery, and overlap with ConnectedSolutions, not read |
 | Massachusetts clean peak credits | No | mass.gov blocks automated downloads, so neither the value nor the storage rules could be read |
-| Investment tax credit | Yes, as a scenario | Rate and eligibility read; whether a given battery qualifies depends on its supply chain |
+| Investment tax credit | Yes, on the cost side | Rate and eligibility read; whether a given battery qualifies depends on its supply chain |
 | Depreciation | No | Rules read; the value depends on the operator's tax rate and tax appetite |
 
 ## G-3 optional coincident peak transmission
@@ -101,8 +101,9 @@ and https://www.law.cornell.edu/uscode/text/26/48; IRS, Clean Electricity
 Investment Credit, https://www.irs.gov/credits-deductions/clean-electricity-investment-credit
 (updated 2026-01-05). All read 2026-10-20.
 
-Model: a scenario stage that lowers the installed cost by the credit, off by
-default (config/costs.yaml), as in the plan.
+Model: a cost-side toggle that lowers the installed cost by the credit,
+used only in the break-even column and the optional model confidence, off
+by default (config/costs.yaml). It is not a revenue stream.
 
 ## Depreciation
 

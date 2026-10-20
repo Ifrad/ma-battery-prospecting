@@ -1,7 +1,9 @@
 # Method
 
-How the tool turns public data into model confidence. Sections are added as
-each part is built.
+How the tool turns public data into value per battery block: the simulated
+yearly demand savings plus grid program revenue one battery block could
+bring, gross, before any host share. Not profit, and unvalidated. Sections
+are added as each part is built.
 
 ## Hypothesis: which building types are spiky
 
@@ -155,10 +157,11 @@ docs/ASSUMPTIONS.md (`make assumptions`) explains each one.
   pair, and the 90 percent usable depth, are placeholders.
 - Costs: config/costs.yaml. The 10 year life is the warranty on the same
   page; the installed cost cases, financing rate, O&M, ITC rate and
-  minimum host benefit are placeholders.
-
-Values Phase 4 still needs: the minimum host benefit, the realization
-factor and the two ConnectedSolutions factors have no value yet.
+  minimum host benefit are placeholders. Cost is not an input to the
+  ranking: life, financing and O&M turn value into a break-even installed
+  cost, the two installed cost cases are reference points beside it, and
+  the minimum host benefit has no value and is used only when a user asks
+  for model confidence at a given cost.
 
 ## After each October 31 LBER release
 
