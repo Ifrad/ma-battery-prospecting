@@ -11,7 +11,14 @@ from pathlib import Path
 
 from prospect.db import connect
 from prospect.priors import config
-from prospect.validate import baseline, calibration, energy, stability, stress
+from prospect.validate import (
+    baseline,
+    calibration,
+    energy,
+    sensitivity,
+    stability,
+    stress,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 PAGE = ROOT / "docs" / "VALIDATION.md"
@@ -39,6 +46,7 @@ def main() -> None:
             calibration.section(calibration.results(conn, cfg), cfg),
             stability.section(stability.results(conn, cfg)),
             stress.section(stress.results(conn, cfg)),
+            sensitivity.section(),
         ]
     PAGE.write_text(render(sections))
     print(f"wrote {PAGE.relative_to(ROOT)}")

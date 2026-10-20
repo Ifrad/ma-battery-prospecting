@@ -139,3 +139,14 @@ Peak shape is unvalidated: it was only stress-tested. Every site is rescored wit
 Metro South, dropped out of the top 15: BP HAZEL LLC.
 
 Worcester, dropped out of the top 15: OFS FITEL LLC; COORSTEK INC; SOUTHBRIDGE ASSOCIATES II, LLC; SAINT-GOBAIN PERFORMANCE PLASTCIS; AGRAND REALTY CORP; NBPIV GARDNER LLC; NEW GARDEN PARK INC.
+
+## Data assumption sensitivity
+
+Each case rebuilds sites, priors, the funnel and the scores in a throwaway copy of the database with one assumption changed, and compares the top 50 per region by value per block with the current ranking. Sites are matched by site id, so a site whose parcels regroup counts as leaving and joining. Run `make sensitivity` to refresh it.
+
+| Case | Region | Scored sites | Left | Joined | Top 50 kept | Median rank move, sites kept in top 50 |
+|---|---|---|---|---|---|---|
+| touch tolerance 5 m instead of 1 m | Metro South | 156 to 156 | 0 | 0 | 50 of 50 | 0 |
+| touch tolerance 5 m instead of 1 m | Worcester | 198 to 198 | 0 | 0 | 50 of 50 | 0 |
+| 03x and 04x classes removed | Metro South | 156 to 159 | 1 | 4 | 49 of 50 | 1 |
+| 03x and 04x classes removed | Worcester | 198 to 188 | 14 | 4 | 50 of 50 | 0 |

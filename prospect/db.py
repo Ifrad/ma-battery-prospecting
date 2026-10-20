@@ -11,7 +11,7 @@ def connect(**kwargs) -> psycopg.Connection:
         port=os.environ.get("DB_PORT", "5432"),
         user=os.environ.get("POSTGRES_USER", "prospect"),
         password=os.environ.get("POSTGRES_PASSWORD", "prospect"),
-        dbname=os.environ.get("POSTGRES_DB", "prospect"),
+        dbname=kwargs.pop("dbname", os.environ.get("POSTGRES_DB", "prospect")),
         connect_timeout=5,
         **kwargs,
     )
