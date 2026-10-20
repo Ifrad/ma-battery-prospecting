@@ -1,0 +1,31 @@
+# Settings for the Phase 4 value model (make score). Values are simulated,
+# gross per battery block before any host share, and unvalidated.
+
+draws:
+  value: 1000
+  status: placeholder
+  note: >-
+    Monte Carlo draws per site. A computation setting, not a property of
+    any building. Each building's draws are seeded by its building id and
+    each site's by its site id, so results never depend on row order.
+  test: >-
+    Rerun with 4,000 draws and compare each site's P10, P50 and P90.
+  replace: >-
+    A draw count chosen from that comparison.
+
+measured_kwh:
+  # LBER match confidences that count as weak (see config/sites.yaml).
+  weak_confidences: [low]
+  weak_ambiguous: true
+  status: placeholder
+  note: >-
+    A building with LBER measured electricity uses its reported yearly kWh
+    as is; year-to-year variation is not modeled. When the match is weak
+    (by address, or ambiguous between several buildings), the kWh may
+    belong to more than one building, so it gets its segment's intensity
+    spread around the reported value instead.
+  test: >-
+    Compare two LBER reporting years for the same buildings once the next
+    release is loaded.
+  replace: >-
+    A width measured from year-to-year LBER changes.
