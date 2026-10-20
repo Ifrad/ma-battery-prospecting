@@ -60,7 +60,9 @@ def reprice(r: dict, cfg: dict, real: float, perf: float, overlap: float) -> flo
     ) * rates.get("G-3", 0.0)
     value = demand * real / base_real
     if r["scenario"] == "with_connected_solutions" and base_grid > 0:
-        grid = r["grid_kw"] * cs["daily_dispatch_usd_per_kw_season"]["value"]
+        grid = (
+            np.asarray(r["grid_kw"]) * cs["daily_dispatch_usd_per_kw_season"]["value"]
+        )
         value = value + grid * perf * (1 - overlap) / base_grid
     return float(np.median(value))
 
