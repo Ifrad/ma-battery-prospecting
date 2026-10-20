@@ -14,6 +14,12 @@ demand_basis:
     of the kVA peak (on G-2 only where the kW peak exceeds 75 kW). We have
     no power factor data, so the model uses the kW peak only. Where power
     factor is below 0.9, this understates billed demand.
+  test: >-
+    Compare the kW peak with billed demand on real bills or interval
+    data.
+  replace: >-
+    Each host's power factor or billed kVA, from its bills or meter
+    data.
 
 utilities:
   National Grid (Massachusetts Electric):

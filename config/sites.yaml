@@ -15,19 +15,30 @@ food_keyword_min_area_sqft:
     plant there. Only 2 of 32 sampled rows were reviewed, picked because
     they looked suspicious, so they do not estimate an error rate. Recall
     is not measured. See docs/MATCH_RATES.md, Hand review.
+  test: >-
+    Rerun at 50,000 sq ft and review the sites that change.
+  replace: >-
+    A source that confirms production, such as a list of licensed food
+    manufacturers.
 
 owner_normalization:
   # Removed after punctuation is turned into spaces.
   drop_words: [THE, INC, INCORPORATED, CORP, CORPORATION, CO, COMPANY, LLC, LTD]
+  cutoff_within_chars: 1
   status: placeholder
   note: >-
     Words the pilot data shows varying within one owner, for example
     BROCKTON HOSPITAL, BROCKTON HOSPITAL INC and BROCKTON HOSPITAL COMPANY
-    THE. Check false merges in the match rate report review.
-  # A name within one character of the longest owner name in its town is
-  # treated as possibly cut off (8 pilot towns cap names at 29 or 30
-  # characters, and a cut name can lose its trailing space). Its last word
-  # is dropped and it may match a longer name that starts with it.
+    THE. A name within cutoff_within_chars characters of the longest owner
+    name in its town is treated as possibly cut off (8 pilot towns cap
+    names at 29 or 30 characters, and a cut name can lose its trailing
+    space). Its last word is dropped and it may match a longer name that
+    starts with it. Check false merges in the match rate report review.
+  test: >-
+    The owner group review in the match rate report, for false and
+    missed merges.
+  replace: >-
+    Owner names matched to a business registry.
 
 touch_tolerance_m:
   value: 1.0
@@ -35,6 +46,12 @@ touch_tolerance_m:
   note: >-
     Parcels this close count as touching, to allow for small gaps where
     parcel lines were digitized separately. Not checked against the data.
+  test: >-
+    The gap table in docs/MATCH_RATES.md, and the Phase 5 rerun at 1 m
+    versus 5 m.
+  replace: >-
+    A tolerance chosen from a reviewed sample of nearly touching
+    parcels.
 
 # Matching LBER buildings to footprints. Methods run in this order and each
 # LBER row stops at the first that finds a building. When a method finds
@@ -50,6 +67,10 @@ lber_match:
   note: >-
     Labels for how sure a single-building match is, by method. Chosen by
     hand from the UBID check in docs/DATA.md, not measured per method.
+  test: >-
+    Hand check a sample of matches for each method.
+  replace: >-
+    Measured match accuracy for each method.
 
   # Address method: upper case, punctuation removed, these words shortened,
   # then exact match against parcel site addresses in the same town.
@@ -75,6 +96,11 @@ lber_match:
   address_note: >-
     Common USPS street suffix and direction abbreviations. Not checked
     against every pilot address.
+  address_test: >-
+    The address method matched no pilot row; check it once it matches
+    rows.
+  address_replace: >-
+    The full USPS street suffix list.
 
 # Local owner: the owner's mailing state is MA (or blank) and either the
 # owner city equals the parcel's town once punctuation is removed and the
@@ -89,6 +115,10 @@ local_owner:
     On pilot candidate parcels the town name alone matches 43% of owner
     cities; the ZIP fallback adds about 146, mostly abbreviations, typos
     and villages. A ZIP can cross a town line, so a few may be wrong.
+  test: >-
+    Hand check a sample of local and non-local owners.
+  replace: >-
+    The owner's address from a business registry.
 
 # Tenure: years from the last sale to the parcels' ingest date. L3 keeps
 # only the latest sale, so when it is nominal, tenure is missing; it is
@@ -102,6 +132,10 @@ tenure:
     $99 (76) and $100 (1,648), with only 23 between $101 and $1,000, so
     any price under $1,000, or no price, counts as nominal. Sale dates
     before 1900 (as early as 1754) are treated as filler.
+  test: >-
+    Recount the sale price distribution after each parcel refresh.
+  replace: >-
+    Sale history from the registry of deeds, if older sales are needed.
 
 # Building area checks, applied per site to the pooled assessor area (the
 # sum of BLD_AREA over the site's parcels that have it) against the pooled
@@ -123,4 +157,14 @@ area_checks:
     roof outlines include overhangs). Ceiling 3 x stories, or 10 without
     stories, flags 33 sites, no hospital or other healthcare site, and keeps
     all 15 sites of 9 or more stories (446 Main St, Worcester, 24 stories,
-    has a ratio of 15.0). A factor of 2 would flag 230.
+    has a ratio of 15.0). A factor of 2 would flag 230. Fallbacks, for
+    flagged sites and for parcels with no BLD_AREA: footprint area times
+    the parcel's stories, otherwise footprint area alone (roof outlines,
+    so they include overhangs). The measured error of each fallback is in
+    docs/DATA.md, Footprint area error.
+  test: >-
+    The area error tables in docs/DATA.md, and the Phase 5 rerun with
+    estimated areas 25 percent higher and lower.
+  replace: >-
+    Building specific floor areas, such as property cards or LBER floor
+    area.
