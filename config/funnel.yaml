@@ -1,0 +1,39 @@
+# Thresholds for the prospecting funnel (make funnel). Sites that fail a
+# filter stay in site_funnel, flagged with the filter that dropped them.
+
+min_kwh_per_month:
+  value: 10000
+  status: placeholder
+  note: >-
+    The National Grid G-1 line: above 10,000 kWh a month a customer moves
+    to G-2 and pays a demand charge (config/rates.yaml). Used here as a
+    screen on estimated monthly use, which is itself uncertain.
+  test: >-
+    Check how many measured (tier 1) sites change sides when estimated use
+    replaces measured use.
+  replace: >-
+    The site's actual rate schedule from its bill.
+
+min_peak_kw:
+  value: 200
+  status: placeholder
+  note: >-
+    The National Grid G-2 versus G-3 line. Chosen over 150 and 250 kW,
+    which docs/FUNNEL.md also counts; the peak is estimated from annual kWh
+    and a simulated load factor, so it is uncertain.
+  test: >-
+    Compare estimated with billed peaks on sites where meter data is
+    shared.
+  replace: >-
+    Billed monthly peak demand from the site's bills.
+
+report_peak_kw:
+  value: [150, 200, 250]
+  status: placeholder
+  note: >-
+    Peak thresholds counted side by side in docs/FUNNEL.md, around the
+    200 kW tariff line.
+  test: >-
+    None needed; reporting only.
+  replace: >-
+    Thresholds the operator wants to see.

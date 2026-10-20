@@ -456,6 +456,21 @@ placeholders and each sourced value names its source.
       understates"). The implausible low tail is flagged, not floored. LBER
       covers buildings of about 20,000 sq ft and up, so the priors may not
       apply to smaller buildings.
+- [x] `feat(priors): count candidate sites through the funnel`
+      `make funnel` rebuilds `site_funnel` (one row per candidate site)
+      and writes docs/FUNNEL.md: sites surviving each filter by region
+      and segment, in order: (1) a ConnectedSolutions utility (National
+      Grid, Eversource; municipal plant sites dropped, flagged), (2) over
+      10,000 kWh a month, from LBER measured kWh where available,
+      otherwise the segment's median intensity, with the count of sites
+      with no usable estimate, (3) estimated peak of at least 200 kW,
+      from average kW and the simulated load factor (pooled median,
+      flagged, where there is no open profile), with counts at 150, 200
+      and 250 kW. Thresholds are placeholders in config/funnel.yaml.
+      Dropped sites stay, flagged with the filter, never deleted. Tier 1
+      has at least one building with LBER measured electricity, tier 2 is
+      estimated and flagged. Spikiness is a Phase 4 score, not a filter.
+      Survivors still carry unvalidated peak shape.
 - [ ] `docs(method): document priors and how to recalibrate`
       docs/METHOD.md section on priors, battery and cost assumptions,
       including what to rerun after each October 31 LBER release. Record
