@@ -69,6 +69,17 @@ def test_scattered_parcels_and_other_owners_stay_separate(db, raw):
     assert [s for s, _, _, _ in sites(db)] == ["C1", "C2", "C3"]
 
 
+def test_parcels_a_few_meters_apart_stay_separate(db, raw):
+    parcel, footprint = raw
+    # 0.00005 degrees of longitude is about 4 m here, beyond the 1 m tolerance.
+    parcel("G1", 0.06, 0, OWNER1="ACME")
+    parcel("G2", 0.06105, 0, OWNER1="ACME")
+    footprint(0.0601, 0.0001, 500)
+    footprint(0.0612, 0.0001, 500)
+    build(db)
+    assert [s for s, _, _, _ in sites(db)] == ["G1", "G2"]
+
+
 def test_town_line_splits_sites(db, raw):
     parcel, footprint = raw
     parcel("D1", 0.03, 0, OWNER1="ACME")
