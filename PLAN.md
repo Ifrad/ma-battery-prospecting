@@ -613,7 +613,7 @@ stays a config placeholder.
       Per site and scenario, keep demand savings, ConnectedSolutions
       revenue and any modeled optional stream separate, and show each
       stream's share of P50 value.
-- [ ] `feat(model): attribute results to input drivers`
+- [x] `feat(model): attribute results to input drivers`
       Rank correlation between each input and the result.
 - [ ] `feat(model): persist scores with run metadata`
       `site_scores` table with run id, scenario, config hash and timestamp.

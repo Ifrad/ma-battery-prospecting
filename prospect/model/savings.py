@@ -98,4 +98,10 @@ def demand_savings(site: dict, d: dict, cfg: dict) -> dict:
     kwm_g3 = 12 * w3 * np.minimum(share_g3 * per_block, power) * real
     rates = schedule_rates(site["utility"], cfg)
     usd = kwm_g2 * rates["G-2"] + kwm_g3 * rates.get("G-3", 0.0)
-    return {"blocks": n, "kwm_g2": kwm_g2, "kwm_g3": kwm_g3, "demand_usd": usd}
+    return {
+        "blocks": n,
+        "reduction_share": w2 * share_g2 + w3 * share_g3,
+        "kwm_g2": kwm_g2,
+        "kwm_g3": kwm_g3,
+        "demand_usd": usd,
+    }

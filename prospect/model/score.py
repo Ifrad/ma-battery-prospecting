@@ -3,7 +3,7 @@ break-even installed cost. Reads nothing from the database; see
 prospect/model/run.py for that.
 """
 
-from prospect.model import cost, value
+from prospect.model import cost, drivers, value
 
 
 def score_site(site: dict, buildings: list[dict], cfg: dict) -> list[dict]:
@@ -20,6 +20,7 @@ def score_site(site: dict, buildings: list[dict], cfg: dict) -> list[dict]:
                     x["value_per_block"], s["blocks"], cfg
                 ),
                 "streams": value.by_stream(x),
+                "drivers": drivers.top_drivers(x),
                 "draws": x,
             }
         )
