@@ -149,7 +149,7 @@ Every model input is either sourced, with the document it was read from, or a pl
 ### profiles.yaml: no_open_profile
 
 - Value: segments: 4 items, use_codes: 1 items, label=no open profile, unvalidated
-- What and why: ComStock has no profile for factories, laundries, food plants, cold storage or auto repair. These sites are not simulated. They get the widest range seen across all simulated types and bins (config/simulation.yaml, no_open_profile), for peak reduction share and for load factor, so nothing about their spikiness is assumed.
+- What and why: ComStock has no profile for factories, laundries, food plants, cold storage or auto repair. These sites are not simulated. Their peak reduction share is drawn uniformly from the widest range within the size bin of their peak per block: the lowest p10 to the highest p90 over the pooled cell and every type with its own cell in that bin, so a large factory never takes a share only small buildings reach. Their load factor takes the widest range across all simulated types (config/simulation.yaml, no_open_profile), since load factor is not binned. Nothing about their spikiness is assumed.
 - How it gets tested: Measured 15-minute data from a few such sites.
 - What would replace it: An open industrial load profile dataset or operator meter data.
 

@@ -86,7 +86,7 @@ def row(run_id: int, site: dict, r: dict) -> list:
         site["tier"],
         site["passes_200kw"],
         "no_open_profile" in site["flags"],
-        site["flags"],
+        r["flags"],
         r["blocks"],
         v["p10"],
         v["p50"],

@@ -279,17 +279,26 @@ def payback_section(by: dict, cfg: dict) -> list[str]:
     ]
 
 
+def rank_key(r: dict) -> tuple:
+    """Rank by P50 value per block, then expected blocks, then P50 total."""
+    return (-r["value_p50"], -r["blocks"], -r["total_p50"], r["site_id"])
+
+
 def top_section(by: dict) -> list[str]:
     out = ["## Top sites by value per block", ""]
     out.append(
         f"The {TOP} sites per region with the highest P50 value per block, with"
         " ConnectedSolutions. Value is per block per year; the band is P10 to"
-        " P90. Break-even is per block at P50, without the ITC."
+        " P90. Break-even is per block at P50, without the ITC. Ties are"
+        " broken by expected blocks, then P50 total. capped: one block's cut"
+        " reaches its power limit in most draws, so value per block is at the"
+        " one-block ceiling. Rate area unconfirmed: Eversource sites in Canton"
+        " and Sharon, priced at the Greater Boston rates (a placeholder)."
     )
     for k, label in REGIONS.items():
         rs = sorted(
             (r for r in by["with_connected_solutions"] if r["region"] == k),
-            key=lambda r: -r["value_p50"],
+            key=rank_key,
         )[:TOP]
         out += [
             "",
@@ -322,9 +331,14 @@ def top_section(by: dict) -> list[str]:
                             for n, on in (
                                 ("no open profile, least certain", r["least_certain"]),
                                 ("under 200 kW", not r["passes_200kw"]),
+                                ("capped", "capped" in r["flags"]),
                                 (
                                     "Eversource, all-hours reduction",
                                     "eversource_all_hours" in r["flags"],
+                                ),
+                                (
+                                    "rate area unconfirmed",
+                                    "rate_area_unconfirmed" in r["flags"],
                                 ),
                             )
                             if on
