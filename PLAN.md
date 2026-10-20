@@ -615,11 +615,17 @@ stays a config placeholder.
       stream's share of P50 value.
 - [x] `feat(model): attribute results to input drivers`
       Rank correlation between each input and the result.
-- [ ] `feat(model): persist scores with run metadata`
+- [x] `feat(model): persist scores with run metadata`
       `site_scores` table with run id, scenario, config hash and timestamp.
       Keep demand savings and grid revenue draws separate, in physical
       units (kW-months of peak reduction and eligible grid-program kW), so
-      the report can recompute value when settings change.
+      the report can recompute value when settings change. `make score`
+      adds a run to `score_runs` (config hash, draws, time) and one
+      `site_scores` row per site and scenario (migration 0017), and writes
+      docs/SCORES.md. `prospect score --installed-cost X
+      --min-host-benefit Y [--itc]` reprices the latest run's stored draws
+      into model confidence. `make db-check` flags scores for sites no
+      longer in scope.
 - [ ] `docs(method): check the payback claim`
       Powertown says it recovers costs in 2 to 3 years. Across the scored
       sites, report the median P50 yearly value and the installed cost per

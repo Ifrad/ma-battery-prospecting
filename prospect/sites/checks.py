@@ -67,6 +67,12 @@ MUST_BE_ZERO = {
     "funnel rows for sites that no longer exist (rerun make funnel)": """
         SELECT count(*) FROM site_funnel f
         WHERE NOT EXISTS (SELECT 1 FROM sites s WHERE s.site_id = f.site_id)""",
+    "latest scores for sites no longer in the funnel (rerun make score)": """
+        SELECT count(*) FROM site_scores sc
+        WHERE sc.run_id = (SELECT max(run_id) FROM score_runs)
+            AND NOT EXISTS (
+                SELECT 1 FROM site_funnel f WHERE f.site_id = sc.site_id
+                    AND (f.dropped_by IS NULL OR f.dropped_by = 'peak'))""",
     "candidate sites missing from the funnel (rerun make funnel)": """
         SELECT count(*) FROM site_evidence s WHERE s.candidate
             AND NOT EXISTS (SELECT 1 FROM site_funnel f WHERE f.site_id = s.site_id)""",

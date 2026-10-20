@@ -15,7 +15,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="list every value that is not from a cited source",
     )
+    scorer = commands.add_parser(
+        "score", help="score sites by value per battery block (make score)"
+    )
+    scorer.add_argument("--installed-cost", type=float, help="per block, dollars")
+    scorer.add_argument(
+        "--min-host-benefit", type=float, help="per block, dollars a year"
+    )
+    scorer.add_argument("--itc", action="store_true", help="apply the ITC")
     args = parser.parse_args(argv)
+    if args.command == "score":
+        from prospect.model import run
+
+        return run.main(args.installed_cost, args.min_host_benefit, args.itc)
 
     try:
         configs = config.load()
