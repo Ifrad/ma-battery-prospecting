@@ -809,13 +809,18 @@ list.
 - [x] `docs(plan): merge export and report phases`
       Merge the Export and Report phases into this one phase, keeping every
       task text from both.
-- [ ] `feat(export): write ranked sites per region as GeoJSON and CSV`
+- [x] `feat(export): write ranked sites per region as GeoJSON and CSV`
       Value per block first: P50 with the P10 to P90 band, expected
       blocks, total, break-even installed cost per block (with and without
       the ITC), the value split by revenue stream, and the evidence flags,
       for both scenarios (demand savings only, and with
       ConnectedSolutions). The flags include capped, rate area
       unconfirmed and no open profile. No model confidence by default.
+      `make export` writes export/<region>.geojson (one feature per scored
+      site at its centroid, both scenarios, its parcels and buildings, the
+      model rank and the size-only rank among all candidate sites) and
+      export/<region>.csv (one row per site and scenario). It refuses to
+      run if config/ changed since the latest score run.
 - [ ] `feat(export): include compact draws per site`
       A small fixed number of draws per site, split into demand savings
       and grid revenue in physical units (kW-months of peak reduction and

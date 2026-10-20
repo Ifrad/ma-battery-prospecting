@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score validate sensitivity enernoc
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score validate sensitivity enernoc export
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -70,6 +70,10 @@ sensitivity:
 # for the out-of-sample peak shape test only. Never committed.
 enernoc:
 	$(PY) -m prospect.ingest.enernoc
+
+# Write the per-region export files (export/) from the latest score run.
+export:
+	$(PY) -m prospect.export.build
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:
