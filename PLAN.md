@@ -836,10 +836,18 @@ list.
       and export caps. export/manifest.json also carries the block,
       realization factor, ConnectedSolutions terms and the placeholder
       list.
-- [ ] `test(export): validate export schema and size budget`
+- [x] `test(export): validate export schema and size budget`
       Includes a parity test: model confidence recomputed from the export
       at a given installed cost and host benefit matches the Python
-      model.
+      model. prospect/export/recompute.py recomputes value per block,
+      break-even and confidence from the export alone, with the
+      event-window and export caps, as the report does; the report's
+      JavaScript mirrors it. Tests: the committed files pass the schema
+      and are at most 5 MB each; their draws reproduce every exported P50
+      within $10 (break-even within $100, the rounding of draws to 0.1);
+      a model-scored site passed through the export matches the model
+      draw by draw, with and without export, and in break-even and
+      confidence at given costs.
 - [ ] `chore(export): add data manifest`
       Version, generated time, config hash, source reporting years.
 - [ ] `feat(report): build single-file report from the export`
