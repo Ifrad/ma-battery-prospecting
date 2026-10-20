@@ -26,3 +26,15 @@ def test_itc_raises_break_even_only_under_one_megawatt():
     base = cost.break_even(30_000, CFG, itc=False)
     assert cost.break_even(30_000, CFG, itc=True, blocks=3) == pytest.approx(base / 0.7)
     assert cost.break_even(30_000, CFG, itc=True, blocks=4) == pytest.approx(base)
+
+
+def test_confidence_never_rises_with_cost_or_host_benefit():
+    import numpy as np
+
+    v = np.linspace(10_000, 60_000, 1001)
+    base = cost.confidence(v, 180_000, 0, CFG)
+    assert 0 < base < 1
+    assert cost.confidence(v, 260_000, 0, CFG) <= base
+    assert cost.confidence(v, 180_000, 5_000, CFG) <= base
+    assert cost.confidence(v, 180_000, 0, CFG, itc=True) >= base
+    assert cost.confidence(v, 0, 0, CFG) == 1.0

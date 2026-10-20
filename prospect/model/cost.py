@@ -46,3 +46,21 @@ def break_even_summary(value_per_block: np.ndarray, blocks: float, cfg: dict) ->
         out[f"{label}_itc"] = break_even(float(v), cfg, itc=True, blocks=blocks)
     out["itc_applies"] = itc_applies(blocks, cfg)
     return out
+
+
+def confidence(
+    value_per_block: np.ndarray,
+    installed: float,
+    min_host_benefit: float,
+    cfg: dict,
+    itc: bool = False,
+    blocks: float = 1,
+) -> float:
+    """Model confidence for a given installed cost and minimum host benefit.
+
+    The share of draws in which the yearly value per block exceeds the
+    block's annualized cost plus the minimum yearly host benefit. Optional:
+    computed only when a user supplies both numbers. Not accurate.
+    """
+    hurdle = annual_cost(installed, cfg, itc, blocks) + min_host_benefit
+    return float(np.mean(value_per_block > hurdle))

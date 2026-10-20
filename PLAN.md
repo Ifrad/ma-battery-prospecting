@@ -595,7 +595,7 @@ stays a config placeholder.
       leaves out the host benefit and says so. A translation column, since
       installed cost is the least known input. Tests: break-even is higher
       for higher value, and a site with zero value has break-even zero.
-- [ ] `feat(model): compute model confidence for a given cost`
+- [x] `feat(model): compute model confidence for a given cost`
       Optional: only when a user supplies an installed cost and a minimum
       host benefit (`prospect score --installed-cost X --min-host-benefit
       Y`); `make score` does not compute it. Model confidence is the
