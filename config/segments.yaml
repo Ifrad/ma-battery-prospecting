@@ -13,6 +13,11 @@ order:
     Hospital codes first, then hospital names, then the specific trades
     known only from owner names, then the other use codes, then HEALTH.
     Chosen by hand; check precision in the match rate report review.
+  test: >-
+    Keyword precision in the match rate hand review
+    (docs/MATCH_RATES.md).
+  replace: >-
+    A rule order checked by a fair random review.
 
 rules:
   - segment: hospital
@@ -38,10 +43,19 @@ rules:
       on the pilot build are unverified, and 2 look like medical office
       buildings (VERNON MEDICAL CENTER II, HTA PEARL ST MEDICAL CENTER LLC).
       Precision and recall are not measured; see docs/MATCH_RATES.md.
+    test: >-
+      Review the keyword hospital sites one by one; 4 remain,
+      unverified.
+    replace: >-
+      A public list of licensed hospitals, matched by address.
   - segment: cold_storage
     owner_keywords: [COLD STORAGE, COLD STORAGES, REFRIGERATED, REFRIGERATION, REFRIGERATING, REFRIGERATOR, REFRIGERATORS, FREEZER, FREEZERS, FROZEN]
     status: placeholder
     note: No DOR code for cold storage; owner names only.
+    test: >-
+      Review the keyword cold storage sites one by one.
+    replace: >-
+      A public list of cold storage facilities, matched by address.
   - segment: food_production
     owner_keywords: [FOOD, FOODS, FOODSERVICE, FOODSERVICES, FOOD SERVICE, FOOD SERVICES, BAKERY, BAKERIES, BAKING, DAIRY, DAIRIES, CREAMERY, CREAMERIES, BREWING, BREWERY, BREWERIES, MEAT, MEATS, SEAFOOD, SEAFOODS, CHOCOLATE, CHOCOLATES, CANDY, CANDIES]
     status: placeholder
@@ -53,10 +67,18 @@ rules:
       Known miss: PERFORMANCE FOOD GROUP, Brockton (code 400), which looks
       like a warehouse. Precision and recall are not measured; only 2
       suspicious rows were hand reviewed.
+    test: >-
+      Review the keyword food sites one by one; one known miss so far.
+    replace: >-
+      A public list of licensed food manufacturers, matched by address.
   - segment: laundry
     owner_keywords: [LAUNDRY, LAUNDRIES, LAUNDROMAT, LAUNDROMATS, CLEANER, CLEANERS, LINEN, LINENS, UNIFORM, UNIFORMS]
     status: placeholder
     note: No DOR code for laundries; owner names only.
+    test: >-
+      Review the keyword laundry sites one by one.
+    replace: >-
+      A public list of commercial laundries, matched by address.
   - segment: other_healthcare
     use_codes: ["304", "306", "342"]
     status: sourced
@@ -80,3 +102,8 @@ rules:
     owner_keywords: [HEALTH, HEALTHCARE, HEALTH CARE]
     status: placeholder
     note: From the plan. Also catches nursing homes and health agencies.
+    test: >-
+      Review the keyword health sites one by one.
+    replace: >-
+      Public lists of licensed health care facilities, matched by
+      address.

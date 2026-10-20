@@ -66,15 +66,16 @@ WHERE a.owner_norm IS NOT NULL AND b.owner_norm IS NOT NULL
 def group(conn, config: dict) -> None:
     """Fill parcels.owner_norm, owner_truncated and site_id.
 
-    A name is possibly cut off when it is within one character of the
-    longest owner name in its town: a name cut at the field width loses
-    its trailing space too.
+    A name is possibly cut off when it is within cutoff_within_chars of
+    the longest owner name in its town: a name cut at the field width
+    loses its trailing space too.
     """
     drop = config["owner_normalization"]["drop_words"]
     rows = conn.execute(
-        "SELECT p.loc_id, p.owner, length(p.owner) >= m.width - 1"
+        "SELECT p.loc_id, p.owner, length(p.owner) >= m.width - %s"
         " FROM parcels p JOIN (SELECT town_id, max(length(owner)) AS width"
-        " FROM parcels GROUP BY town_id) m USING (town_id)"
+        " FROM parcels GROUP BY town_id) m USING (town_id)",
+        (config["owner_normalization"]["cutoff_within_chars"],),
     ).fetchall()
     conn.execute(
         "CREATE TEMP TABLE parcel_owner (loc_id text, owner_norm text,"

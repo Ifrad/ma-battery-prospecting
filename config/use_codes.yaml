@@ -16,6 +16,10 @@ normalize:
     Inferred from the pilot data (USE_CODE and USE_DESC), not from a DOR
     document, which defines three digit codes only. Check if a town's
     fourth character turns out to mean something else.
+  test: >-
+    Spot check what the fourth character means in the towns that use it.
+  replace: >-
+    Each town's own use code list.
 
 classes:
   commercial_industrial:
@@ -54,6 +58,10 @@ classes:
       example 031 "primarily Commercial") or industrial (04x). Not in the
       plan's classes; included as a placeholder because Worcester's largest
       hospital parcel is coded 049C. The owner decides whether these stay.
+    test: >-
+      The Phase 5 rerun with 03x and 04x in versus out.
+    replace: >-
+      The owner's decision whether these classes stay.
 
   charitable_former:
     codes: ["905"]
@@ -65,6 +73,12 @@ classes:
       code. Parcels under this code are not candidates, so a hospital that
       still sits under 905 is not ranked. This is a known limitation, not
       tested.
+    test: >-
+      Not tested. A known limitation: a hospital still under 905 is not
+      ranked.
+    replace: >-
+      A reviewed list of the 905 parcels, or hospital parcels found by
+      owner.
 
 # Open decision for the owner: municipal property (DOR 9xx government
 # codes) is not covered by any class yet. Whether to add a municipal class

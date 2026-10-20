@@ -12,9 +12,23 @@ def test_real_config_is_clean():
     "node,problem",
     [
         ({"value": 1, "status": "sourced"}, "sourced without a source"),
-        ({"value": 1, "status": "placeholder"}, "placeholder without a note"),
+        (
+            {"value": 1, "status": "placeholder", "test": "t", "replace": "r"},
+            "placeholder without a note",
+        ),
+        (
+            {"value": 1, "status": "placeholder", "note": "n", "replace": "r"},
+            "placeholder without a test",
+        ),
         ({"value": 1, "status": "guess", "note": "x"}, "is not one of"),
-        ({"address_status": "placeholder"}, "placeholder without a note"),
+        (
+            {
+                "address_status": "placeholder",
+                "address_test": "t",
+                "address_replace": "r",
+            },
+            "placeholder without a note",
+        ),
     ],
 )
 def test_check_finds_missing_status_details(node, problem):
@@ -24,12 +38,22 @@ def test_check_finds_missing_status_details(node, problem):
 
 def test_entries_walk_lists_and_prefixed_statuses():
     tree = {
-        "rules": [{"segment": "laundry", "status": "placeholder", "note": "n"}],
+        "rules": [
+            {
+                "segment": "laundry",
+                "status": "placeholder",
+                "note": "n",
+                "test": "t",
+                "replace": "r",
+            }
+        ],
         "match": {
             "status": "sourced",
             "source": "s",
             "address_status": "placeholder",
             "address_note": "m",
+            "address_test": "t",
+            "address_replace": "r",
             "words": {"ROAD": "RD"},
         },
     }
@@ -50,3 +74,11 @@ def test_cli_lists_placeholders(capsys):
     out = capsys.readouterr().out
     assert "placeholders in config/" in out
     assert "sites.yaml touch_tolerance_m = 1.0" in out
+
+
+def test_assumptions_page_is_current():
+    from prospect.priors import assumptions
+
+    assert assumptions.PAGE.read_text() == assumptions.render(config.load()), (
+        "docs/ASSUMPTIONS.md is stale; run make assumptions"
+    )
