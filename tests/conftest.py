@@ -72,3 +72,35 @@ def raw(db):
         )
 
     return parcel, footprint
+
+
+@pytest.fixture
+def lber_rows(db):
+    """Helpers to add a town polygon and LBER rows to the test schema."""
+    run_id = db.execute(
+        "INSERT INTO ingest_runs (source, url) VALUES ('test', 'test') RETURNING id"
+    ).fetchone()[0]
+
+    def town(town_id, x=0, y=0, size=0.5):
+        db.execute(
+            "INSERT INTO raw_utility_territories (objectid, scope, run_id, attrs, geom)"
+            " VALUES (%s, 'test', %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))",
+            (town_id, run_id, Jsonb({"TOWN_ID": town_id}), box(x, y, size)),
+        )
+
+    def lber(objectid, x, y, kbtu=341214, ubid="", street=None, year=2024):
+        x0, y0 = -71.8 + x, 42.26 + y
+        attrs = {
+            "UBID": ubid,
+            "Street_Address": street,
+            "City": "TEST",
+            "Total_Electricity_Use_Purchased_From_Grid__kBtu_": kbtu,
+        }
+        db.execute(
+            "INSERT INTO raw_lber"
+            " (objectid, scope, run_id, attrs, geom, reporting_year) VALUES"
+            " (%s, 'test', %s, %s, ST_SetSRID(ST_Point(%s, %s), 4326), %s)",
+            (objectid, run_id, Jsonb(attrs), x0, y0, year),
+        )
+
+    return town, lber

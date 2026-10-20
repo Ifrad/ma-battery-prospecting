@@ -20,3 +20,43 @@ touch_tolerance_m:
   note: >-
     Parcels this close count as touching, to allow for small gaps where
     parcel lines were digitized separately. Not checked against the data.
+
+# Matching LBER buildings to footprints. Methods run in this order and each
+# LBER row stops at the first that finds a building. When a method finds
+# several buildings, the largest footprint is used and the confidence reads
+# "ambiguous, n buildings", so one LBER row never gives kWh to two buildings.
+lber_match:
+  confidence:
+    ubid: high
+    point_in_footprint: high
+    point_in_parcel: medium
+    address: low
+  status: placeholder
+  note: >-
+    Labels for how sure a single-building match is, by method. Chosen by
+    hand from the UBID check in docs/DATA.md, not measured per method.
+
+  # Address method: upper case, punctuation removed, these words shortened,
+  # then exact match against parcel site addresses in the same town.
+  address_words:
+    STREET: ST
+    AVENUE: AVE
+    ROAD: RD
+    DRIVE: DR
+    BOULEVARD: BLVD
+    LANE: LN
+    COURT: CT
+    PLACE: PL
+    PARKWAY: PKWY
+    HIGHWAY: HWY
+    TERRACE: TER
+    CIRCLE: CIR
+    SQUARE: SQ
+    NORTH: N
+    SOUTH: S
+    EAST: E
+    WEST: W
+  address_status: placeholder
+  address_note: >-
+    Common USPS street suffix and direction abbreviations. Not checked
+    against every pilot address.

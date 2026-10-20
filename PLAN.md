@@ -202,7 +202,7 @@ Evidence flags, per building and per site:
       UBIDs on the pilot data (92.7% of pilot LBER rows match a footprint
       exactly) and agrees with buildingid 2.3.0 on 4,019 of 4,019 sampled
       footprints. Feasibility check and match detail in docs/DATA.md.
-- [ ] `feat(sites): match buildings to LBER records`
+- [x] `feat(sites): match buildings to LBER records`
       In order, stopping at the first that works: (1) exact UBID match,
       (2) LBER point inside a footprint, (3) point inside a parcel,
       (4) normalized address. Record the method and a confidence for every
