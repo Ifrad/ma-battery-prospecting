@@ -509,7 +509,7 @@ Multiple blocks: revenue scales per block, and installed cost is per block
 with no volume discount (a placeholder note in config). The block count cap
 stays a config placeholder.
 
-- [ ] `docs(method): research other revenue streams`
+- [x] `docs(method): research other revenue streams`
       For each of the G-3 optional coincident peak transmission charge
       ($21.91 per kW, recorded as unmodeled), ISO-NE capacity payments,
       Massachusetts clean peak credits, and the ITC and depreciation, read
