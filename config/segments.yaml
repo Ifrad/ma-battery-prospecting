@@ -1,0 +1,70 @@
+# Segments for candidate parcels (a commercial, industrial, hospital or
+# multi-use commercial class in config/use_codes.yaml). Non-candidates get no
+# segment. Rules run in the order listed and the first that applies wins;
+# a parcel no rule covers is generic.
+#
+# Use codes match on the first three characters, like the classes. Owner
+# keywords match the owner name in upper case with punctuation removed, at
+# the start of a word, so FOOD also matches FOODS.
+
+order:
+  status: placeholder
+  note: >-
+    Hospital codes first, then hospital names, then the specific trades
+    known only from owner names, then the other use codes, then HEALTH.
+    Chosen by hand; check precision in the match rate report review.
+
+rules:
+  - segment: hospital
+    use_codes: ["955", "305"]
+    status: sourced
+    source: >-
+      DOR 2019 classification: 955 Hospitals, 305 Private Hospitals, as
+      reproduced in EPA CII General Permit Appendix H,
+      https://www.epa.gov/system/files/documents/2024-10/appendix-h-matax-assessor-use-code-for-cii-land-uses.pdf
+  - segment: hospital
+    use_codes: ["979"]
+    town_ids: [35]
+    status: sourced
+    source: City of Boston assessor code list, 979 exempt hospital.
+  - segment: hospital
+    owner_keywords: [HOSPITAL, MEDICAL CENTER]
+    status: placeholder
+    note: Owner name keywords from the plan, for hospitals under other codes.
+  - segment: cold_storage
+    owner_keywords: [COLD STORAGE, REFRIGERAT, FREEZER, FROZEN]
+    status: placeholder
+    note: No DOR code for cold storage; owner names only.
+  - segment: food_production
+    owner_keywords: [FOOD, BAKERY, BAKING, DAIRY, CREAMERY, BREWING, BREWERY, MEATS, SEAFOOD, CHOCOLATE, CANDY]
+    status: placeholder
+    note: >-
+      No statewide DOR code for food processing (Boston's 414 is a city
+      code); owner names only. Will also catch some food distributors.
+  - segment: laundry
+    owner_keywords: [LAUNDRY, LAUNDROMAT, CLEANERS, LINEN, UNIFORM]
+    status: placeholder
+    note: No DOR code for laundries; owner names only.
+  - segment: other_healthcare
+    use_codes: ["304", "306", "342"]
+    status: sourced
+    source: >-
+      DOR 2019 classification: 304 Nursing Homes, 306 Care and Treatment
+      Facilities, 342 Medical Office Buildings (EPA Appendix H, above).
+  - segment: warehouse
+    use_codes: ["316", "401"]
+    status: sourced
+    source: >-
+      DOR 2019 classification: 316 Other Storage, Warehouse and
+      Distribution; 401 Warehouses for storage of manufactured products.
+  - segment: manufacturing
+    use_codes: ["400", "402", "403"]
+    status: sourced
+    source: >-
+      DOR 2019 classification: 400 Buildings for manufacturing operations,
+      402 Office Building and 403 Land, both part of a manufacturing
+      operation.
+  - segment: other_healthcare
+    owner_keywords: [HEALTH]
+    status: placeholder
+    note: From the plan. Also catches nursing homes and health agencies.
