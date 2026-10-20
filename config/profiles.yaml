@@ -76,12 +76,15 @@ eversource_peak_reduction:
     A simulation case for the Eversource billing rule.
 
 realization_factor:
-  value: null
+  value: 0.8
+  range: {low: 0.6, high: 0.95}
   status: placeholder
   note: >-
     The simulation has perfect foresight over each month, so its peak
     reduction is an upper bound. Phase 4 multiplies the simulated reduction
-    by this factor. No value has been given yet; Phase 4 needs one.
+    by this factor. A real controller that misses one 15-minute peak loses
+    that month's saving, so the factor is below 1. 0.8 and the range are
+    the owner's judgment (2026-10-20), not from a source.
   test: >-
     Compare simulated with achieved peak reduction on operating batteries.
   replace: >-

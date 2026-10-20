@@ -40,25 +40,33 @@ daily_dispatch_usd_per_kw_season:
     The current published daily dispatch rate.
 
 performance_factor:
-  value: null
+  value: 0.61
+  range: {low: 0.61, high: 0.92}
   status: placeholder
   note: >-
-    The share of the battery's power it delivers on average across events,
-    since payment follows average kW performed. No value has been given
-    yet; Phase 4 needs one.
+    The share of the battery's 250 kW it delivers on average across an
+    event, since payment follows average kW performed. Derived, not read:
+    the block delivers about 458 kWh (469.8 usable x 0.975), which is
+    153 kW over a 3-hour event (0.61) and 229 kW over a 2-hour event
+    (0.92). Event lengths of 2 to 3 hours are from the 2021 program
+    materials. The default assumes 3-hour events.
   test: >-
     Compare with event performance reported for enrolled batteries.
   replace: >-
     The operator's measured event performance.
 
 overlap_factor:
-  value: null
+  value: 0.13
+  range: {low: 0, high: 0.13}
   status: placeholder
   note: >-
     The share of event days that fall on the building's own monthly peak,
     when the same battery energy cannot serve both, so grid revenue is not
-    double counted with peak shaving. No value has been given yet; Phase 4
-    needs one.
+    double counted with peak shaving. An upper bound: a building has at
+    most one monthly peak day in each of the 4 event months, and daily
+    dispatch calls at least 30 events, so at most 4 / 30 = 0.13 of event
+    revenue is at risk. ConnectedSolutions revenue is reduced by this
+    share.
   test: >-
     Compare event days with simulated monthly peak days on the ComStock
     sample.

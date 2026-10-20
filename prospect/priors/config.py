@@ -43,7 +43,10 @@ def entries(tree, path: str = ""):
 def summary(node: dict, prefix: str) -> str:
     """The value itself, short: `value` if given, else the other scalar fields."""
     if prefix + "value" in node:
-        return str(node[prefix + "value"])
+        value = str(node[prefix + "value"])
+        if "range" in node:
+            value += f" (range {node['range']['low']} to {node['range']['high']})"
+        return value
     if prefix:
         return ""
     parts = []
@@ -72,7 +75,10 @@ def check(configs: dict) -> list[str]:
                 problems.append(f"{where}: status {status!r} is not one of {STATUSES}")
             elif status == "sourced" and not node.get(prefix + "source"):
                 problems.append(f"{where}: sourced without a source")
-            elif status == "placeholder":
+            rng, value = node.get("range"), node.get(prefix + "value")
+            if rng and value is not None and not rng["low"] <= value <= rng["high"]:
+                problems.append(f"{where}: value {value} is outside its range")
+            if status == "placeholder":
                 for key in ("note", "test", "replace"):
                     if not node.get(prefix + key):
                         problems.append(f"{where}: placeholder without a {key}")
