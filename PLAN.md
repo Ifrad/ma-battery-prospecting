@@ -410,14 +410,25 @@ placeholders and each sourced value names its source.
       buildings, 803 MB, 9 hospitals). It checks the first profile for
       15-minute steps before fetching the rest. Adds pyarrow and numpy,
       pinned.
-- [ ] `feat(priors): simulate the battery block on ComStock profiles`
+- [x] `feat(priors): simulate the battery block on ComStock profiles`
       Read the downloaded profiles from local files. Simulate one battery
       block within its power and energy limits, and record the
       distribution of monthly peak reduction as a share of peak, per
       building type, twice: for the peak over all hours (G-2) and for the
       peak in the G-3 peak window only. Also record peak-to-average ratio
       and load factor per building type. Write them to config with source
-      notes, labeled as simulated.
+      notes, labeled as simulated. `make simulate` writes
+      config/simulation.yaml: per ComStock type and four bins of annual
+      peak (under 200, 200 to 500, 500 to 1,000, 1,000 kW and up), p10,
+      median, p90 and building count; cells under 10 buildings fall back
+      to all types pooled, flagged. The dispatch rule (perfect foresight,
+      each month starting empty) is in docs/METHOD.md, so results are an
+      upper bound. config/profiles.yaml maps segments and generic use
+      codes to types, gives factories, laundries, food plants, cold
+      storage and auto repair (332) the widest simulated range ("no open
+      profile, unvalidated"), and holds the realization factor
+      (placeholder, no value yet). Eversource sites use the all-hours
+      reduction, flagged.
 - [ ] `docs(method): rank building types by simulated peak reduction value`
       Test the spiky building hypothesis in docs/METHOD.md. For each
       building type, a table of peak-to-average ratio, load factor and

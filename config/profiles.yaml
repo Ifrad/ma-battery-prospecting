@@ -1,0 +1,88 @@
+# How candidate sites map to the simulated ComStock building types in
+# config/simulation.yaml, and what Phase 4 applies to those results.
+
+comstock_types:
+  # By segment first.
+  segments:
+    hospital: [Hospital]
+    other_healthcare: [Outpatient]
+    warehouse: [Warehouse]
+  # Generic sites by assessor use code (first three characters). Codes are
+  # described in the L3 parcels' USE_DESC.
+  generic_use_codes:
+    "340": [SmallOffice, MediumOffice, LargeOffice]  # General Office Buildings
+    "341": [SmallOffice, MediumOffice, LargeOffice]  # Bank Buildings
+    "320": [RetailStandalone]
+    "321": [RetailStandalone]  # building materials, hardware
+    "322": [RetailStandalone]  # discount and department stores
+    "325": [RetailStandalone]  # small retail and services, under 10,000 sq ft
+    "323": [RetailStripmall]  # shopping centers and malls
+    "324": [Grocery]  # supermarkets over 10,000 sq ft
+    "326": [QuickServiceRestaurant, FullServiceRestaurant]  # eating and drinking
+    "300": [SmallHotel, LargeHotel]  # hotels
+  # Where several types are listed, the site takes the one whose median
+  # floor area in config/simulation.yaml is nearest on a log scale.
+  choose_by: floor_area
+  status: placeholder
+  note: >-
+    Mapping approved by the owner on 2026-10-20. ComStock models no
+    industrial buildings, so a use code or segment is matched to the
+    nearest commercial type by judgment, not by a source.
+  test: >-
+    Compare each mapped type's simulated load factor with measured load
+    factors from operator meter data for the same use codes.
+  replace: >-
+    Load shapes measured on buildings of each segment.
+
+no_open_profile:
+  segments: [manufacturing, laundry, food_production, cold_storage]
+  use_codes: ["332"]  # Auto Repair Facilities
+  label: no open profile, unvalidated
+  status: placeholder
+  note: >-
+    ComStock has no profile for factories, laundries, food plants, cold
+    storage or auto repair. These sites are not simulated. They get the
+    widest range seen across all simulated types and bins
+    (config/simulation.yaml, no_open_profile), for peak reduction share and
+    for load factor, so nothing about their spikiness is assumed.
+  test: >-
+    Measured 15-minute data from a few such sites.
+  replace: >-
+    An open industrial load profile dataset or operator meter data.
+
+placeholder_mix:
+  label: placeholder mix
+  status: placeholder
+  note: >-
+    Generic sites whose use code is not listed above (031 mixed use, 334
+    gas stations, 330 auto sales and others) take all simulated types
+    pooled in their size bin, flagged.
+  test: >-
+    Check the largest uncovered codes against measured meter data.
+  replace: >-
+    A mapping for each large uncovered code.
+
+eversource_peak_reduction:
+  value: all_hours
+  status: placeholder
+  note: >-
+    Eversource G-2 and G-3 bill off-peak demand at a 55 or 70 percent
+    discount with a seasonal peak window, which the simulation does not
+    model. Eversource sites (Canton, Sharon) use the all-hours reduction,
+    flagged.
+  test: >-
+    Simulate the Eversource billing rule for a few buildings and compare.
+  replace: >-
+    A simulation case for the Eversource billing rule.
+
+realization_factor:
+  value: null
+  status: placeholder
+  note: >-
+    The simulation has perfect foresight over each month, so its peak
+    reduction is an upper bound. Phase 4 multiplies the simulated reduction
+    by this factor. No value has been given yet; Phase 4 needs one.
+  test: >-
+    Compare simulated with achieved peak reduction on operating batteries.
+  replace: >-
+    The operator's achieved share of the simulated reduction.
