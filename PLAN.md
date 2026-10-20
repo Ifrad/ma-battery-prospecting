@@ -18,9 +18,8 @@ revenue. Before a business shares meter data, nobody knows its peak. This tool
 estimates it from public data and ranks sites by value per battery block: the
 simulated yearly demand savings plus grid program revenue one standard battery
 block could bring, gross, before any host share, with a band and the reasons,
-grouped by region. The operator applies its own installed cost; the tool
-translates value into a break-even cost and, for a cost the reader enters, a
-model confidence.
+grouped by region. Cost and profit are not modeled: the operator applies
+its own installed cost and host share.
 
 ## What "better than size ranking" means, measurably
 
@@ -30,11 +29,8 @@ model confidence.
    statewide, with the pilot towns reported separately. Zero or negative
    grid electricity counts as missing, never as zero.
 2. Every site shows its value per block with a P10 to P90 band and its
-   evidence flags, not a single point estimate, and the break-even
-   installed cost per block. Model confidence, the probability that value
-   exceeds the annualized battery cost plus a minimum yearly benefit for
-   the host, is shown only for a cost the reader supplies. The annual
-   energy estimate behind it is checked for calibration. Peak shape is
+   evidence flags, not a single point estimate. The annual energy
+   estimate behind it is checked for calibration. Peak shape is
    unvalidated until real interval meter data tests it.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
@@ -411,6 +407,9 @@ placeholders and each sourced value names its source.
       name appears only in docs. The page renders with JavaScript, so an
       automated recheck on 2026-10-20 could not read it; the values are
       as read by the owner on 2026-10-19.
+      Superseded: the cost assumptions and minimum host benefit tasks below
+      were removed in Phase 6 (`refactor(model): remove cost and profit
+      layer`); cost and profit are no longer modeled.
 - [x] `feat(config): add cost assumptions`
       Each with status and source. Installed cost $180,000 (low case) and
       $260,000 (middle case): both the owner's own estimates, unverified,
@@ -525,16 +524,16 @@ placeholders and each sourced value names its source.
 
 Goal: for each site, the yearly value one battery block could bring
 (demand savings plus ConnectedSolutions revenue, gross, before any host
-share), with a P10 to P90 band, under each scenario, and the installed cost
-per block at which it would break even. Sites are ranked by value per block.
-Installed cost is the least known input and Powertown knows it, so nothing
-about cost sits in the headline: the model shows where the value comes from
-and what cost would make a site work. Values are simulated and unvalidated,
-not profit.
+share), with a P10 to P90 band, under each scenario. Sites are ranked by
+value per block. Installed cost is not modeled; the operator applies its
+own. Values are simulated and unvalidated, not profit.
 Done when: `make score` writes a scored row per site and scenario with value
-per block (P10, P50, P90), blocks, total, break-even cost, value by stream
-and top drivers, model tests pass, and model confidence can be computed for
-a given cost.
+per block (P10, P50, P90), blocks, total, value by stream and top drivers,
+and model tests pass.
+
+Removed in Phase 6 (`refactor(model): remove cost and profit layer`): the
+break-even cost, model confidence and payback check tasks below were built
+here and later removed; their boxes stay ticked as a record.
 
 Scoring scope: funnel survivors at the loosest reported peak line (150 kW),
 with a flag for those that pass 200 kW. Tier 1 and tier 2 are both scored;
@@ -542,9 +541,8 @@ sites with no open profile are marked least certain. Sites the funnel
 dropped stay in the database and are not scored, and municipal plant sites
 are not scored.
 
-Multiple blocks: revenue scales per block, and installed cost is per block
-with no volume discount (a placeholder note in config). The block count cap
-stays a config placeholder.
+Multiple blocks: revenue scales per block. The block count cap stays a
+config placeholder.
 
 - [x] `docs(method): research other revenue streams`
       For each of the G-3 optional coincident peak transmission charge
@@ -809,13 +807,20 @@ list.
 - [x] `docs(plan): merge export and report phases`
       Merge the Export and Report phases into this one phase, keeping every
       task text from both.
+- [ ] `refactor(model): remove cost and profit layer`
+      Cost and profit are no longer modeled. Remove break-even cost, model
+      confidence, the minimum host benefit, the payback check, the owner's
+      installed cost figures, the ITC setting, life, financing and O&M from
+      code, config, docs and the export, with a new migration that drops
+      the break-even columns from site_scores. No site's rank or P50 value
+      per block may change. Installed cost stays only as an open question.
 - [x] `feat(export): write ranked sites per region as GeoJSON and CSV`
       Value per block first: P50 with the P10 to P90 band, expected
-      blocks, total, break-even installed cost per block (with and without
-      the ITC), the value split by revenue stream, and the evidence flags,
+      blocks, total, the value split by revenue stream, and the evidence
+      flags,
       for both scenarios (demand savings only, and with
       ConnectedSolutions). The flags include capped, rate area
-      unconfirmed and no open profile. No model confidence by default.
+      unconfirmed and no open profile.
       `make export` writes export/<region>.geojson (one feature per scored
       site at its centroid, both scenarios, its parcels and buildings, the
       model rank and the size-only rank among all candidate sites) and
@@ -825,9 +830,8 @@ list.
       A small fixed number of draws per site, split into demand savings
       and grid revenue in physical units (kW-months of peak reduction and
       eligible grid-program kW). The manifest carries the config values the
-      report needs: demand rate, life, financing, O&M, ITC and the
-      ConnectedSolutions factors. Installed cost and minimum host benefit
-      are left empty. Built: all 1,000 stored draws per site, which fit
+      report needs: demand rates, the realization factor and the
+      ConnectedSolutions factors and caps. Built: all 1,000 stored draws per site, which fit
       the budget (Worcester 4.55 MB, Metro South 3.54 MB), so the report
       reproduces the stored P50s exactly: kW-months under G-2 and G-3,
       whole blocks, the drawn site peak and whether the draw is on G-3
@@ -837,17 +841,16 @@ list.
       realization factor, ConnectedSolutions terms and the placeholder
       list.
 - [x] `test(export): validate export schema and size budget`
-      Includes a parity test: model confidence recomputed from the export
-      at a given installed cost and host benefit matches the Python
-      model. prospect/export/recompute.py recomputes value per block,
-      break-even and confidence from the export alone, with the
-      event-window and export caps, as the report does; the report's
-      JavaScript mirrors it. Tests: the committed files pass the schema
-      and are at most 5 MB each; their draws reproduce every exported P50
-      within $10 (break-even within $100, the rounding of draws to 0.1);
-      a model-scored site passed through the export matches the model
-      draw by draw, with and without export, and in break-even and
-      confidence at given costs.
+      Includes a parity test: value per block, expected blocks and stream
+      shares recomputed from the export match the Python model at default
+      settings, with ConnectedSolutions on or off, and with a changed
+      demand rate. prospect/export/recompute.py recomputes them from the
+      export alone, with the event-window and export caps, as the report
+      does; the report's JavaScript mirrors it. Tests: the committed files
+      pass the schema and are at most 5 MB each; their draws reproduce
+      every exported P50 within $10 (the rounding of draws to 0.1); a
+      model-scored site passed through the export matches the model draw
+      by draw, with and without export.
 - [ ] `chore(export): add data manifest`
       Version, generated time, config hash, source reporting years.
 - [ ] `feat(report): build single-file report from the export`
@@ -856,17 +859,9 @@ list.
       switch (Metro South, Worcester) and a sortable ranked table: owner,
       address, town, segment, value per block (P50, with the P10 to P90
       range) and its percentile rank inside the region, expected blocks,
-      total, the break-even installed cost per block with and without the
-      ITC, the share of value from each revenue stream, data quality as
+      total, the share of value from each revenue stream, data quality as
       text from the evidence flags, and the size-only rank next to the
-      model rank. The table can sort by break-even cost. The default view
-      has no profit colors. A confidence view appears when the reader
-      enters an installed cost and a minimum host benefit; only there,
-      model confidence shows with color, number and short label (90 and
-      above green, 80 to under 90 yellow, 70 to under 80 orange, 50 to
-      under 70 deep orange, under 50 red), and red sites are hidden by
-      default and shown with one click, with the reason each is red.
-      Both scenarios show side by side. The report says ConnectedSolutions
+      model rank. No profit colors. Both scenarios show side by side. The report says ConnectedSolutions
       is the same per block for every eligible site except those capped
       by the program's export cap. The report computes the
       ConnectedSolutions share of P50 value from the export and states it,
@@ -880,12 +875,9 @@ list.
       nothing embedded).
 - [ ] `feat(report): add settings and filters`
       Settings the reader can change, recomputed in the browser from the
-      export: installed cost and minimum host benefit (both empty by
-      default; filling them opens the confidence view), ITC on or off,
-      ConnectedSolutions on or off, demand rate. A column showing how far
-      each site moved from the defaults. Filters: segment, utility,
-      minimum value per block, hide existing customers, and in the
-      confidence view minimum confidence and show red sites.
+      export: ConnectedSolutions on or off, demand rate. A column showing
+      how far each site moved from the defaults. Filters: segment,
+      utility, minimum value per block, hide existing customers.
 - [ ] `feat(report): load a customer status file`
       An optional CSV the reader picks in the browser: owner or address,
       and a status (customer, contacted, declined). Matching sites get a
@@ -895,16 +887,16 @@ list.
       with obviously fake rows.
 - [ ] `feat(report): add assumptions and limits section`
       Lists every placeholder in use. Explains value per block: simulated,
-      gross, before any host share, not profit. Says installed cost is not
-      an input to the ranking; the owner's estimates appear only as
-      reference points next to break-even cost. Explains model confidence
-      in the optional view. Says peak shape is unvalidated until real
-      meter data tests it. Lists what the ranking does not model: space for cabinets,
-      utility interconnection capacity, owner willingness.
+      gross revenue before any host share, not profit. Says installed cost
+      and the host share are not modeled, and the reader applies their
+      own. Says peak shape is unvalidated until real meter data tests it.
+      Lists what the ranking does not model: space for cabinets, utility
+      interconnection capacity, owner willingness.
 - [ ] `test(report): check offline use and parity`
-      The built file makes no network requests, its value per block
-      matches the export at default settings, and its model confidence at
-      a given installed cost and host benefit matches the Python model.
+      The built file makes no network requests, and its value per block,
+      expected blocks and stream shares match the Python model at default
+      settings, with ConnectedSolutions on or off, and with a changed
+      demand rate.
 
 ---
 
@@ -916,7 +908,7 @@ Done when: the README follows that structure and every link works on a phone.
 
 - [ ] `docs: write one-page brief for Powertown`
       docs/BRIEF.md: what the tool does, the headline finding (value per
-      block, with break-even cost as the translation), one worked
+      block), one worked
       example (Brockton Hospital: its evidence flags and why it ranks where
       it does), what is unvalidated, and the open questions. It can be
       drafted and sent once Phase 5 gives a validation result. Check that
@@ -926,20 +918,18 @@ Done when: the README follows that structure and every link works on a phone.
       Top: problem sentence, what it does, a screenshot, and a "Start
       here" path to the brief and report.html. Middle: 2 minute
       walkthrough link. Bottom: method, validation, limits, how to run.
-      The headline is value per block; use model confidence only for the
-      optional view. State the break-even comparison with the owner's cost
-      estimates (docs/SCORES.md), that values are gross before any host
-      share and not profit, and that shape estimates are unvalidated until
-      real meter data tests them. List open questions for Powertown:
+      The headline is value per block. State that values are gross before
+      any host share and not profit, that cost is not modeled, and that
+      shape estimates are unvalidated until real meter data tests them. List open questions for Powertown:
       how they find sites today, a list of current and contacted sites,
       installed cost, ITC eligibility, whether ConnectedSolutions stacks
       with peak shaving, the savings split, and how their own meter data
       could replace the type-based shape estimates, and a Canton or
       Sharon commercial bill, or Eversource's list of towns by rate
       division, to settle which rate area serves the two Eversource towns.
-      Also list two product
-      page claims to check, which are not used as inputs: "1 to 3 months
-      off your bill" and recovering costs "by year two or three".
+      Also list two product page claims to check, which are not inputs:
+      "1 to 3 months off your bill" and recovering costs "by year two or
+      three".
 - [ ] `docs: add method, data and limits pages`
 - [ ] `docs: add guide for plugging in operator data`
       docs/POWERTOWN_DATA.md: where real block size, cost, tariffs, meter
