@@ -354,9 +354,18 @@ placeholders and each sourced value names its source.
       without them. The owner name cutoff width moved from code into
       config/sites.yaml (same value, 1 character) so the page covers it.
       A test fails when the page is stale.
-- [ ] `feat(config): add remaining utility demand rates with sources`
+- [x] `feat(config): add remaining utility demand rates with sources`
       Eversource (2 pilot towns) and the six municipal light plants, from
       filed tariffs. Anything not read from a tariff stays a placeholder.
+      Eversource: Greater Boston G-1 (up to 100 kW, no demand charge by
+      default), G-2 (over 100 kW, $33.95 per kW-month: $20.21
+      distribution plus $13.74 transmission) and G-3 (primary voltage,
+      $30.05), with off-peak demand discounted 55 and 70 percent and a
+      seasonal peak window. Which service area serves Canton and Sharon is
+      a placeholder (Greater Boston assumed). West Boylston: Large
+      Commercial $8.66 per kW-month above 6,000 kWh a month. Holden,
+      Sterling, Paxton, Princeton and Boylston: no schedule found online,
+      so their demand charge is a placeholder with no value.
 - [ ] `feat(config): add battery block specification`
       config/battery.yaml for the standard deployment, one battery block:
       250 kW, 522 kWh and 97.5 percent PCS efficiency, status sourced, from
