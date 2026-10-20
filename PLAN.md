@@ -429,14 +429,13 @@ placeholders and each sourced value names its source.
       profile, unvalidated"), and holds the realization factor
       (placeholder, no value yet). Eversource sites use the all-hours
       reduction, flagged.
-- [ ] `docs(method): rank building types by simulated peak reduction value`
-      Test the spiky building hypothesis in docs/METHOD.md. For each
-      building type, a table of peak-to-average ratio, load factor and
-      monthly peak reduction as a share of peak, and the same split by
-      building peak size. Rank building types by peak reduction in dollars
-      per year at the sourced demand rates, and say whether the ranking
-      agrees with the hypothesis. Written to docs/METHOD.md and labeled
-      as simulated. The hypothesis never goes into config.
+- [x] `docs(method): tabulate simulated peak reduction by building size`
+      A short table in docs/METHOD.md: median monthly peak reduction share
+      against building peak size, by building type, with load factor,
+      labeled simulated. No dollar ranking by segment, since factories,
+      laundries, food plants and auto repair have no open profile. Say
+      what the table shows about the spiky building hypothesis, which
+      never goes into config.
 - [ ] `feat(config): add ConnectedSolutions assumptions`
       $200 per kW-season (vendor source), a performance factor
       (placeholder), and an overlap factor (placeholder) for event days
