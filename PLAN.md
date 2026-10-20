@@ -391,6 +391,14 @@ placeholders and each sourced value names its source.
       peak in the G-3 peak window only. Also record peak-to-average ratio
       and load factor per building type. Write them to config with source
       notes, labeled as simulated.
+- [ ] `docs(method): rank building types by simulated peak reduction value`
+      Test the spiky building hypothesis in docs/METHOD.md. For each
+      building type, a table of peak-to-average ratio, load factor and
+      monthly peak reduction as a share of peak, and the same split by
+      building peak size. Rank building types by peak reduction in dollars
+      per year at the sourced demand rates, and say whether the ranking
+      agrees with the hypothesis. Written to docs/METHOD.md and labeled
+      as simulated. The hypothesis never goes into config.
 - [ ] `feat(config): add ConnectedSolutions assumptions`
       $200 per kW-season (vendor source), a performance factor
       (placeholder), and an overlap factor (placeholder) for event days
