@@ -1,0 +1,66 @@
+# ConnectedSolutions daily dispatch: summer grid program revenue for a
+# battery, used in Phase 4 only where the site's utility is eligible.
+
+eligible_utilities:
+  value:
+    - National Grid (Massachusetts Electric)
+    - Eversource Energy (NSTAR Electric)
+  status: sourced
+  source: >-
+    National Grid, Program Materials for ConnectedSolutions for Commercial /
+    Industrial Customers, dated 2021-08-31, Eligibility Requirements,
+    https://www.nationalgridus.com/media/pdfs/bus-ways-to-save/connectedsolutions-ciprogrammaterials.pdf,
+    read 2026-10-20.
+  note: >-
+    Eligible: a National Grid, Eversource or Unitil account in Massachusetts
+    that pays the energy efficiency charge, with a behind-the-meter
+    battery. Municipal light plant customers are not eligible. The only
+    municipal program found, NextZero's Connected Homes pilot (spring 2026
+    newsletter), is behavioral demand response, not batteries. The program
+    document is from 2021 and the live page could not be read.
+
+daily_dispatch_usd_per_kw_season:
+  value: 200
+  status: placeholder
+  note: >-
+    The owner's vendor figure, unverified. Utility documents read on
+    2026-10-20 also say $200 per average kW per summer: National Grid's C&I
+    program materials (dated 2021-08-31) and its daily dispatch flyer (last
+    edited 2022-08-11). The live National Grid page could not be read
+    (HTTP 403); search summaries of it give $200 for daily dispatch and
+    $275 only for batteries under 50 kW. Vendor pages quoting $225 or $275
+    for commercial daily dispatch conflict with the utility documents. The
+    2021 document pays on average kW delivered across 30 to 60 events, June
+    to September, 2 to 3 hours each between 2 and 7 p.m., with the rate
+    locked for 5 years for new batteries.
+  test: >-
+    Read the current program materials from National Grid, Eversource or
+    Mass Save.
+  replace: >-
+    The current published daily dispatch rate.
+
+performance_factor:
+  value: null
+  status: placeholder
+  note: >-
+    The share of the battery's power it delivers on average across events,
+    since payment follows average kW performed. No value has been given
+    yet; Phase 4 needs one.
+  test: >-
+    Compare with event performance reported for enrolled batteries.
+  replace: >-
+    The operator's measured event performance.
+
+overlap_factor:
+  value: null
+  status: placeholder
+  note: >-
+    The share of event days that fall on the building's own monthly peak,
+    when the same battery energy cannot serve both, so grid revenue is not
+    double counted with peak shaving. No value has been given yet; Phase 4
+    needs one.
+  test: >-
+    Compare event days with simulated monthly peak days on the ComStock
+    sample.
+  replace: >-
+    A joint simulation of events and peak shaving.

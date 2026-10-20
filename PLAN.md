@@ -436,11 +436,15 @@ placeholders and each sourced value names its source.
       laundries, food plants and auto repair have no open profile. Say
       what the table shows about the spiky building hypothesis, which
       never goes into config.
-- [ ] `feat(config): add ConnectedSolutions assumptions`
+- [x] `feat(config): add ConnectedSolutions assumptions`
       $200 per kW-season (vendor source), a performance factor
       (placeholder), and an overlap factor (placeholder) for event days
       that fall on the building's own peak, so grid revenue is not double
-      counted with peak shaving.
+      counted with peak shaving. In config/connected_solutions.yaml: $200
+      stays an unverified placeholder; the utility documents that agree
+      are dated 2021 and 2022 and the live page could not be read. Both
+      factors have no value yet. Eligible utilities are National Grid
+      and Eversource; municipal light plant customers are not eligible.
 - [ ] `feat(priors): derive energy intensity priors from LBER`
       kWh per sq ft by segment, for buildings without reported use. Only
       buildings with measured grid electricity count.
