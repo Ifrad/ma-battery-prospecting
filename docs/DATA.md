@@ -253,3 +253,50 @@ Area, in order:
 Candidate parcels are those with a commercial, industrial, hospital or
 multi-use commercial class. How estimated areas are used is decided after
 the footprint area error is measured.
+
+## LBER UBID feasibility
+
+Checked on 2026-10-19, read-only, before choosing any dependency. LBER's
+`UBID` field was decoded with a throwaway script (Google's
+`openlocationcode`, run outside the project, not added to pyproject.toml
+or uv.lock), following PNNL's UBID specification
+(https://github.com/pnnl/buildingid/blob/master/SPEC.md): a UBID is the
+Open Location Code of the footprint's centroid cell plus its north, east,
+south and west extents in grid cells, so it decodes to the footprint's
+bounding box snapped outward to whole cells.
+
+Pilot rule: an LBER row is in the pilot when its point lies inside the
+town polygon of a pilot town (`raw_utility_territories`). That gives 3,952
+rows, slightly more than matching the `City` text field (3,907), which can
+name a village or mailing town.
+
+| Region | Pilot LBER rows | With UBID | Box center inside a footprint | Box within one grid cell of a footprint's box | Exact UBID string match |
+|---|---|---|---|---|---|
+| Metro South | 1,950 | 1,950 | 1,751 (89.8%) | 1,857 (95.2%) | 1,816 (93.1%) |
+| Worcester | 2,002 | 2,002 | 1,746 (87.2%) | 1,896 (94.7%) | 1,848 (92.3%) |
+| Both | 3,952 | 3,952 | 3,497 (88.5%) | 3,753 (95.0%) | 3,664 (92.7%) |
+
+- Every pilot row has a UBID, and every UBID decodes. All use an 11
+  character code, a grid cell of about 2.8 m north to south.
+- The exact match encodes a UBID from each nearby MassGIS footprint the
+  same way (planar centroid, bounding box) and compares strings. No LBER
+  UBID equals more than one footprint's.
+- For comparison, the LBER point lies inside a footprint for 88.5% of
+  pilot rows and inside a parcel for 99.9%. So DOER built its UBIDs from
+  the MassGIS footprints, and an exact UBID match pins a footprint for
+  about 4 percentage points more rows (about 170) than the point method.
+
+Ten decoded boxes and the footprint each matched within one cell:
+
+| UBID | Decoded box (south, west, north, east) | Footprint objectid |
+|---|---|---|
+| 87JC3XMJ+25F-13-13-10-10 | 42.082300, -71.019906, 42.082900, -71.019156 | 4985311 |
+| 87JC68V7+QXJ-10-9-10-11 | 42.244200, -71.685469, 42.244725, -71.684812 | 4508625 |
+| 87JC7648+49P-9-9-6-10 | 42.255175, -71.784375, 42.255575, -71.783750 | 3114043 |
+| 87JC66R3+MG2-8-6-7-6 | 42.241450, -71.796438, 42.241850, -71.796031 | 4578650 |
+| 87JC7632+57V-5-7-6-7 | 42.252825, -71.799563, 42.253125, -71.799094 | 3908643 |
+| 87JC2XWW+F65-11-13-12-12 | 42.045825, -71.004781, 42.046425, -71.003969 | 4952417 |
+| 87JC4W5M+JWG-11-16-12-15 | 42.108750, -71.065656, 42.109350, -71.064656 | 4729092 |
+| 87JC3X7R+57R-22-12-22-8 | 42.062425, -71.009625, 42.063550, -71.008969 | 4952163 |
+| 87JC54QV+6GJ-9-7-9-6 | 42.187850, -71.856438, 42.188325, -71.856000 | 2926908 |
+| 87JC7692+828-14-15-13-18 | 42.267950, -71.800500, 42.268650, -71.799437 | 3452114 |
