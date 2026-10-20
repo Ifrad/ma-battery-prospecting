@@ -762,7 +762,7 @@ was validated, and what is unvalidated.
       (CREATE DATABASE ... TEMPLATE), overrides the assumption in memory,
       recomputes priors and funnel in memory, and writes
       data/validate/sensitivity.json, which `make validate` reads.
-- [ ] `docs(validate): generate validation report`
+- [x] `docs(validate): generate validation report`
       `make validate` writes docs/VALIDATION.md: where the model beats
       size-only and where it does not, the energy comparison,
       calibration, rank stability, the peak shape result, the sensitivity
@@ -770,7 +770,8 @@ was validated, and what is unvalidated.
       ConnectedSolutions delivery, installed cost not in the model, the
       unconfirmed Eversource rate area, no open profile for factories),
       and a plain statement of limits. Everything simulated is labeled
-      simulated.
+      simulated. A generated summary leads the page; the sensitivity
+      section reads the results of `make sensitivity`.
 
 ---
 
