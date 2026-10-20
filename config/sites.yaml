@@ -87,3 +87,25 @@ tenure:
     $99 (76) and $100 (1,648), with only 23 between $101 and $1,000, so
     any price under $1,000, or no price, counts as nominal. Sale dates
     before 1900 (as early as 1754) are treated as filler.
+
+# Building area checks, applied per site to the pooled assessor area (the
+# sum of BLD_AREA over the site's parcels that have it) against the pooled
+# footprint area on those parcels. When either check fails, those buildings
+# get area_source assessor_below_footprint or assessor_above_footprint and
+# use footprint times stories, or footprint alone, instead.
+area_checks:
+  # Below: pooled assessor area under footprint area times this.
+  floor_tolerance: 0.5
+  # Above: pooled assessor area over footprint area times this many times the
+  # site's highest recorded stories, or times ceiling_without_stories when
+  # no parcel in the site records stories.
+  ceiling_stories_factor: 3
+  ceiling_without_stories: 10
+  status: placeholder
+  note: >-
+    Chosen from trigger counts on 9,284 pilot candidate sites. Floor 0.5
+    flags 562 sites (0.8 would flag 1,346 and 1.0 would flag 3,975, since
+    roof outlines include overhangs). Ceiling 3 x stories, or 10 without
+    stories, flags 33 sites, no hospital or other healthcare site, and keeps
+    all 15 sites of 9 or more stories (446 Main St, Worcester, 24 stories,
+    has a ratio of 15.0). A factor of 2 would flag 230.
