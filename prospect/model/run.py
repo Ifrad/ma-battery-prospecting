@@ -107,7 +107,7 @@ def row(run_id: int, site: dict, r: dict) -> list:
         x["kwm_g2"].astype(np.float32).tolist(),
         x["kwm_g3"].astype(np.float32).tolist(),
         x["blocks"].astype(int).tolist(),
-        float(x["grid_kw"][0]),
+        x["grid_kw"].astype(np.float32).tolist(),
     ]
 
 
@@ -137,7 +137,7 @@ def value_draws(stored: dict, cfg: dict) -> np.ndarray:
         stored["kwm_g3"]
     ) * rates.get("G-3", 0.0)
     grid = (
-        stored["grid_kw"]
+        np.asarray(stored["grid_kw"])
         * cfg["connected_solutions"]["daily_dispatch_usd_per_kw_season"]["value"]
     )
     return demand + (grid if stored["scenario"] == "with_connected_solutions" else 0.0)

@@ -591,8 +591,12 @@ stays a config placeholder.
       with the realization factor, the cut never exceeds block power.
 - [x] `feat(model): add grid program revenue`
       ConnectedSolutions only where the utility is eligible, scaled by the
-      performance factor and discounted by the overlap factor. Tests:
-      municipal sites get none.
+      performance factor and discounted by the overlap factor. The kW
+      counted per block is the lesser of the block's power and 1.5 times
+      the estimated site peak (the program's export cap, sourced), shared
+      over the site's blocks. Tests: municipal sites get none, a 100 kW
+      peak site counts at most 150 kW, a site at 167 kW or more is
+      uncapped.
 - [x] `feat(model): compute value per block`
       Per site and scenario: value per block per year (demand savings plus
       ConnectedSolutions revenue, gross, before any host share) at P10,
