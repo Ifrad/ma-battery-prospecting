@@ -4,8 +4,10 @@ data search, what is unvalidated, and the limits."""
 PEAK_SHAPE = [
     "## Peak shape",
     "",
-    "Peak shape is unvalidated: no open interval dataset matched the scored"
-    " sites well enough to test it, so it was only stress-tested (above).",
+    "Peak shape is unvalidated. It was stress-tested (above), and its"
+    " unit-free parts were checked out of sample against EnerNOC meter data"
+    " (below); the share of a block's cut could not be tested against real"
+    " meters.",
     "",
     "- Building Data Genome 2 (github.com/buds-lab/building-data-genome-project-2),"
     " assessed 2026-10-20 and not used: hourly readings, which cannot test"
@@ -13,8 +15,8 @@ PEAK_SHAPE = [
     " mostly university campuses (education 604, office 296) with few of the"
     " scored kinds (warehouse 14, manufacturing 11, healthcare 27); no site in"
     " New England; years 2016 and 2017; licensed CC BY-SA 4.0 (share-alike).",
-    "- EnerNOC open data, 100 commercial and industrial sites, 2012: assessed"
-    " 2026-10-20, decision pending with the owner (see the Phase 5 plan).",
+    "- EnerNOC open data, 100 commercial and industrial sites, 2012, 5-minute"
+    " readings, CC BY-NC 3.0: used only for the out-of-sample check below.",
 ]
 
 UNVALIDATED = [
@@ -22,7 +24,9 @@ UNVALIDATED = [
     "",
     "- Peak shape: the monthly peak reduction share, load factor and event-window"
     " load all come from ComStock simulation (one weather year, 2018, perfect"
-    " foresight reduced by a placeholder realization factor). Stress-tested only.",
+    " foresight reduced by a placeholder realization factor). Stress-tested,"
+    " and its unit-free measures checked against EnerNOC meters, but the"
+    " share of a block's cut was never compared with real meters.",
     "- ConnectedSolutions delivery: the rate and terms are sourced from the"
     " program documents, but what a block actually delivers in events (the"
     " performance factor, the overlap with the building's own peaks, and"

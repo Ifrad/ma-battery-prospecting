@@ -736,7 +736,7 @@ was validated, and what is unvalidated.
       where the ranking is a tier and not an order. No new draws. Draw i
       of every site in a region is one joint outcome; sites vary
       independently, since each site's draws are seeded on their own.
-- [ ] `docs(validate): find an open interval meter dataset for peak shape`
+- [x] `docs(validate): find an open interval meter dataset for peak shape`
       One pass. Candidate: Building Data Genome 2. Check its license,
       number of buildings, building types, climate and location, and
       whether readings are hourly or 15-minute (hourly cannot test
@@ -747,8 +747,16 @@ was validated, and what is unvalidated.
       by building type. If not, record that peak shape is unvalidated.
       Building Data Genome 2 was assessed and not used (hourly,
       campus-heavy, no New England site, CC BY-SA 4.0), as recorded in
-      docs/VALIDATION.md. The EnerNOC open dataset is assessed; the owner
-      decides whether to download it.
+      docs/VALIDATION.md. The EnerNOC open dataset (100 sites, 2012,
+      5-minute, CC BY-NC 3.0) is downloaded by `make enernoc` into data/
+      only, never committed or redistributed, and used only as an
+      out-of-sample test: no config value is derived or tuned from it. Its
+      readings are skewed by an unknown linear factor per site, so only
+      unit-free measures are compared (peak-to-average ratio, monthly load
+      factor, summer 3 to 8 pm mean over peak), at 15 minutes: light
+      industrial against the no-profile range, grocers and schools against
+      ComStock. The block's peak reduction share by size bin depends on
+      real kW and cannot be tested with it. It has no warehouses.
 - [x] `feat(validate): stress-test peak shape`
       Peak shape is unvalidated, so rescore with the simulated peak
       reduction share cut by 30 percent for all sites and by 50 percent for
