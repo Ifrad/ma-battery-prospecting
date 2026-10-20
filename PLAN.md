@@ -227,7 +227,7 @@ Evidence flags, per building and per site:
       One place to read every flag listed above, for both levels. A site's
       flags summarize its buildings (for example, how many have measured
       electricity).
-- [ ] `docs(data): measure footprint area error`
+- [x] `docs(data): measure footprint area error`
       Compare footprint-based area with `BLD_AREA`, and with LBER
       `Gross_Floor_Area` for matched buildings: median and 90th percentile
       error for footprint_x_stories and footprint_only. Measure on all
