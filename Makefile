@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -43,6 +43,10 @@ simulate:
 # Derive kWh per sq ft priors from LBER; writes config/intensity.yaml.
 intensity:
 	$(PY) -m prospect.priors.intensity
+
+# Count candidate sites through the funnel; rerun after make sites.
+funnel:
+	$(PY) -m prospect.priors.funnel
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:
