@@ -445,9 +445,17 @@ placeholders and each sourced value names its source.
       are dated 2021 and 2022 and the live page could not be read. Both
       factors have no value yet. Eligible utilities are National Grid
       and Eversource; municipal light plant customers are not eligible.
-- [ ] `feat(priors): derive energy intensity priors from LBER`
+- [x] `feat(priors): derive energy intensity priors from LBER`
       kWh per sq ft by segment, for buildings without reported use. Only
-      buildings with measured grid electricity count.
+      buildings with measured grid electricity count. `make intensity`
+      writes config/intensity.yaml: per segment, the measured count, p10,
+      median and p90 on our area and on LBER floor area, and the prior to
+      use. Segments under 30 are flagged. Hospital and other_healthcare
+      use LBER's statewide Healthcare rows; food production, cold storage
+      and laundry borrow the manufacturing spread ("proxy, likely
+      understates"). The implausible low tail is flagged, not floored. LBER
+      covers buildings of about 20,000 sq ft and up, so the priors may not
+      apply to smaller buildings.
 - [ ] `docs(method): document priors and how to recalibrate`
       docs/METHOD.md section on priors, battery and cost assumptions,
       including what to rerun after each October 31 LBER release. Record
