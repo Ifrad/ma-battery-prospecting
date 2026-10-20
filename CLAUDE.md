@@ -6,11 +6,15 @@ at the start of every session.
 ## What this project is
 
 A prospecting tool for behind-the-meter battery storage in Massachusetts. It
-ranks commercial and industrial sites by model confidence: the probability
-that a standard battery block pays for itself and still leaves the host a
-minimum yearly benefit. Each rank comes with a band and the reasons, grouped
-by region so someone preparing for a local chamber of commerce event knows
-which buildings to talk to.
+ranks commercial and industrial sites by value per battery block: the
+simulated yearly demand savings plus ConnectedSolutions revenue one standard
+battery block could bring, gross, before any host share. Each rank comes with
+a P10 to P90 band, the break-even installed cost and the reasons, grouped by
+region so someone preparing for a local chamber of commerce event knows which
+buildings to talk to. The operator applies its own installed cost. Model
+confidence (the probability that a block pays for itself and still leaves the
+host a minimum yearly benefit) is optional, computed only for a cost and host
+benefit the user supplies.
 
 It uses public data only. It is not affiliated with Powertown and does not use
 Powertown's data. An operator can supply optional files, such as a customer
@@ -91,6 +95,8 @@ Never rewrite history on main.
 - Peak shape is unvalidated until real interval meter data tests it.
   Calibration covers only the annual energy estimate.
 - Never present model confidence as accurate.
+- Revenue values are simulated gross values per block, before the host
+  share. They are not profit and not accurate; never call them either.
 - Credit the earlier public prototype (github.com/thutch17/powertown-hackathon)
   as prior work. Do not call it a hackathon entry or say how it placed.
 - Do not claim anything about Powertown's customers, contracts or revenue split.

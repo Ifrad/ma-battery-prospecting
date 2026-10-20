@@ -15,9 +15,12 @@ highest 15-minute spike each month. A battery can shave that spike. A company
 that installs batteries at no upfront cost and shares the savings earns money
 only if the site has large, predictable peaks, so choosing sites is choosing
 revenue. Before a business shares meter data, nobody knows its peak. This tool
-estimates it from public data and ranks sites by model confidence, the
-probability that a standard battery pays for itself and still leaves the host
-a minimum yearly benefit, with a band and the reasons, grouped by region.
+estimates it from public data and ranks sites by value per battery block: the
+simulated yearly demand savings plus grid program revenue one standard battery
+block could bring, gross, before any host share, with a band and the reasons,
+grouped by region. The operator applies its own installed cost; the tool
+translates value into a break-even cost and, for a cost the reader enters, a
+model confidence.
 
 ## What "better than size ranking" means, measurably
 
@@ -26,12 +29,13 @@ a minimum yearly benefit, with a band and the reasons, grouped by region.
    and median absolute percent error, with whole towns held out. Measured
    statewide, with the pilot towns reported separately. Zero or negative
    grid electricity counts as missing, never as zero.
-2. Every site shows its model confidence: the probability that its total
-   value exceeds the annualized battery cost plus a minimum yearly benefit
-   for the host, with a band and its evidence flags, not a single point
-   estimate. The annual energy estimate behind it is checked for
-   calibration. Peak shape is unvalidated until real interval meter data
-   tests it.
+2. Every site shows its value per block with a P10 to P90 band and its
+   evidence flags, not a single point estimate, and the break-even
+   installed cost per block. Model confidence, the probability that value
+   exceeds the annualized battery cost plus a minimum yearly benefit for
+   the host, is shown only for a cost the reader supplies. The annual
+   energy estimate behind it is checked for calibration. Peak shape is
+   unvalidated until real interval meter data tests it.
 3. Nonprofit hospitals are included rather than silently filtered out:
    state code 955 or 9550, Boston code 979, or an owner name containing
    the whole word HOSPITAL or MEDICAL CENTER and not VETERINARY. Vacant
@@ -418,13 +422,16 @@ placeholders and each sourced value names its source.
       sourcing rules decide eligibility. The page's claims of "1 to 3
       months off your bill" and recovering costs "by year two or three"
       are not inputs. In config/costs.yaml; the ITC rate is a placeholder
-      too, since it was not read from IRS guidance.
+      too, since it was not read from IRS guidance. Since Phase 4 ranks by
+      value per block, the installed cost cases are not model inputs: they
+      are reference points next to the break-even column and an example
+      cost for the optional model confidence.
 - [x] `feat(config): add minimum host benefit`
       The minimum yearly benefit a host must get for the deal to be worth
       offering, in dollars a year, added to the annualized cost in the
-      Phase 4 hurdle. A placeholder with status and a note until Powertown
-      gives a real figure. In config/costs.yaml with no value yet, since
-      no figure has been given; one is needed before Phase 4 scores.
+      optional Phase 4 model confidence. A placeholder with status and a
+      note until Powertown gives a real figure. In config/costs.yaml with
+      no value; it is not used in scoring, only when a user supplies one.
 - [x] `feat(ingest): download ComStock profiles for Massachusetts`
       A loader in `prospect/ingest/` that fetches 15-minute ComStock
       profiles for each building type in Massachusetts and saves them
@@ -510,15 +517,18 @@ placeholders and each sourced value names its source.
 
 ## Phase 4: Economics model  (branch `phase-4-model`, tag v0.4.0)
 
-Goal: for each site, its model confidence that a standard battery
-deployment clears the profit hurdle (annualized cost plus the minimum host
-benefit), with a band, under each scenario, and the installed cost per
-block at which it would break even. Installed cost is the least known
-input, so it is never a hidden assumption: the model shows where the value
-comes from and what cost would make a site work.
-Done when: `make score` writes a scored row per site and scenario with the
-model confidence, P10, P50 and P90 of total value, expected
-blocks and top drivers, and model tests pass.
+Goal: for each site, the yearly value one battery block could bring
+(demand savings plus ConnectedSolutions revenue, gross, before any host
+share), with a P10 to P90 band, under each scenario, and the installed cost
+per block at which it would break even. Sites are ranked by value per block.
+Installed cost is the least known input and Powertown knows it, so nothing
+about cost sits in the headline: the model shows where the value comes from
+and what cost would make a site work. Values are simulated and unvalidated,
+not profit.
+Done when: `make score` writes a scored row per site and scenario with value
+per block (P10, P50, P90), blocks, total, break-even cost, value by stream
+and top drivers, model tests pass, and model confidence can be computed for
+a given cost.
 
 Scoring scope: funnel survivors at the loosest reported peak line (150 kW),
 with a flag for those that pass 200 kW. Tier 1 and tier 2 are both scored;
@@ -567,33 +577,39 @@ stays a config placeholder.
       Tests: flat load gives zero, higher rate never lowers savings, a
       longer spike never raises the shaved share.
 - [ ] `feat(model): add grid program revenue`
-      ConnectedSolutions only where the utility is eligible, discounted by
-      the overlap factor. Tests: municipal sites get none.
-- [ ] `feat(model): compute model confidence for the profit hurdle`
-      Model confidence is the probability that total value (demand
-      savings plus grid revenue) exceeds the annualized battery cost
-      (installed cost over life at the financing rate, plus O&M) plus the
-      minimum yearly host benefit from config. It does not depend on the
-      host share split. Tests: higher cost or a higher minimum host
-      benefit never raises model confidence.
+      ConnectedSolutions only where the utility is eligible, scaled by the
+      performance factor and discounted by the overlap factor. Tests:
+      municipal sites get none.
+- [ ] `feat(model): compute value per block`
+      Per site and scenario: value per block per year (demand savings plus
+      ConnectedSolutions revenue, gross, before any host share) at P10,
+      P50 and P90, the expected number of blocks, and the total (value per
+      block times blocks). Sites are ranked by P50 value per block.
 - [ ] `feat(model): compute break-even installed cost`
       Per site and scenario, the highest installed cost per block at which
-      P50 total value equals the annualized cost plus the minimum host
-      benefit (life, financing and O&M from config), and the same at P10.
-      A headline number next to model confidence, since installed cost is
-      the least known input. Tests: break-even is higher for higher value,
-      and a site with zero value has break-even zero.
+      P50 value per block equals the annualized cost (life, financing and
+      O&M from config), and the same at P10, with and without the ITC. It
+      leaves out the host benefit and says so. A translation column, since
+      installed cost is the least known input. Tests: break-even is higher
+      for higher value, and a site with zero value has break-even zero.
+- [ ] `feat(model): compute model confidence for a given cost`
+      Optional: only when a user supplies an installed cost and a minimum
+      host benefit (`prospect score --installed-cost X --min-host-benefit
+      Y`); `make score` does not compute it. Model confidence is the
+      probability that value per block exceeds the annualized battery cost
+      (installed cost over life at the financing rate, plus O&M, less the
+      ITC when it is on) plus the minimum yearly host benefit. Tests:
+      higher cost or a higher minimum host benefit never raises model
+      confidence.
 - [ ] `feat(model): run scenarios`
-      A staged revenue ladder: demand savings only, plus
-      ConnectedSolutions, plus ITC. Every score names its scenario.
+      Two per site: demand savings only, and demand savings plus
+      ConnectedSolutions. The ITC is a cost-side toggle, used only in the
+      break-even column and the confidence option. Every score names its
+      scenario.
 - [ ] `feat(model): report value by revenue stream`
       Per site and scenario, keep demand savings, ConnectedSolutions
       revenue and any modeled optional stream separate, and show each
       stream's share of P50 value.
-- [ ] `feat(model): split savings between host and operator`
-      Host share as a parameter. It only changes the site detail numbers
-      (host share, operator share minus annualized cost), never model
-      confidence.
 - [ ] `feat(model): attribute results to input drivers`
       Rank correlation between each input and the result.
 - [ ] `feat(model): persist scores with run metadata`
@@ -637,17 +653,18 @@ bands are calibrated, and whether peak shape was validated.
       first. If one is usable, test the shape estimates against it, with
       any download done by a loader in `prospect/ingest/`. If none is
       usable, record in docs/VALIDATION.md that shape is unvalidated.
-- [ ] `feat(validate): report cost sensitivity`
-      How rankings change between the low ($180,000) and middle ($260,000)
-      installed cost cases.
+- [ ] `feat(validate): compare break-even cost with the cost estimates`
+      The ranking does not depend on cost. Report how many sites have a
+      break-even cost above the low ($180,000) and middle ($260,000)
+      installed cost estimates, with and without the ITC.
 - [ ] `feat(validate): run data assumption sensitivity`
       Rerun the pipeline with one data assumption changed at a time (touch
       tolerance 1 m versus 5 m, 03x/04x in versus out, estimated areas 25
       percent higher and lower) and report how the top 50 per region move.
       Record it in docs/VALIDATION.md.
 - [ ] `docs(validate): generate validation report`
-      Metrics, energy calibration, the peak shape result, cost
-      sensitivity, sample sizes and a plain statement of limits.
+      Metrics, energy calibration, the peak shape result, the break-even
+      comparison, sample sizes and a plain statement of limits.
 
 ---
 
@@ -658,18 +675,21 @@ Done when: `make export` writes per-region files under 5 MB each that pass
 schema validation.
 
 - [ ] `feat(export): write ranked sites per region as GeoJSON and CSV`
-      Every site includes its model confidence, its band, its break-even
-      installed cost per block (P50 and P10), its value split by revenue
-      stream, and its evidence flags.
+      Value per block first: P50 with the P10 to P90 band, expected
+      blocks, total, break-even installed cost per block (with and without
+      the ITC), the value split by revenue stream, and the evidence flags.
+      No model confidence by default.
 - [ ] `feat(export): include compact draws per site`
       A small fixed number of draws per site, split into demand savings
       and grid revenue in physical units (kW-months of peak reduction and
       eligible grid-program kW). The manifest carries the config values the
-      report needs: demand rate, cost, minimum host benefit, ITC and the
-      ConnectedSolutions factors.
+      report needs: demand rate, life, financing, O&M, ITC and the
+      ConnectedSolutions factors. Installed cost and minimum host benefit
+      are left empty.
 - [ ] `test(export): validate export schema and size budget`
-      Includes a parity test: recomputing model confidence from the export
-      at default settings matches the Python model.
+      Includes a parity test: model confidence recomputed from the export
+      at a given installed cost and host benefit matches the Python
+      model.
 - [ ] `chore(export): add data manifest`
       Version, generated time, config hash, source reporting years.
 
@@ -679,7 +699,7 @@ schema validation.
 
 Goal: one self-contained report.html that someone opens by double click, with
 no network, backend or install, to see which buildings to approach next,
-ranked by model confidence.
+ranked by value per block.
 Done when: `make report` writes report.html from the Phase 6 export, it
 opens offline, and it lets a reader change the key assumptions and filter the
 list.
@@ -688,25 +708,31 @@ list.
       A script under `prospect/report/` writes one HTML file with data, CSS
       and JS inline and no external scripts, fonts or images. A region
       switch (Metro South, Worcester) and a sortable ranked table: owner,
-      address, town, segment, model confidence with color, number and
-      short label, the P10 to P90 yearly value range, the break-even
-      installed cost per block, the share of value from each revenue
-      stream, data quality as text from the evidence flags, and the
-      size-only rank next to the model rank. The table can sort by
-      break-even cost. Color scale: 90 and above green, 80 to under 90 yellow, 70 to
-      under 80 orange, 50 to under 70 deep orange, under 50 red. Red sites
-      are hidden by default and shown with one click, with the reason each
-      is red. Basic responsive CSS.
+      address, town, segment, value per block (P50, with the P10 to P90
+      range) and its percentile rank inside the region, expected blocks,
+      total, the break-even installed cost per block with and without the
+      ITC, the share of value from each revenue stream, data quality as
+      text from the evidence flags, and the size-only rank next to the
+      model rank. The table can sort by break-even cost. The default view
+      has no profit colors. A confidence view appears when the reader
+      enters an installed cost and a minimum host benefit; only there,
+      model confidence shows with color, number and short label (90 and
+      above green, 80 to under 90 yellow, 70 to under 80 orange, 50 to
+      under 70 deep orange, under 50 red), and red sites are hidden by
+      default and shown with one click, with the reason each is red.
+      Basic responsive CSS.
 - [ ] `feat(report): add site detail view`
       Evidence flags, top drivers, the buildings and parcels in the site,
       and a map link by coordinates for outreach (an external link,
       nothing embedded).
 - [ ] `feat(report): add settings and filters`
       Settings the reader can change, recomputed in the browser from the
-      export: installed cost, minimum host benefit, ITC on or off,
+      export: installed cost and minimum host benefit (both empty by
+      default; filling them opens the confidence view), ITC on or off,
       ConnectedSolutions on or off, demand rate. A column showing how far
-      each site moved from the defaults. Filters: segment, utility, minimum
-      confidence, hide existing customers, show red sites.
+      each site moved from the defaults. Filters: segment, utility,
+      minimum value per block, hide existing customers, and in the
+      confidence view minimum confidence and show red sites.
 - [ ] `feat(report): load a customer status file`
       An optional CSV the reader picks in the browser: owner or address,
       and a status (customer, contacted, declined). Matching sites get a
@@ -715,14 +741,17 @@ list.
       (normalized owner or address). Add docs/customer_status.example.csv
       with obviously fake rows.
 - [ ] `feat(report): add assumptions and limits section`
-      Lists every placeholder in use. Shows the installed cost assumption
-      and says it is pending Powertown's confirmation. Explains model
-      confidence. Says peak shape is unvalidated until real meter data
-      tests it. Lists what the ranking does not model: space for cabinets,
+      Lists every placeholder in use. Explains value per block: simulated,
+      gross, before any host share, not profit. Says installed cost is not
+      an input to the ranking; the owner's estimates appear only as
+      reference points next to break-even cost. Explains model confidence
+      in the optional view. Says peak shape is unvalidated until real
+      meter data tests it. Lists what the ranking does not model: space for cabinets,
       utility interconnection capacity, owner willingness.
 - [ ] `test(report): check offline use and parity`
-      The built file makes no network requests, and its recomputed model
-      confidence matches the export at default settings.
+      The built file makes no network requests, its value per block
+      matches the export at default settings, and its model confidence at
+      a given installed cost and host benefit matches the Python model.
 
 ---
 
@@ -733,7 +762,8 @@ and can audit the method in 15.
 Done when: the README follows that structure and every link works on a phone.
 
 - [ ] `docs: write one-page brief for Powertown`
-      docs/BRIEF.md: what the tool does, the headline finding, one worked
+      docs/BRIEF.md: what the tool does, the headline finding (value per
+      block, with break-even cost as the translation), one worked
       example (Brockton Hospital: its evidence flags and why it ranks where
       it does), what is unvalidated, and the open questions. It can be
       drafted and sent once Phase 5 gives a validation result.
@@ -741,8 +771,10 @@ Done when: the README follows that structure and every link works on a phone.
       Top: problem sentence, what it does, a screenshot, and a "Start
       here" path to the brief and report.html. Middle: 2 minute
       walkthrough link. Bottom: method, validation, limits, how to run.
-      Use the term model confidence. State the low cost assumption and the
-      cost sensitivity result, and that shape estimates are unvalidated
+      The headline is value per block; use model confidence only for the
+      optional view. State the break-even comparison with the owner's cost
+      estimates, that values are gross before any host share and not
+      profit, and that shape estimates are unvalidated
       until real meter data tests them. List open questions for Powertown:
       how they find sites today, a list of current and contacted sites,
       installed cost, ITC eligibility, whether ConnectedSolutions stacks
@@ -771,7 +803,10 @@ Done when: the README follows that structure and every link works on a phone.
   ranking quality can be measured with precision at k.
 - Learn building load shape from Powertown's real meter data where they
   share it, replacing the type-based priors.
-- A host share slider in the report.
+- Split value between host and operator, moved from Phase 4: host share
+  as a parameter that changes only the site detail numbers (host share,
+  operator share minus annualized cost), never the ranking, with a host
+  share slider in the report.
 - Phase 4, if area uncertainty is too wide: test floors derived from
   building height, and the Overture buildings probe for multi-story types.
 - Key `raw_parcels`, `raw_footprints` and `raw_utility_territories` by
