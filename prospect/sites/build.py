@@ -11,7 +11,7 @@ from pathlib import Path
 
 from prospect import use_codes
 from prospect.db import connect
-from prospect.sites import group
+from prospect.sites import group, ubid
 
 SQL = Path(__file__).resolve().parents[2] / "sql" / "sites"
 
@@ -19,6 +19,7 @@ SQL = Path(__file__).resolve().parents[2] / "sql" / "sites"
 STEPS = [
     "01_parcels.sql",
     "02_buildings.sql",
+    lambda conn: fill_ubids(conn),
     lambda conn: group.group(conn, group.load_config()),
     "03_sites.sql",
 ]
@@ -36,6 +37,25 @@ def fill_use_code_classes(conn, config: dict) -> None:
             " VALUES (%s, %s, %s)",
             [(t, c, use_codes.classify(c, t, config)) for t, c in pairs],
         )
+
+
+def fill_ubids(conn) -> None:
+    """Set buildings.ubid from each footprint's bounding box and centroid."""
+    rows = conn.execute(
+        "SELECT building_id, ST_YMin(geom), ST_XMin(geom), ST_YMax(geom),"
+        " ST_XMax(geom), ST_Y(ST_Centroid(geom)), ST_X(ST_Centroid(geom))"
+        " FROM buildings"
+    ).fetchall()
+    conn.execute(
+        "CREATE TEMP TABLE building_ubid (building_id bigint, ubid text) ON COMMIT DROP"
+    )
+    with conn.cursor().copy("COPY building_ubid FROM STDIN") as copy:
+        for building_id, *box in rows:
+            copy.write_row((building_id, ubid.encode(*box)))
+    conn.execute(
+        "UPDATE buildings b SET ubid = u.ubid FROM building_ubid u"
+        " WHERE u.building_id = b.building_id"
+    )
 
 
 def build(conn) -> None:

@@ -89,6 +89,12 @@ wheels = [
 ]
 
 [[package]]
+name = "openlocationcode"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/e8/9fc58ee30f4f7b1befe190005c3d0d50b472df4bb968dcae1db7fbbf0e2a/openlocationcode-1.0.1.tar.gz", hash = "sha256:6fc0108a8214b65d74964105bd69645a8a7529237f0de6aadcfa83cc3373b359", size = 7767, upload-time = "2019-07-20T21:27:40.502Z" }
+
+[[package]]
 name = "packaging"
 version = "26.3"
 source = { registry = "https://pypi.org/simple" }
@@ -112,6 +118,7 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
+    { name = "openlocationcode" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pyyaml" },
     { name = "tenacity" },
@@ -126,6 +133,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
+    { name = "openlocationcode", specifier = "==1.0.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "tenacity", specifier = ">=9.2.1" },

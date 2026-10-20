@@ -110,7 +110,7 @@ Never rewrite history on main.
 - Python 3.11+, packaged with pyproject.toml. Use uv if installed, otherwise
   venv and pip.
 - Python libraries: httpx, tenacity, psycopg (v3), pandas, numpy, pyyaml,
-  pytest, ruff.
+  openlocationcode (pinned 1.0.1, for UBIDs), pytest, ruff.
 - Postgres 16 with PostGIS, run locally with docker compose. Spatial joins
   happen in SQL, not in Python.
 - Report: one self-contained report.html written by a Python script under

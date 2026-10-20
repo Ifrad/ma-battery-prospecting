@@ -194,14 +194,14 @@ Evidence flags, per building and per site:
       `BROCKTON HOSPITAL`, `... INC` and `... COMPANY THE`. This also joins
       cases like 1129 Auburn St, Whitman: two touching parcels, one owner,
       one address. Scattered parcels of one owner stay separate sites.
-- [ ] `feat(sites): compute UBIDs for footprints`
+- [x] `feat(sites): compute UBIDs for footprints`
       Unique Building Identifiers from the MassGIS footprints, so LBER's
-      `UBID` field can be matched exactly. Start with a read-only
-      feasibility check: decode a sample of LBER UBIDs to bounding boxes
-      with a throwaway decoder that is not added to the project, and
-      compare them with the MassGIS footprints. Record the match rate in
-      docs/DATA.md and stop for the owner before proposing or adding any
-      dependency (PNNL's buildingid implementation is not in the Stack).
+      `UBID` field can be matched exactly. Computed with
+      `openlocationcode==1.0.1` and our own encoder following PNNL's UBID
+      specification, not PNNL's buildingid package: it reproduces DOER's
+      UBIDs on the pilot data (92.7% of pilot LBER rows match a footprint
+      exactly) and agrees with buildingid 2.3.0 on 4,019 of 4,019 sampled
+      footprints. Feasibility check and match detail in docs/DATA.md.
 - [ ] `feat(sites): match buildings to LBER records`
       In order, stopping at the first that works: (1) exact UBID match,
       (2) LBER point inside a footprint, (3) point inside a parcel,
