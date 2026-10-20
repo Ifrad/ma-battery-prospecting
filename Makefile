@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score
+.PHONY: check lint test db-up db-down migrate probe ingest sites match-rates assumptions comstock simulate intensity funnel db-check score validate
 
 RUN := $(shell command -v uv >/dev/null 2>&1 && echo "uv run" || echo ".venv/bin/python -m")
 PY := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo ".venv/bin/python")
@@ -56,6 +56,10 @@ db-check:
 # Score funnel survivors by value per battery block; writes docs/SCORES.md.
 score:
 	$(RUN) prospect score
+
+# Write docs/VALIDATION.md from the database and local files.
+validate:
+	$(PY) -m prospect.validate.run
 
 # Rebuild parcels, buildings and sites from the raw tables.
 sites:

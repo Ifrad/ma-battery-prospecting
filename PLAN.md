@@ -696,11 +696,15 @@ was validated, and what is unvalidated.
       the 150 percent cap applies. Types with no open profile take the
       pooled medians (placeholder). The report's sensitivity table now
       rescores instead of repricing, since the cap is not linear.
-- [ ] `feat(validate): reproduce size-only baseline`
+- [x] `feat(validate): reproduce size-only baseline`
       Rank by building area, as the earlier public prototype
       (github.com/thutch17/powertown-hackathon) did, credited as prior
       work. Report how much the model's top 50 per region overlaps with
-      the size-only top 50.
+      the size-only top 50. The prototype also used town permit history,
+      but only for Boston, Cambridge and Somerville, so in the pilot it
+      ranks by size alone. `make validate` writes the section, against all
+      candidate sites and against scored sites only, with why the size
+      top 50 sites that were not scored dropped out.
 - [ ] `feat(validate): compare energy estimates against LBER with town holdout`
       For LBER buildings with measured grid electricity (zero or negative
       is missing), estimate annual kWh as if unmeasured, with the Phase 3
