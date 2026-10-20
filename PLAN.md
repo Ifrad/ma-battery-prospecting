@@ -667,7 +667,7 @@ model beats a size-only ranking and where it does not, whether the annual
 energy bands are calibrated, how stable the rankings are, whether peak shape
 was validated, and what is unvalidated.
 
-- [ ] `docs(config): record the Eversource rate source and division`
+- [x] `docs(config): record the Eversource rate source and division`
       Find which Eversource document and rate division the $33.95 G-2
       demand charge in config/rates.yaml came from, which towns that
       division covers, and whether Canton and Sharon are in it, from
@@ -675,7 +675,9 @@ was validated, and what is unvalidated.
       different rate applies, stop and show the owner first. Otherwise
       record the source and division in the config note, and keep the
       rate area unconfirmed flag unless Eversource's documents confirm the
-      towns.
+      towns. Result: source and division confirmed (rate 15, Greater
+      Boston, M.D.P.U. No. 1-26-F); no Eversource document lists towns by
+      area, so the flag stays.
 - [ ] `feat(model): cap ConnectedSolutions by event-window load`
       The payment cannot exceed the building's load during the 3 to 8 pm
       summer weekday event window unless the site exports, which needs an
