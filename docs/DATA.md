@@ -338,3 +338,29 @@ Whitinsville 3, North and South Grafton 4, North Oxford 2), a few
 neighboring town names (Plympton 2, Bellingham, New Braintree,
 Weymouth) and two wrong ones (Andover, and Shrewsbury on a point in
 Metro South). The point location is more reliable than the `City` text.
+
+## LBER matching
+
+`make sites` matches each pilot LBER row, once per reporting year, to one
+building (`lber_matches`). Pilot rule: the LBER point lies inside a pilot
+town's polygon. Methods run in order and stop at the first that finds a
+building: exact UBID, point inside a footprint, point inside a parcel,
+normalized address. When a method finds several buildings, the largest
+footprint is used and the confidence reads "ambiguous, n buildings", so
+one LBER row never gives kWh to two buildings. Confidence labels and
+address abbreviations are placeholders in `config/sites.yaml`.
+
+| Region | Pilot rows | UBID | Point in footprint | Point in parcel | Address | Unmatched |
+|---|---|---|---|---|---|---|
+| Metro South | 1,950 | 1,816 (93.1%) | 117 (6.0%) | 15 (0.8%) | 0 | 2 |
+| Worcester | 2,002 | 1,848 (92.3%) | 117 (5.8%) | 29 (1.4%) | 0 | 8 |
+| Both | 3,952 | 3,664 (92.7%) | 234 (5.9%) | 44 (1.1%) | 0 | 10 |
+
+- 35 of the 44 parcel matches are ambiguous (up to 51 buildings on one
+  parcel); 8 of those 35 have grid electricity.
+- The 10 unmatched rows (`lber_unmatched`) all lie on a parcel with no
+  footprint; 1 has grid electricity. The address method found none.
+- A building's electricity source is measured only through a matched row
+  with grid electricity, from its latest reporting year. 1,165 of the
+  1,166 pilot rows with grid electricity are matched, each to a different
+  building.

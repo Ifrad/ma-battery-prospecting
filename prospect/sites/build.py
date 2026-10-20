@@ -11,7 +11,8 @@ from pathlib import Path
 
 from prospect import use_codes
 from prospect.db import connect
-from prospect.sites import group, ubid
+from prospect.regions import load_regions
+from prospect.sites import group, lber, ubid
 
 SQL = Path(__file__).resolve().parents[2] / "sql" / "sites"
 
@@ -22,6 +23,7 @@ STEPS = [
     lambda conn: fill_ubids(conn),
     lambda conn: group.group(conn, group.load_config()),
     "03_sites.sql",
+    lambda conn: lber.match(conn, group.load_config()["lber_match"]),
 ]
 
 
@@ -36,6 +38,15 @@ def fill_use_code_classes(conn, config: dict) -> None:
             "INSERT INTO use_code_classes (town_id, use_code, use_class)"
             " VALUES (%s, %s, %s)",
             [(t, c, use_codes.classify(c, t, config)) for t, c in pairs],
+        )
+
+
+def fill_pilot_towns(conn, regions: dict) -> None:
+    conn.execute("TRUNCATE pilot_towns")
+    with conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO pilot_towns (town_id, region) VALUES (%s, %s)",
+            [(t, r) for r, towns in regions.items() for t in towns],
         )
 
 
@@ -61,6 +72,7 @@ def fill_ubids(conn) -> None:
 def build(conn) -> None:
     with conn.transaction():
         fill_use_code_classes(conn, use_codes.load())
+        fill_pilot_towns(conn, load_regions())
         for step in STEPS:
             if callable(step):
                 step(conn)
@@ -71,7 +83,13 @@ def build(conn) -> None:
 def main() -> None:
     with connect(autocommit=True) as conn:
         build(conn)
-        for table in ("parcels", "buildings", "sites"):
+        for table in (
+            "parcels",
+            "buildings",
+            "sites",
+            "lber_matches",
+            "lber_unmatched",
+        ):
             n = conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
             print(f"{table}: {n:,}")
 
