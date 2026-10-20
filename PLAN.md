@@ -583,7 +583,7 @@ stays a config placeholder.
       ConnectedSolutions only where the utility is eligible, scaled by the
       performance factor and discounted by the overlap factor. Tests:
       municipal sites get none.
-- [ ] `feat(model): compute value per block`
+- [x] `feat(model): compute value per block`
       Per site and scenario: value per block per year (demand savings plus
       ConnectedSolutions revenue, gross, before any host share) at P10,
       P50 and P90, the expected number of blocks, and the total (value per
