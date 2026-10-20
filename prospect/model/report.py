@@ -4,10 +4,12 @@ Values are simulated gross yearly revenue per battery block, before any host
 share. They are not profit, not accurate and unvalidated.
 """
 
+import copy
 from pathlib import Path
 
 import numpy as np
 
+from prospect.model import value
 from prospect.sites.match_rates import table
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -40,31 +42,6 @@ def rows(conn, run_id: int) -> list[dict]:
     )
     names = [d.name for d in cur.description]
     return [dict(zip(names, r, strict=True)) for r in cur.fetchall()]
-
-
-def reprice(r: dict, cfg: dict, real: float, perf: float, overlap: float) -> float:
-    """P50 value per block with the three factors changed, from stored units.
-
-    Stored kW-months already carry the config realization factor and stored
-    grid kW the config performance and overlap factors; all scale linearly.
-    """
-    base_real = cfg["profiles"]["realization_factor"]["value"]
-    cs = cfg["connected_solutions"]
-    base_grid = cs["performance_factor"]["value"] * (1 - cs["overlap_factor"]["value"])
-    rates = {
-        s["name"]: s["demand_charge_per_kw_month"]
-        for s in cfg["rates"]["utilities"][r["utility"]]["schedules"]
-    }
-    demand = np.asarray(r["kwm_g2"]) * rates["G-2"] + np.asarray(
-        r["kwm_g3"]
-    ) * rates.get("G-3", 0.0)
-    value = demand * real / base_real
-    if r["scenario"] == "with_connected_solutions" and base_grid > 0:
-        grid = (
-            np.asarray(r["grid_kw"]) * cs["daily_dispatch_usd_per_kw_season"]["value"]
-        )
-        value = value + grid * perf * (1 - overlap) / base_grid
-    return float(np.median(value))
 
 
 def counts_section(scored: list[dict]) -> list[str]:
@@ -220,7 +197,29 @@ def streams_section(by: dict) -> list[str]:
     ]
 
 
-def sensitivity_section(by: dict, cfg: dict) -> list[str]:
+def with_factors(cfg: dict, real: float, perf: float, overlap: float) -> dict:
+    """A copy of cfg with the three factors set."""
+    out = copy.deepcopy(cfg)
+    out["profiles"]["realization_factor"]["value"] = real
+    out["connected_solutions"]["performance_factor"]["value"] = perf
+    out["connected_solutions"]["overlap_factor"]["value"] = overlap
+    return out
+
+
+def median_p50(scope: list, cfg: dict) -> float:
+    """Median P50 value per block, with ConnectedSolutions, rescored."""
+    streams = tuple(cfg["model"]["scenarios"]["with_connected_solutions"])
+    return float(
+        np.median(
+            [
+                np.median(value.site_draws(s, b, cfg, streams)["value_per_block"])
+                for s, b in scope
+            ]
+        )
+    )
+
+
+def sensitivity_section(scope: list, cfg: dict) -> list[str]:
     real = cfg["profiles"]["realization_factor"]
     cs = cfg["connected_solutions"]
     perf, over = cs["performance_factor"], cs["overlap_factor"]
@@ -230,10 +229,9 @@ def sensitivity_section(by: dict, cfg: dict) -> list[str]:
         ("ConnectedSolutions performance factor", 1, perf),
         ("ConnectedSolutions overlap factor", 2, over),
     ]
-    rs = by["with_connected_solutions"]
 
     def median_value(factors) -> float:
-        return float(np.median([reprice(r, cfg, *factors) for r in rs]))
+        return median_p50(scope, with_factors(cfg, *factors))
 
     body = []
     for name, i, c in cases:
@@ -257,7 +255,7 @@ def sensitivity_section(by: dict, cfg: dict) -> list[str]:
         "",
         "Median P50 value per block across scored sites, with ConnectedSolutions,"
         " with one factor at a time at the low end, default and high end of its"
-        " range in config. Repriced from the stored draws.",
+        " range in config, rescored with the same draws.",
         "",
         table(
             ["Factor", "Low / default / high", "Low", "Default", "High", "Swing"], body
@@ -353,7 +351,7 @@ def top_section(by: dict) -> list[str]:
     return out
 
 
-def render(scored: list[dict], run: dict, cfg: dict) -> str:
+def render(scored: list[dict], run: dict, cfg: dict, scope: list) -> str:
     by = {s: [r for r in scored if r["scenario"] == s] for s in SCENARIOS}
     one = by["with_connected_solutions"]
     parts = [
@@ -379,7 +377,7 @@ def render(scored: list[dict], run: dict, cfg: dict) -> str:
         "",
         *streams_section(by),
         "",
-        *sensitivity_section(by, cfg),
+        *sensitivity_section(scope, cfg),
         "",
         *payback_section(by, cfg),
         "",
@@ -391,4 +389,6 @@ def render(scored: list[dict], run: dict, cfg: dict) -> str:
 def write(conn, run_id: int, cfg: dict, path: Path = PAGE) -> None:
     cur = conn.execute("SELECT * FROM score_runs WHERE run_id = %s", (run_id,))
     run = dict(zip([d.name for d in cur.description], cur.fetchone(), strict=True))
-    path.write_text(render(rows(conn, run_id), run, cfg))
+    from prospect.model.run import load_scope
+
+    path.write_text(render(rows(conn, run_id), run, cfg, load_scope(conn, cfg)))

@@ -92,6 +92,22 @@ def peak_window(starts: list[datetime], window: dict) -> np.ndarray:
     )
 
 
+def event_window(starts: list[datetime], terms: dict) -> tuple[np.ndarray, np.ndarray]:
+    """ConnectedSolutions event-window steps: (summer, all year).
+
+    Weekdays inside the daily dispatch window (3 to 8 p.m.); summer adds the
+    event months (June to September). The program uses the all-year weekday
+    window peak to set a G-3 site's peak for its export cap.
+    """
+    start = int(terms["window"]["start"][:2]) * 60 + int(terms["window"]["start"][3:])
+    end = int(terms["window"]["end"][:2]) * 60 + int(terms["window"]["end"][3:])
+    weekday_window = np.array(
+        [s.weekday() < 5 and start <= s.hour * 60 + s.minute < end for s in starts]
+    )
+    summer = np.array([s.month in terms["months"] for s in starts])
+    return weekday_window & summer, weekday_window
+
+
 def by_month(kw: np.ndarray, starts: list[datetime]) -> tuple[np.ndarray, np.ndarray]:
     """Split one year of steps into 12 rows padded to 31 days.
 
@@ -154,11 +170,15 @@ def read_profile(path: Path) -> tuple[np.ndarray, list[datetime]]:
     return kw, starts
 
 
-def simulate(paths: list[Path], window: dict, b: dict) -> list[dict]:
-    """One row per building and month: peaks, load factor and peak reduction."""
-    loads, valids, windows, meta = [], [], [], []
+def simulate(paths: list[Path], window: dict, b: dict, terms: dict) -> list[dict]:
+    """One row per building and month: peaks, load factor and peak reduction,
+    with the building's event-window mean and peak (terms: ConnectedSolutions
+    daily dispatch terms) repeated on each of its rows."""
+    loads, valids, windows, meta, events = [], [], [], [], []
     for path in paths:
         kw, starts = read_profile(path)
+        summer, all_year = event_window(starts, terms)
+        events.append((kw[summer].mean(), kw[all_year].max()))
         index, valid = by_month(kw, starts)
         in_window = peak_window(starts, window)
         loads.append(np.where(valid, kw[index], 0.0))
@@ -188,6 +208,8 @@ def simulate(paths: list[Path], window: dict, b: dict) -> list[dict]:
                     "month_window_peak_kw": round(peak_win[r], 3),
                     "reduction_all_kw": round(peak_all[r] - held_all[r], 3),
                     "reduction_window_kw": round(peak_win[r] - held_win[r], 3),
+                    "event_mean_kw": round(events[i][0], 3),
+                    "event_peak_kw": round(events[i][1], 3),
                 }
             )
     return rows
@@ -212,6 +234,20 @@ def shares(rows: list[dict]) -> dict:
             r["reduction_window_kw"] / r["month_window_peak_kw"]
             for r in rows
             if r["month_window_peak_kw"] > 0
+        ),
+    }
+
+
+def event_ratios(first_rows) -> dict:
+    """Event-window load over annual peak, across buildings: the summer
+    weekday 3 to 8 p.m. mean, and the all-year weekday 3 to 8 p.m. peak."""
+    rows = list(first_rows)
+    return {
+        "mean_over_peak": spread(
+            r["event_mean_kw"] / r["annual_peak_kw"] for r in rows
+        ),
+        "peak_over_peak": spread(
+            r["event_peak_kw"] / r["annual_peak_kw"] for r in rows
         ),
     }
 
@@ -254,6 +290,7 @@ def summarize(rows: list[dict], sample: list[dict]) -> dict:
                 for i in ids
             ),
             "load_factor": spread(r["month_mean_kw"] / r["month_peak_kw"] for r in rs),
+            "event_window": event_ratios(first[i] for i in ids),
             "bins": bins,
         }
     cells = [c for t in types.values() for c in t["bins"].values()]
@@ -273,6 +310,7 @@ def summarize(rows: list[dict], sample: list[dict]) -> dict:
             "load_factor": spread(
                 r["month_mean_kw"] / r["month_peak_kw"] for r in rows
             ),
+            "event_window": event_ratios(r for r in rows if r["month"] == 1),
             "bins": pooled,
         },
         "types": types,
@@ -288,6 +326,9 @@ HEADER = """\
 # is the National Grid G-2 peak, peak_window the G-3 peak window. Bins are by
 # the building's annual peak kW. A cell with fewer than 10 buildings uses all
 # types pooled in that bin (pooled_fallback: true) and keeps its own count.
+# event_window: across buildings, the June to September weekday 3 to 8 p.m.
+# mean load and the all-year weekday 3 to 8 p.m. peak, each over the annual
+# peak, for the ConnectedSolutions caps.
 """
 
 
@@ -330,7 +371,8 @@ def main() -> int:
     ngrid = rates["utilities"]["National Grid (Massachusetts Electric)"]
     window = next(s for s in ngrid["schedules"] if s["name"] == "G-3")["peak_window"]
     paths = sorted((DATA / "timeseries").glob("*.parquet"))
-    rows = simulate(paths, window, battery())
+    cs = yaml.safe_load((ROOT / "config" / "connected_solutions.yaml").read_text())
+    rows = simulate(paths, window, battery(), cs["daily_dispatch_terms"])
     out = DATA / "simulation.csv"
     with out.open("w", newline="") as f:
         w = csv.DictWriter(f, list(rows[0]))

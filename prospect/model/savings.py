@@ -132,4 +132,5 @@ def demand_savings(site: dict, d: dict, cfg: dict) -> dict:
         "kwm_g3": kwm_g3,
         "demand_usd": usd,
         "capped": capped,
+        "g3_weight": w3,
     }

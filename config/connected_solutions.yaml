@@ -58,6 +58,39 @@ export_cap_share_of_site_peak:
     windows, which can be lower than the annual peak; the model uses the
     estimated annual peak for every site.
 
+site_exports:
+  value: false
+  status: placeholder
+  note: >-
+    Whether a site's battery may export to the grid during events. Export
+    needs an interconnection agreement, and then the 150 percent cap above
+    applies. Without export, the kW curtailed cannot exceed the building's
+    own load in the 3 to 8 p.m. event window, so the model counts per block
+    the lesser of the block's average event output (power times the
+    performance factor) and the building's mean summer weekday event-window
+    load per block, from config/simulation.yaml (event_window,
+    mean_over_peak, times the estimated annual peak). The default assumes no
+    site exports.
+  test: >-
+    Ask the operator whether its deployments export during events.
+  replace: >-
+    Each site's interconnection status.
+
+event_window_no_profile:
+  from: pooled
+  status: placeholder
+  note: >-
+    Sites with no open profile (factories, laundries, food plants, cold
+    storage, auto repair) and the placeholder mix take the pooled median
+    event-window ratios across all simulated ComStock buildings
+    (config/simulation.yaml, pooled event_window: mean 0.368 and peak
+    0.894 of annual peak on the 2026-10-20 simulation). Nothing about their
+    afternoon load is known.
+  test: >-
+    Measured interval data from a few such sites.
+  replace: >-
+    An open industrial load profile dataset or operator meter data.
+
 performance_factor:
   value: 0.61
   range: {low: 0.61, high: 0.92}
