@@ -1,0 +1,273 @@
+"""Write the per-region export files from the latest score run.
+
+Usage: python -m prospect.export.build (make export)
+
+For each region: export/<region>.geojson (one feature per scored site, both
+scenarios) and export/<region>.csv (one row per site and scenario). Values
+are simulated gross yearly revenue per battery block, before any host share:
+not profit, not accurate, unvalidated. Reads the database only.
+"""
+
+import csv
+import json
+import sys
+from pathlib import Path
+
+from prospect.db import connect
+from prospect.model.report import rank_key
+from prospect.model.run import config_hash
+from prospect.priors import config
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "export"
+REGIONS = ("metro_south", "worcester")
+SCENARIOS = ("demand_savings", "with_connected_solutions")
+
+SCORES = """
+    SELECT s.*, st.owner, st.site_addr, initcap(u.attrs ->> 'TOWN') AS town,
+           st.parcels AS parcel_count, st.buildings AS building_count,
+           st.area_sqft, ST_X(st.geom) AS lon, ST_Y(st.geom) AS lat,
+           f.profile, f.annual_kwh, f.peak_kw AS funnel_peak_kw
+    FROM site_scores s
+    JOIN sites st USING (site_id)
+    JOIN site_funnel f USING (site_id)
+    JOIN raw_utility_territories u ON (u.attrs ->> 'TOWN_ID')::integer = st.town_id
+    WHERE s.run_id = %s
+    ORDER BY s.site_id, s.scenario
+"""
+# Size-only rank: building area among every candidate site in the region, as
+# the earlier public prototype ranked (docs/VALIDATION.md).
+SIZE_RANK = """
+    SELECT site_id, rank() OVER (PARTITION BY region ORDER BY area_sqft DESC)
+    FROM site_evidence WHERE candidate AND region IS NOT NULL
+"""
+PARCELS = """
+    SELECT p.site_id, p.loc_id, p.site_addr, p.use_code, p.use_desc, p.owner
+    FROM parcels p WHERE p.site_id = ANY(%s) ORDER BY p.site_id, p.loc_id
+"""
+BUILDINGS = """
+    SELECT site_id, building_id, round(area_sqft) AS area_sqft, area_source,
+           electricity_source, round(grid_kwh) AS grid_kwh, segment
+    FROM building_evidence WHERE candidate AND site_id = ANY(%s)
+    ORDER BY site_id, building_id
+"""
+
+
+def latest_run(conn) -> dict:
+    cur = conn.execute("SELECT * FROM score_runs ORDER BY run_id DESC LIMIT 1")
+    return dict(zip([d.name for d in cur.description], cur.fetchone(), strict=True))
+
+
+def fetch(conn, sql: str, params=None) -> list[dict]:
+    cur = conn.execute(sql, params)
+    names = [d.name for d in cur.description]
+    return [dict(zip(names, r, strict=True)) for r in cur.fetchall()]
+
+
+def scenario_block(r: dict) -> dict:
+    """One scenario's results, rounded to whole dollars."""
+    d = lambda x: round(float(x))  # noqa: E731
+    return {
+        "value_per_block": {k: d(r[f"value_{k}"]) for k in ("p10", "p50", "p90")},
+        "total": {k: d(r[f"total_{k}"]) for k in ("p10", "p50", "p90")},
+        "break_even": {
+            "p50": d(r["break_even_p50"]),
+            "p10": d(r["break_even_p10"]),
+            "p50_itc": d(r["break_even_p50_itc"]),
+            "p10_itc": d(r["break_even_p10_itc"]),
+            "itc_applies": r["itc_applies"],
+        },
+        "streams": {
+            "demand_savings": {
+                "p50": d(r["demand_p50"]),
+                "share": round(r["demand_share"], 4),
+            },
+            "connected_solutions": {
+                "p50": d(r["grid_p50"]),
+                "share": round(r["grid_share"], 4),
+            },
+        },
+        "top_drivers": r["top_drivers"],
+    }
+
+
+def sites(conn, run_id: int) -> list[dict]:
+    rows = fetch(conn, SCORES, (run_id,))
+    size_rank = dict(conn.execute(SIZE_RANK).fetchall())
+    by_site: dict[str, dict] = {}
+    for r in rows:
+        s = by_site.setdefault(
+            r["site_id"],
+            {
+                "site_id": r["site_id"],
+                "region": r["region"],
+                "owner": r["owner"],
+                "site_addr": r["site_addr"],
+                "town": r["town"],
+                "segment": r["segment"],
+                "utility": r["utility"],
+                "tier": r["tier"],
+                "profile": r["profile"],
+                "flags": [],
+                "passes_200kw": r["passes_200kw"],
+                "least_certain": r["least_certain"],
+                "blocks": round(r["blocks"], 2),
+                "area_sqft": round(r["area_sqft"]),
+                "parcel_count": r["parcel_count"],
+                "building_count": r["building_count"],
+                "annual_kwh_estimate": round(r["annual_kwh"]),
+                "size_rank": size_rank.get(r["site_id"]),
+                "lon": round(r["lon"], 6),
+                "lat": round(r["lat"], 6),
+                "scenarios": {},
+            },
+        )
+        s["flags"] = sorted(set(s["flags"]) | set(r["flags"]))
+        s["scenarios"][r["scenario"]] = scenario_block(r)
+    out = list(by_site.values())
+    ids = [s["site_id"] for s in out]
+    parcels, buildings = {}, {}
+    for p in fetch(conn, PARCELS, (ids,)):
+        parcels.setdefault(p.pop("site_id"), []).append(p)
+    for b in fetch(conn, BUILDINGS, (ids,)):
+        b["area_sqft"] = int(b["area_sqft"]) if b["area_sqft"] is not None else None
+        b["grid_kwh"] = int(b["grid_kwh"]) if b["grid_kwh"] is not None else None
+        buildings.setdefault(b.pop("site_id"), []).append(b)
+    for s in out:
+        s["parcels"] = parcels.get(s["site_id"], [])
+        s["buildings"] = buildings.get(s["site_id"], [])
+    for region in REGIONS:
+        ranked = sorted(
+            (s for s in out if s["region"] == region),
+            key=lambda s: rank_key(
+                {
+                    "site_id": s["site_id"],
+                    "value_p50": s["scenarios"]["with_connected_solutions"][
+                        "value_per_block"
+                    ]["p50"],
+                    "blocks": s["blocks"],
+                    "total_p50": s["scenarios"]["with_connected_solutions"]["total"][
+                        "p50"
+                    ],
+                }
+            ),
+        )
+        for i, s in enumerate(ranked, 1):
+            s["model_rank"] = i
+    return out
+
+
+def geojson(region_sites: list[dict]) -> dict:
+    features = []
+    for s in sorted(region_sites, key=lambda s: s["model_rank"]):
+        props = {k: v for k, v in s.items() if k not in ("lon", "lat")}
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [s["lon"], s["lat"]]},
+                "properties": props,
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+CSV_COLUMNS = [
+    "model_rank",
+    "size_rank",
+    "site_id",
+    "owner",
+    "site_addr",
+    "town",
+    "segment",
+    "tier",
+    "utility",
+    "flags",
+    "scenario",
+    "value_p10",
+    "value_p50",
+    "value_p90",
+    "blocks",
+    "total_p50",
+    "break_even_p50",
+    "break_even_p50_itc",
+    "demand_share",
+    "connected_solutions_share",
+    "lat",
+    "lon",
+]
+
+
+def csv_rows(region_sites: list[dict]) -> list[dict]:
+    rows = []
+    for s in sorted(region_sites, key=lambda s: s["model_rank"]):
+        for name in SCENARIOS:
+            sc = s["scenarios"][name]
+            rows.append(
+                {
+                    **{
+                        k: s[k]
+                        for k in (
+                            "model_rank",
+                            "size_rank",
+                            "site_id",
+                            "owner",
+                            "site_addr",
+                            "town",
+                            "segment",
+                            "tier",
+                            "utility",
+                            "blocks",
+                            "lat",
+                            "lon",
+                        )
+                    },
+                    "flags": ";".join(s["flags"]),
+                    "scenario": name,
+                    **{
+                        f"value_{k}": sc["value_per_block"][k]
+                        for k in ("p10", "p50", "p90")
+                    },
+                    "total_p50": sc["total"]["p50"],
+                    "break_even_p50": sc["break_even"]["p50"],
+                    "break_even_p50_itc": sc["break_even"]["p50_itc"],
+                    "demand_share": sc["streams"]["demand_savings"]["share"],
+                    "connected_solutions_share": sc["streams"]["connected_solutions"][
+                        "share"
+                    ],
+                }
+            )
+    return rows
+
+
+def write(conn, out: Path = OUT) -> dict:
+    run = latest_run(conn)
+    if run["config_hash"] != config_hash():
+        raise SystemExit(
+            "config/ changed since the latest score run; run make score first"
+        )
+    config.load()  # the export must not ship a config that fails its checks
+    out.mkdir(exist_ok=True)
+    every = sites(conn, run["run_id"])
+    written = {}
+    for region in REGIONS:
+        rs = [s for s in every if s["region"] == region]
+        gj = out / f"{region}.geojson"
+        gj.write_text(json.dumps(geojson(rs), separators=(",", ":")))
+        with (out / f"{region}.csv").open("w", newline="") as f:
+            w = csv.DictWriter(f, CSV_COLUMNS)
+            w.writeheader()
+            w.writerows(csv_rows(rs))
+        written[region] = len(rs)
+    return {"run_id": run["run_id"], "sites": written}
+
+
+def main() -> int:
+    with connect() as conn:
+        out = write(conn)
+    for region, n in out["sites"].items():
+        print(f"export/{region}.geojson and .csv: {n} sites")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
