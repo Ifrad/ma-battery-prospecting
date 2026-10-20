@@ -62,6 +62,9 @@ om_usd_per_year:
 itc:
   rate: 0.30
   default_on: false
+  # The 30 percent rate without wage and apprenticeship rules applies to
+  # storage with a capacity under 1 MW: here, fewer than 4 blocks.
+  max_capacity_kw: 1000
   status: sourced
   source: >-
     26 U.S.C. 48E(a)(2)(B)(ii)(I), energy storage technology with a
@@ -75,7 +78,11 @@ itc:
     includes material assistance from a prohibited foreign entity, or if
     the taxpayer is a specified foreign entity (48E(c)(3) and (d)(6)), so
     the battery's supply chain decides whether it applies. Domestic content
-    and energy community adders are not modeled.
+    and energy community adders are not modeled. The statute does not say
+    whether capacity means power; the model reads it as the site's block
+    power, so a site of 4 or more blocks gets no ITC in the break-even
+    column (flagged), since meeting the wage and apprenticeship rules is
+    not known.
 
 min_host_benefit_usd_per_year:
   value: null

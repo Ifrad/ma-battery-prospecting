@@ -381,9 +381,9 @@ Every model input is either sourced, with the document it was read from, or a pl
 
 ### costs.yaml: itc
 
-- Value: rate=0.3, default_on=False
+- Value: rate=0.3, default_on=False, max_capacity_kw=1000
 - Source: 26 U.S.C. 48E(a)(2)(B)(ii)(I), energy storage technology with a capacity under 1 MW, as amended by Pub. L. 119-21, https://www.law.cornell.edu/uscode/text/26/48E, read 2026-10-20; see docs/REVENUE_STREAMS.md.
-- Note: A cost-side toggle, off by default, used only in the break-even column and the optional model confidence; it lowers the installed cost by the credit. No credit if construction began after December 31, 2025 and includes material assistance from a prohibited foreign entity, or if the taxpayer is a specified foreign entity (48E(c)(3) and (d)(6)), so the battery's supply chain decides whether it applies. Domestic content and energy community adders are not modeled.
+- Note: A cost-side toggle, off by default, used only in the break-even column and the optional model confidence; it lowers the installed cost by the credit. No credit if construction began after December 31, 2025 and includes material assistance from a prohibited foreign entity, or if the taxpayer is a specified foreign entity (48E(c)(3) and (d)(6)), so the battery's supply chain decides whether it applies. Domestic content and energy community adders are not modeled. The statute does not say whether capacity means power; the model reads it as the site's block power, so a site of 4 or more blocks gets no ITC in the break-even column (flagged), since meeting the wage and apprenticeship rules is not known.
 
 ### intensity.yaml: (top)
 
