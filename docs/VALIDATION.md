@@ -12,3 +12,47 @@ The earlier public prototype (github.com/thutch17/powertown-hackathon), credited
 | Worcester | 21 | 22 | 4 | 2 | 1 |
 
 Not scored means the funnel dropped the site (docs/FUNNEL.md): utility is a municipal plant, kwh is under the monthly kWh line, and peak is an estimated peak under 150 kW. A large building is not a good battery site by size alone.
+
+## Annual energy against LBER, towns held out
+
+Each LBER building with measured grid electricity (zero or negative is missing) is estimated as if unmeasured: floor area times its segment's median kWh per sq ft, with the priors recomputed from every other town by the Phase 3 rules. Size-only is floor area times one global median from the same other towns. Spearman is the rank correlation with measured kWh (higher is better); the error is the median absolute percent error (lower is better). LBER covers only buildings of about 20,000 sq ft and up, so this says nothing about smaller buildings.
+
+Within one segment both estimates are floor area times a constant, so they rank buildings the same way; the model can only rank better across segments, and it can be closer in level. Spearman needs three or more buildings (n/a below that). Errors this large partly reflect the first LBER release, where many reported values are implausibly low (config/intensity.yaml).
+
+Pilot: the model as built, on our segments and building areas.
+
+| Group | Buildings | Spearman, model | Spearman, size-only | Median abs. error, model | Median abs. error, size-only |
+|---|---|---|---|---|---|
+| all | 700 | 0.47 | 0.43 | 70% | 77% |
+| cold_storage | 1 | n/a | n/a | 71% | 71% |
+| food_production | 2 | n/a | n/a | 85% | 85% |
+| generic | 279 | 0.49 | 0.49 | 71% | 73% |
+| hospital | 13 | 0.72 | 0.80 | 60% | 81% |
+| laundry | 1 | n/a | n/a | 46% | 46% |
+| manufacturing | 169 | 0.36 | 0.37 | 78% | 77% |
+| other_healthcare | 24 | 0.59 | 0.59 | 30% | 54% |
+| warehouse | 211 | 0.38 | 0.39 | 68% | 92% |
+
+Statewide: the same method on LBER's own property types and floor areas, a method check, since statewide buildings have no segment or area of ours.
+
+| Group | Buildings | Spearman, model | Spearman, size-only | Median abs. error, model | Median abs. error, size-only |
+|---|---|---|---|---|---|
+| all | 8,462 | 0.50 | 0.43 | 75% | 80% |
+| banking/financial services | 28 | 0.36 | 0.42 | 58% | 70% |
+| education | 961 | 0.43 | 0.43 | 57% | 59% |
+| entertainment/public assembly | 228 | 0.37 | 0.39 | 71% | 75% |
+| food sales and service | 41 | 0.07 | 0.14 | 75% | 80% |
+| healthcare | 247 | 0.54 | 0.54 | 48% | 79% |
+| lodging/residential | 2,052 | 0.39 | 0.41 | 80% | 81% |
+| manufacturing/industrial | 632 | 0.38 | 0.38 | 86% | 85% |
+| mixed use | 75 | 0.44 | 0.49 | 77% | 78% |
+| office | 896 | 0.57 | 0.57 | 64% | 75% |
+| other | 917 | 0.30 | 0.31 | 86% | 95% |
+| parking | 37 | 0.39 | 0.44 | 82% | 305% |
+| public services | 326 | 0.24 | 0.26 | 61% | 69% |
+| religious worship | 184 | 0.17 | 0.21 | 66% | 240% |
+| retail | 697 | 0.48 | 0.49 | 79% | 81% |
+| services | 61 | -0.06 | 0.08 | 85% | 92% |
+| technology/science | 250 | 0.54 | 0.53 | 48% | 91% |
+| utility | 38 | 0.26 | 0.44 | 79% | 92% |
+| warehouse/storage | 792 | 0.41 | 0.41 | 68% | 106% |
