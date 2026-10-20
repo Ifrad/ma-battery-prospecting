@@ -588,7 +588,7 @@ stays a config placeholder.
       ConnectedSolutions revenue, gross, before any host share) at P10,
       P50 and P90, the expected number of blocks, and the total (value per
       block times blocks). Sites are ranked by P50 value per block.
-- [ ] `feat(model): compute break-even installed cost`
+- [x] `feat(model): compute break-even installed cost`
       Per site and scenario, the highest installed cost per block at which
       P50 value per block equals the annualized cost (life, financing and
       O&M from config), and the same at P10, with and without the ITC. It
