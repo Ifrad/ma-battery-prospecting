@@ -478,6 +478,9 @@ placeholders and each sourced value names its source.
       are dated 2021 and 2022 and the live page could not be read. Both
       factors have no value yet. Eligible utilities are National Grid
       and Eversource; municipal light plant customers are not eligible.
+      In Phase 4 the rate, event terms and eligibility became sourced from
+      the National Grid Daily Dispatch page and the Mass Save offering
+      materials (6/08/2023); both factors got placeholder values.
 - [x] `feat(priors): derive energy intensity priors from LBER`
       kWh per sq ft by segment, for buildings without reported use. Only
       buildings with measured grid electricity count. `make intensity`

@@ -7,37 +7,39 @@ eligible_utilities:
     - Eversource Energy (NSTAR Electric)
   status: sourced
   source: >-
-    National Grid, Program Materials for ConnectedSolutions for Commercial /
-    Industrial Customers, dated 2021-08-31, Eligibility Requirements,
-    https://www.nationalgridus.com/media/pdfs/bus-ways-to-save/connectedsolutions-ciprogrammaterials.pdf,
-    read 2026-10-20.
+    Mass Save, Offering Materials for ConnectedSolutions for C&I Customers, 6/08/2023, https://www.masssave.com/-/media/Files/PDFs/Business/CI-ConnectedSolutions-Offering-Materials_June-2023.pdf, eligibility, page 3, read 2026-10-20.
   note: >-
-    Eligible: a National Grid, Eversource or Unitil account in Massachusetts
-    that pays the energy efficiency charge, with a behind-the-meter
-    battery. Municipal light plant customers are not eligible. The only
-    municipal program found, NextZero's Connected Homes pilot (spring 2026
-    newsletter), is behavioral demand response, not batteries. The program
-    document is from 2021 and the live page could not be read.
+    Eligible: a National Grid, Eversource or Unitil electric account in
+    Massachusetts that pays into the energy efficiency fund on its bill,
+    with a behind-the-meter battery. Unitil serves no pilot town. Municipal
+    light plant customers are not eligible.
 
 daily_dispatch_usd_per_kw_season:
   value: 200
-  status: placeholder
+  status: sourced
+  source: >-
+    National Grid, Daily Dispatch page, https://www.nationalgridus.com/MA-Business/Energy-Saving-Programs/Daily-Dispatch ("Up to $200 per kW per summer"), and Mass Save, Offering Materials for ConnectedSolutions for C&I Customers, 6/08/2023, https://www.masssave.com/-/media/Files/PDFs/Business/CI-ConnectedSolutions-Offering-Materials_June-2023.pdf, summary table, page 3,
+    both read 2026-10-20.
   note: >-
-    The owner's vendor figure, unverified. Utility documents read on
-    2026-10-20 also say $200 per average kW per summer: National Grid's C&I
-    program materials (dated 2021-08-31) and its daily dispatch flyer (last
-    edited 2022-08-11). The live National Grid page could not be read
-    (HTTP 403); search summaries of it give $200 for daily dispatch and
-    $275 only for batteries under 50 kW. Vendor pages quoting $225 or $275
-    for commercial daily dispatch conflict with the utility documents. The
-    2021 document pays on average kW delivered across 30 to 60 events, June
-    to September, 2 to 3 hours each between 2 and 7 p.m., with the rate
-    locked for 5 years for new batteries.
-  test: >-
-    Read the current program materials from National Grid, Eversource or
-    Mass Save.
-  replace: >-
-    The current published daily dispatch rate.
+    Paid on the average kW curtailed across all events of the summer. The
+    page says "up to": payment follows performance, which the performance
+    factor below models. The rate is locked for 5 years for new batteries.
+
+daily_dispatch_terms:
+  events_per_summer: {min: 30, max: 60, planned: 40}
+  hours_per_event: {min: 2, max: 3}
+  window: {start: "15:00", end: "20:00"}
+  months: [6, 7, 8, 9]
+  rate_lock_years: 5
+  status: sourced
+  source: >-
+    Mass Save, Offering Materials for ConnectedSolutions for C&I Customers, 6/08/2023, https://www.masssave.com/-/media/Files/PDFs/Business/CI-ConnectedSolutions-Offering-Materials_June-2023.pdf, summary table, page 3, and Daily Dispatch event parameters
+    ("approximately 40 events per season"), read 2026-10-20; National Grid, Daily Dispatch page, https://www.nationalgridus.com/MA-Business/Energy-Saving-Programs/Daily-Dispatch, read
+    2026-10-20.
+  note: >-
+    Events are called any day, holidays included, mostly in July and
+    August. Not inputs to the value except through the performance factor
+    (event length) and the overlap factor (event count).
 
 performance_factor:
   value: 0.61
@@ -45,11 +47,11 @@ performance_factor:
   status: placeholder
   note: >-
     The share of the battery's 250 kW it delivers on average across an
-    event, since payment follows average kW performed. Derived, not read:
-    the block delivers about 458 kWh (469.8 usable x 0.975), which is
-    153 kW over a 3-hour event (0.61) and 229 kW over a 2-hour event
-    (0.92). Event lengths of 2 to 3 hours are from the 2021 program
-    materials. The default assumes 3-hour events.
+    event, since payment follows average kW curtailed. The range comes from
+    the sourced 2 to 3 hour event length (daily_dispatch_terms): the block
+    delivers about 458 kWh (469.8 usable x 0.975), which is 153 kW over a
+    3-hour event (0.61) and 229 kW over a 2-hour event (0.92). The default
+    assumes 3-hour events. The factor itself is derived, not read.
   test: >-
     Compare with event performance reported for enrolled batteries.
   replace: >-
@@ -64,7 +66,7 @@ overlap_factor:
     when the same battery energy cannot serve both, so grid revenue is not
     double counted with peak shaving. An upper bound: a building has at
     most one monthly peak day in each of the 4 event months, and daily
-    dispatch calls at least 30 events, so at most 4 / 30 = 0.13 of event
+    dispatch calls at least 30 events (sourced), so at most 4 / 30 = 0.13 of event
     revenue is at risk. ConnectedSolutions revenue is reduced by this
     share.
   test: >-
