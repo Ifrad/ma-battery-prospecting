@@ -9,8 +9,8 @@ read; otherwise it is unmodeled, with what is missing.
 | Stream | Modeled | Why |
 |---|---|---|
 | G-3 optional coincident peak transmission | No | Value and eligibility read, but the net value needs the ISO-NE monthly peak hours, not yet read |
-| ISO-NE capacity payments | No | Price read; eligibility for one small behind-the-meter battery, and overlap with ConnectedSolutions, not read |
-| Massachusetts clean peak credits | No | mass.gov blocks automated downloads, so neither the value nor the storage rules could be read |
+| ISO-NE capacity payments | No | Price read, and co-participation with ConnectedSolutions is allowed; ISO-NE's own eligibility rules for one small behind-the-meter battery not read |
+| Massachusetts clean peak credits | No | Co-participation with ConnectedSolutions is allowed; mass.gov blocks automated downloads, so neither the value nor the storage rules could be read |
 | Investment tax credit | Yes, on the cost side | Rate and eligibility read; whether a given battery qualifies depends on its supply chain |
 | Depreciation | No | Rules read; the value depends on the operator's tax rate and tax appetite |
 
@@ -50,10 +50,21 @@ Source: ISO New England, Key Stats, Markets,
 https://www.iso-ne.com/about/key-stats/markets, read 2026-10-20 (no page
 date shown).
 
-Eligibility: not read. A single 250 kW behind-the-meter battery would take
-part through a demand response aggregator, under ISO-NE's rules for demand
-capacity resources, which were not read. In Massachusetts, ConnectedSolutions
-targets the same system peak, so the two may not stack.
+Eligibility: ISO-NE's own rules not read. A single 250 kW behind-the-meter
+battery would take part through a demand response aggregator, under
+ISO-NE's rules for demand capacity resources.
+
+Stacking with ConnectedSolutions: allowed. The offering materials let
+customers take part in ISO-NE demand resource programs and
+ConnectedSolutions together, with two risks: a ConnectedSolutions event in
+ISO-NE's 10-day baseline period can erode the customer's ISO-NE baseline,
+and an earlier ConnectedSolutions event can lower ISO-NE's same-day
+adjustment. Not allowed: any ISO-NE program that would reconstitute the
+ConnectedSolutions curtailment into the installed capacity requirement
+(ICR); the materials say the current Forward Capacity Market rarely does.
+Source: Mass Save, Offering Materials for ConnectedSolutions for C&I Customers,
+6/08/2023, https://www.masssave.com/-/media/Files/PDFs/Business/CI-ConnectedSolutions-Offering-Materials_June-2023.pdf, Co-Participation in ISO-NE Demand Resource Programs,
+pages 15 to 16, read 2026-10-20.
 
 What a model would need: the ISO-NE eligibility and qualification rules for
 a behind-the-meter battery of this size, the rule on combining capacity
@@ -67,6 +78,12 @@ seasonal peak windows, priced per MWh, not per kW. Search summaries mention
 an Alternative Compliance Payment of $45 or $65 per MWh and a May 28, 2026
 emergency rulemaking that changed storage multipliers. None of this could be
 checked.
+
+Stacking with ConnectedSolutions: allowed. The offering materials say
+customers may take part in the Clean Peak Standard and ConnectedSolutions,
+and the program administrator reserves no rights to the clean peak
+certificates. Source: the same offering materials, Co-Participation in the
+Clean Peak Standard (CPS) Program, page 15, read 2026-10-20.
 
 Eligibility: not read. Search summaries say a qualified storage system must
 be charged from qualified renewable resources or during set windows, and
@@ -104,6 +121,21 @@ Investment Credit, https://www.irs.gov/credits-deductions/clean-electricity-inve
 Model: a cost-side toggle that lowers the installed cost by the credit,
 used only in the break-even column and the optional model confidence, off
 by default (config/costs.yaml). It is not a revenue stream.
+
+## Eversource metering for ConnectedSolutions
+
+Not a revenue stream but an unmodeled cost on the ConnectedSolutions
+stream for Eversource sites (the 34 in Canton and Sharon). All Eversource
+customers in the program must install metering that sends real-time
+interval data to Eversource, with the battery measured at the asset level.
+Customers may apply for an incentive of up to $1,500 per meter toward the
+metering cost. Source: Mass Save, Offering Materials for ConnectedSolutions for C&I Customers,
+6/08/2023, https://www.masssave.com/-/media/Files/PDFs/Business/CI-ConnectedSolutions-Offering-Materials_June-2023.pdf, Customer Interval Data, For
+Eversource Customers, page 15, read 2026-10-20.
+
+What a model would need: the metering cost per site, net of the incentive.
+Neither the cost nor the number of meters per site is known, so it is not
+modeled.
 
 ## Depreciation
 
