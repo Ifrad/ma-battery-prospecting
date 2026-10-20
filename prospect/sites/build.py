@@ -16,19 +16,35 @@ from prospect.sites import group, lber, owner, segments, ubid
 
 SQL = Path(__file__).resolve().parents[2] / "sql" / "sites"
 
+
+def area_checks(conn) -> None:
+    """Pooled site area with the floor and ceiling checks from config."""
+    checks = group.load_config()["area_checks"]
+    params = {
+        k: checks[k]
+        for k in (
+            "floor_tolerance",
+            "ceiling_stories_factor",
+            "ceiling_without_stories",
+        )
+    }
+    conn.execute((SQL / "03_area.sql").read_text(), params)
+
+
 # In order. A string is a file in sql/sites/, a function takes the connection.
 STEPS = [
     "01_parcels.sql",
     "02_buildings.sql",
     lambda conn: fill_ubids(conn),
     lambda conn: group.group(conn, group.load_config()),
-    "03_sites.sql",
+    area_checks,
+    "04_sites.sql",
     lambda conn: lber.match(conn, group.load_config()["lber_match"]),
-    "04_utility.sql",
+    "05_utility.sql",
     lambda conn: segments.assign(conn, segments.load_config()),
-    "05_segments.sql",
+    "06_segments.sql",
     lambda conn: owner.assign(conn, group.load_config()),
-    "06_owner_tenure.sql",
+    "07_owner_tenure.sql",
 ]
 
 

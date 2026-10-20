@@ -6,7 +6,7 @@ def test_site_evidence_summarizes_its_buildings(db, raw, lber_rows):
     town, lber = lber_rows
     town(348, label="Mass Electric")
     parcel("Z", 0.05, 0, OWNER1="A MUCH LONGER OWNER NAME FOR WIDTH")
-    parcel("A1", 0, 0, USE_CODE="316", OWNER1="ACME", BLD_AREA=6000)
+    parcel("A1", 0, 0, USE_CODE="316", OWNER1="ACME", BLD_AREA=1200)
     # Both A2 records have no building area, so the classed one (332) is
     # the primary record: a generic candidate, area from footprint x stories.
     parcel("A2", 0.001, 0, USE_CODE="104", OWNER1="ACME")
@@ -47,9 +47,10 @@ def test_site_evidence_summarizes_its_buildings(db, raw, lber_rows):
     site = db.execute(
         "SELECT buildings, candidate_buildings, measured_buildings,"
         " round(measured_kwh), lber_matched_buildings, ambiguous_matches,"
-        " round(area_share_assessor::numeric, 2),"
-        " round(area_share_footprint_x_stories::numeric, 2), mixed_res_ci, segment"
+        " round(area_share_assessor::numeric, 2)::float8,"
+        " round(area_share_footprint_x_stories::numeric, 2)::float8,"
+        " mixed_res_ci, segment"
         " FROM site_evidence"
     ).fetchall()
-    # A1 6,000 sq ft assessor; A2 1,000 x 2 stories = 2,000 estimated.
-    assert site == [(2, 2, 1, 100000, 1, 0, 0.75, 0.25, True, "warehouse")]
+    # A1 1,200 sq ft assessor; A2 1,000 x 2 stories = 2,000 estimated.
+    assert site == [(2, 2, 1, 100000, 1, 0, 0.38, 0.63, True, "generic")]

@@ -19,12 +19,12 @@ def building_rows(db, loc_id):
 
 def test_assessor_area_is_shared_by_footprint_area(db, raw):
     parcel, footprint = raw
-    parcel("A", 0, 0, USE_CODE="316", BLD_AREA=10000, OWNER1="ACME")
+    parcel("A", 0, 0, USE_CODE="316", BLD_AREA=2000, OWNER1="ACME")
     footprint(0.0001, 0.0001, 600)
     footprint(0.0005, 0.0005, 400)
     build(db)
     assert parcel_row(db, "A")[3] == "commercial_industrial"
-    assert building_rows(db, "A") == [(6000, "assessor"), (4000, "assessor")]
+    assert building_rows(db, "A") == [(1200, "assessor"), (800, "assessor")]
 
 
 def test_multi_record_parcel_sums_units_and_takes_largest_record(db, raw):
@@ -94,3 +94,74 @@ def test_rebuild_gives_same_rows(db, raw):
     build(db)
     build(db)
     assert db.execute("SELECT count(*) FROM buildings").fetchone()[0] == 1
+
+
+def site_area(db, loc_id):
+    return db.execute(
+        "SELECT round(sum(b.area_sqft)) FROM buildings b JOIN parcels p USING (loc_id)"
+        " WHERE p.site_id = (SELECT site_id FROM parcels WHERE loc_id = %s)",
+        (loc_id,),
+    ).fetchone()[0]
+
+
+def test_straddling_building_gets_its_owners_pooled_area(db, raw):
+    parcel, footprint = raw
+    parcel("Z", 0.05, 0, OWNER1="A MUCH LONGER OWNER NAME FOR WIDTH")
+    # One owner, two touching parcels. The building's interior point is on
+    # S2, which carries only 500 sq ft; S1 carries 9,500 and no footprint.
+    parcel("S1", 0, 0, OWNER1="ACME", USE_CODE="400", BLD_AREA=9500)
+    parcel("S2", 0.001, 0, OWNER1="ACME", USE_CODE="400", BLD_AREA=500)
+    footprint(0.0012, 0.0001, 2000)
+    build(db)
+    assert building_rows(db, "S2") == [(10000, "assessor")]
+
+
+def test_tiny_assessor_area_on_large_footprint_is_flagged(db, raw):
+    parcel, footprint = raw
+    parcel("T", 0, 0, USE_CODE="386", BLD_AREA=100, STORIES="1")
+    footprint(0.0001, 0.0001, 5000)
+    build(db)
+    assert building_rows(db, "T") == [(5000, "assessor_below_footprint")]
+
+
+def test_assessor_area_far_above_footprint_x_stories_is_flagged(db, raw):
+    parcel, footprint = raw
+    # Like 8 Mason St, Worcester: 13,335 sq ft on a 338 sq ft footprint.
+    parcel("M", 0, 0, USE_CODE="316", BLD_AREA=13335, STORIES="3")
+    footprint(0.0001, 0.0001, 338)
+    build(db)
+    assert building_rows(db, "M") == [(1014, "assessor_above_footprint")]
+
+
+def test_tall_building_within_its_stories_is_trusted(db, raw):
+    parcel, footprint = raw
+    # Like 446 Main St, Worcester: 24 stories, ratio 15.
+    parcel("W", 0, 0, USE_CODE="340", BLD_AREA=15000, STORIES="24")
+    footprint(0.0001, 0.0001, 1000)
+    build(db)
+    assert building_rows(db, "W") == [(15000, "assessor")]
+
+
+def test_site_assessor_total_is_conserved(db, raw):
+    parcel, footprint = raw
+    parcel("Z", 0.05, 0, OWNER1="A MUCH LONGER OWNER NAME FOR WIDTH")
+    parcel("C1", 0, 0, OWNER1="ACME", USE_CODE="400", BLD_AREA=3000)
+    parcel("C2", 0.001, 0, OWNER1="ACME", USE_CODE="401", BLD_AREA=6000)
+    parcel("C3", 0.002, 0, OWNER1="ACME", USE_CODE="400", STORIES="2")
+    footprint(0.0001, 0.0001, 1000)
+    footprint(0.0005, 0.0005, 2000)
+    footprint(0.0011, 0.0001, 1500)
+    footprint(0.0021, 0.0001, 700)  # on C3, no BLD_AREA: keeps its fallback
+    build(db)
+    rows = db.execute(
+        "SELECT p.loc_id, round(b.area_sqft), b.area_source FROM buildings b"
+        " JOIN parcels p USING (loc_id) ORDER BY p.loc_id, b.footprint_sqft"
+    ).fetchall()
+    # 9,000 sq ft pooled over 4,500 sq ft of footprint on C1 and C2.
+    assert rows == [
+        ("C1", 2000, "assessor"),
+        ("C1", 4000, "assessor"),
+        ("C2", 3000, "assessor"),
+        ("C3", 1400, "footprint_x_stories"),
+    ]
+    assert site_area(db, "C1") == 9000 + 1400

@@ -72,8 +72,8 @@ def test_site_takes_segment_of_its_largest_candidate_building(db, raw):
     parcel, footprint = raw
     # A long name elsewhere sets the town's name width, so ACME is not cut.
     parcel("Z", 0.05, 0, OWNER1="A MUCH LONGER OWNER NAME FOR WIDTH")
-    parcel("A1", 0, 0, USE_CODE="316", OWNER1="ACME", BLD_AREA=50000)
-    parcel("A2", 0.001, 0, USE_CODE="340", OWNER1="ACME", BLD_AREA=5000)
+    parcel("A1", 0, 0, USE_CODE="316", OWNER1="ACME", BLD_AREA=20000)
+    parcel("A2", 0.001, 0, USE_CODE="340", OWNER1="ACME", BLD_AREA=2000)
     footprint(0.0001, 0.0001, 5000)
     footprint(0.0011, 0.0001, 500)
     build(db)
