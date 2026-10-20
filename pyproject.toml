@@ -13,6 +13,9 @@ dependencies = [
     "tenacity>=9.2.1",
 ]
 
+[project.scripts]
+prospect = "prospect.cli:main"
+
 [dependency-groups]
 dev = ["pytest", "ruff"]
 
