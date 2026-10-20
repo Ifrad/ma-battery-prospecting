@@ -177,7 +177,7 @@ Every model input is either sourced, with the document it was read from, or a pl
 ### rates.yaml: utilities.Eversource Energy (NSTAR Electric).service_area
 
 - Value: Greater Boston
-- What and why: Eversource prices by service area (Greater Boston; Cambridge; South Shore, Cape Cod and Martha's Vineyard; Western Massachusetts). No document read on 2026-10-20 says which area serves Canton and Sharon; Eversource's community list does not group towns by area. Greater Boston is assumed. If they are South Shore, G-2 is rate 30, billed per kVA ($3.72 distribution plus $13.74 transmission).
+- What and why: Eversource prices by service area (Greater Boston; Cambridge; South Shore, Cape Cod and Martha's Vineyard; Western Massachusetts). No document read on 2026-10-20 says which area serves Canton and Sharon; Eversource's community list does not group towns by area. Greater Boston is assumed. If they are South Shore, G-2 is rate 30, billed per kVA ($3.72 distribution plus $13.74 transmission). Rechecked 2026-10-20 (Phase 5): the $33.95 G-2 charge is the "BOST" row of rate 15 in the Summary of Electric Service Delivery Rates, M.D.P.U. No. 1-26-F, effective 2026-09-01 ($20.21 distribution plus $13.74 transmission), and rate 15 (M.D.P.U. No. 15I) is the Greater Boston service area tariff, so the source and division are right. Neither the tariffs nor the Communities We Serve page, which tags every Massachusetts town "NSTAR Electric, Eastern Massachusetts Electric", lists the towns in each area, so Canton and Sharon stay flagged rate area unconfirmed.
 - How it gets tested: Read the service area or rate number on a Canton or Sharon C&I bill.
 - What would replace it: A town list by service area from Eversource or the DPU.
 
