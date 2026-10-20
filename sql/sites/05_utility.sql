@@ -17,7 +17,7 @@ UPDATE buildings b
 SET utility = t.utility, utility_flag = t.utility_flag
 FROM buildings x
 LEFT JOIN parcels p USING (loc_id)
-JOIN town_utility t ON t.town_id = coalesce(p.town_id, x.town_id)
+JOIN town_utility t ON t.town_id = coalesce(p.town_id, x.footprint_town_id)
 WHERE x.building_id = b.building_id;
 
 UPDATE sites s

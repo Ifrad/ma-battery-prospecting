@@ -315,6 +315,27 @@ Phase 2 deviations:
   owners hospitals and small eateries food production. It changed 14 of
   9,640 candidate sites.
 
+Phase 2 follow-up (migration 0016, made on `phase-4-model` before any
+model code, after a schema review found integrity gaps):
+
+- Exact duplicate footprints (2 in the pilot, same shape and struct id)
+  are dropped, so their area is not counted twice; 5 near-duplicates
+  (overlap over 90 percent, a placeholder) are flagged in
+  `near_duplicate_of`.
+- Parcels in a group with no building keep no `site_id` (33,051), so
+  `parcels.site_id` can reference `sites`. New foreign keys:
+  `parcels.site_id` and `sites.main_loc_id` (checked at commit), and
+  `lber_matches` and `lber_unmatched` to `raw_lber` (removed with it).
+- `buildings.town_id` is renamed `footprint_town_id`: at town lines it
+  differs from the parcel's town (175 buildings), which is the one to use.
+- Check constraints on segment, segment source and LBER match confidence.
+- `make db-check` fails if a copied column drifts from its source.
+- Effect: buildings 359,301 to 359,299, candidate buildings 15,650 to
+  15,649; sites, candidate sites (9,640), LBER matches and funnel
+  survivors (251 at 200 kW, 347 at 150 kW) unchanged. The touch tolerance
+  table in docs/MATCH_RATES.md now leaves out pairs of parcels with no
+  building.
+
 ---
 
 ## Phase 3: Priors and rates  (branch `phase-3-priors`, tag v0.3.0)
@@ -753,6 +774,9 @@ Done when: the README follows that structure and every link works on a phone.
 - A host share slider in the report.
 - Phase 4, if area uncertainty is too wide: test floors derived from
   building height, and the Overture buildings probe for multi-story types.
+- Key `raw_parcels`, `raw_footprints` and `raw_utility_territories` by
+  release as well as object id, as `raw_lber` is by reporting year, so a new
+  MassGIS release cannot overwrite rows in place or reuse an object id.
 - The building parcel overlap allocation is parked on
   `wip/building-parcel-overlap`. It needs wiring into `make sites`, its
   config value, a TRUNCATE CASCADE fix and a remeasured area error.

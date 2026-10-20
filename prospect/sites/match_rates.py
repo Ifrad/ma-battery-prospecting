@@ -256,13 +256,14 @@ def gap_section(conn) -> str:
     """Gaps between same-owner parcel pairs, merged or not, near the tolerance."""
     pairs = conn.execute(
         """
-        SELECT a.site_id = b.site_id,
+        SELECT coalesce(a.site_id = b.site_id, false),
                ST_Distance(ST_Transform(a.geom, 26986), ST_Transform(b.geom, 26986))
         FROM parcels a
         JOIN parcels b
             ON a.town_id = b.town_id AND a.loc_id < b.loc_id
             AND a.geom && ST_Expand(b.geom, 0.0001)
         WHERE a.owner_norm IS NOT NULL AND a.owner_norm = b.owner_norm
+            AND (a.site_id IS NOT NULL OR b.site_id IS NOT NULL)
         """
     ).fetchall()
     bands = [
@@ -283,6 +284,7 @@ def gap_section(conn) -> str:
         " planar gap between them (Massachusetts State Plane meters). Pairs up to"
         " 1 m apart count as touching and join one site; owner names cut off at"
         " the field width can also join by prefix, which this table leaves out."
+        " Pairs of two parcels with no building (so no site) are left out."
     )
     out += ["", table(["Gap", "Same site", "Different sites"], rows)]
     return "\n".join(out)
