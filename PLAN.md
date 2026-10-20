@@ -553,7 +553,7 @@ stays a config placeholder.
       modeled only if a sourced per-kW value and an eligibility rule can be
       read; otherwise it is recorded as unmodeled with what is missing. No
       unread number goes into config.
-- [ ] `feat(model): estimate peak demand from annual energy and load factor`
+- [x] `feat(model): estimate peak demand from annual energy and load factor`
       Monte Carlo draws per building, seeded per building id so results
       never depend on row order. Tests: determinism, known kWh narrows the
       range.
