@@ -604,7 +604,7 @@ stays a config placeholder.
       ITC when it is on) plus the minimum yearly host benefit. Tests:
       higher cost or a higher minimum host benefit never raises model
       confidence.
-- [ ] `feat(model): run scenarios`
+- [x] `feat(model): run scenarios`
       Two per site: demand savings only, and demand savings plus
       ConnectedSolutions. The ITC is a cost-side toggle, used only in the
       break-even column and the confidence option. Every score names its

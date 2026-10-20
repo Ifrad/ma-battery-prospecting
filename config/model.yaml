@@ -86,3 +86,9 @@ blocks:
     Compare with the block counts the operator installs at large sites.
   replace: >-
     The operator's sizing rule and block cap.
+
+# Two scenarios per site. The ITC is a cost-side toggle used only in the
+# break-even column and the optional model confidence, not a scenario.
+scenarios:
+  demand_savings: [demand]
+  with_connected_solutions: [demand, connected_solutions]
