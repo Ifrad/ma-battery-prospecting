@@ -81,11 +81,12 @@ def lber_rows(db):
         "INSERT INTO ingest_runs (source, url) VALUES ('test', 'test') RETURNING id"
     ).fetchone()[0]
 
-    def town(town_id, x=0, y=0, size=0.5):
+    def town(town_id, x=0, y=0, size=0.5, elec="TEST ELECTRIC", label="TEST"):
+        attrs = {"TOWN_ID": town_id, "ELEC": elec, "ELEC_LABEL": label}
         db.execute(
             "INSERT INTO raw_utility_territories (objectid, scope, run_id, attrs, geom)"
             " VALUES (%s, 'test', %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))",
-            (town_id, run_id, Jsonb({"TOWN_ID": town_id}), box(x, y, size)),
+            (town_id, run_id, Jsonb(attrs), box(x, y, size)),
         )
 
     def lber(objectid, x, y, kbtu=341214, ubid="", street=None, year=2024):
