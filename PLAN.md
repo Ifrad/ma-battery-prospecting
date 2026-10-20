@@ -223,7 +223,7 @@ Evidence flags, per building and per site:
       boxes included. Tenure: years since the last sale, ignoring nominal
       sales ($1, $100 and similar), as a rough proxy for a locally rooted
       business.
-- [ ] `feat(sites): collect evidence flags per building and per site`
+- [x] `feat(sites): collect evidence flags per building and per site`
       One place to read every flag listed above, for both levels. A site's
       flags summarize its buildings (for example, how many have measured
       electricity).
