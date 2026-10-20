@@ -717,7 +717,7 @@ was validated, and what is unvalidated.
       tests the same method on LBER property types and floor areas. Within
       a segment both estimates rank alike (area times a constant), so the
       model can only rank better across segments.
-- [ ] `feat(validate): check calibration of the annual energy estimate`
+- [x] `feat(validate): check calibration of the annual energy estimate`
       This tests the annual energy estimate only, not peak shape. Hold out
       LBER buildings with measured electricity, estimate them as if
       unmeasured, and check how often the stated 80 percent band (P10 to
@@ -725,7 +725,10 @@ was validated, and what is unvalidated.
       the hit rate is far from 80 percent, recalibrate the band widths,
       store them in config as measured values sourced from
       docs/VALIDATION.md, rerun make score, and report the hit rates and
-      ranking moves before and after.
+      ranking moves before and after. Result: 79 percent of 700 pilot
+      buildings, within the 5 point tolerance (placeholder,
+      config/validate.yaml), so the widths are not recalibrated and the
+      scores do not move. Groups under 30 buildings are too few to judge.
 - [ ] `feat(validate): measure rank stability`
       From the stored draws, the probability that each scored site is in
       the top 15 and top 50 of its region by value per block. Report how
