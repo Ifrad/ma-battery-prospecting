@@ -189,5 +189,5 @@ real value is higher than simulated, or the claim counts something else.
 This is a consistency check on the cost estimates, not evidence for or
 against the claim. Simple payback ignores financing, O&M and the host's
 share, and the value is simulated, gross and unvalidated. About two
-thirds of the median comes from ConnectedSolutions at $200 per kW, an
-unverified figure.
+thirds of the median comes from ConnectedSolutions: the $200 per kW rate
+is sourced, but the performance factor behind it is a placeholder.
