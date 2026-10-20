@@ -2,6 +2,10 @@
 data/*
 !data/README.md
 
+# Operator customer lists: read locally by the report, never committed
+customer_status*.csv
+!docs/customer_status.example.csv
+
 # Secrets
 .env
 .env.*
