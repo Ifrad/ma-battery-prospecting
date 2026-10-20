@@ -4,9 +4,10 @@ Usage: python -m prospect.priors.intensity
 
 Reads the database only. Writes config/intensity.yaml. Pilot candidate
 buildings with measured grid electricity give each segment's spread, using
-our building area; hospital and other_healthcare use LBER's statewide
-Healthcare rows instead, and food production, cold storage and laundry
-borrow the manufacturing spread as a proxy.
+our building area. Hospital uses its own few measured pilot buildings
+(a placeholder, since there are few); other_healthcare uses LBER's statewide
+Healthcare rows; food production, cold storage and laundry borrow the
+manufacturing spread as a proxy.
 """
 
 import sys
@@ -20,7 +21,8 @@ from prospect.db import connect
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_OUT = ROOT / "config" / "intensity.yaml"
 MIN_BUILDINGS = 30
-HEALTHCARE = ("hospital", "other_healthcare")
+HEALTHCARE = ("other_healthcare",)
+FEW_MEASURED = ("hospital",)  # own pilot buildings despite under 30
 PROXY_FOR = ("food_production", "cold_storage", "laundry")
 PROXY = "manufacturing"
 
@@ -64,7 +66,8 @@ def healthcare_rows(conn) -> list[float]:
 def summarize(pilot: list[tuple], healthcare: list[float]) -> dict:
     """Per segment: measured count, both spreads, and the prior to use."""
     out = {}
-    for seg in sorted({s for s, _, _ in pilot} | set(HEALTHCARE) | set(PROXY_FOR)):
+    named = set(HEALTHCARE) | set(FEW_MEASURED) | set(PROXY_FOR)
+    for seg in sorted({s for s, _, _ in pilot} | named):
         ours = [a for s, a, _ in pilot if s == seg]
         gfa = [g for s, _, g in pilot if s == seg]
         row = {
@@ -77,6 +80,9 @@ def summarize(pilot: list[tuple], healthcare: list[float]) -> dict:
             row["prior_from"] = "LBER statewide Healthcare, LBER floor area"
             row["prior"] = spread(healthcare)
             row["prior_buildings"] = len(healthcare)
+        elif seg in FEW_MEASURED:
+            row["prior_from"] = f"pilot measured, our area, only {len(ours)} buildings"
+            row["prior"] = row["our_area"]
         elif seg in PROXY_FOR:
             row["prior_from"] = f"{PROXY} (proxy, likely understates)"
             row["prior"] = spread(a for s, a, _ in pilot if s == PROXY)
@@ -101,7 +107,7 @@ def write_config(segments: dict, path: Path = CONFIG_OUT) -> None:
             "DOER Large Building Energy Reporting, reporting year 2024"
             " (config/lber.yaml), measured grid electricity matched to pilot"
             " buildings in make sites; statewide LBER Healthcare rows for"
-            " hospital and other_healthcare."
+            " other_healthcare."
         ),
         "note": (
             "LBER covers buildings of about 20,000 sq ft and up, so these"
@@ -114,6 +120,21 @@ def write_config(segments: dict, path: Path = CONFIG_OUT) -> None:
             " buildings are flagged."
         ),
         "segments": segments,
+        "hospital_prior": {
+            "segments": list(FEW_MEASURED),
+            "from": "pilot measured hospitals",
+            "status": "placeholder",
+            "note": (
+                "Hospital uses the median of its own measured pilot"
+                f" buildings (n {segments['hospital']['measured_buildings']},"
+                " under 30) rather than LBER's statewide Healthcare rows"
+                f" (median {segments['other_healthcare']['prior']['median']}),"
+                " which mix clinics and offices in with hospitals. Owner's"
+                " choice, 2026-10-20."
+            ),
+            "test": "Compare with measured use of more Massachusetts hospitals.",
+            "replace": "A statewide hospital-only spread, if LBER separates them.",
+        },
         "proxy": {
             "segments": list(PROXY_FOR),
             "from": PROXY,

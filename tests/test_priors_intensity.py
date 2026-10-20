@@ -11,8 +11,10 @@ def test_priors_flag_small_segments_and_use_healthcare_and_proxy():
     assert not out["warehouse"]["under_30"]
     assert out["warehouse"]["prior"]["median"] == pytest.approx(2.0)
     assert out["hospital"]["under_30"]
-    assert out["hospital"]["prior"]["median"] == pytest.approx(10.0)
-    assert out["hospital"]["prior_buildings"] == 3
+    assert out["hospital"]["prior"]["median"] == pytest.approx(20.0)
+    assert "only 3 buildings" in out["hospital"]["prior_from"]
+    assert out["other_healthcare"]["prior"]["median"] == pytest.approx(10.0)
+    assert out["other_healthcare"]["prior_buildings"] == 3
     assert out["laundry"]["prior"] == out["manufacturing"]["our_area"]
     assert "likely understates" in out["laundry"]["prior_from"]
     assert out["cold_storage"]["measured_buildings"] == 0

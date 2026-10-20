@@ -4,7 +4,7 @@
 status: sourced
 source: DOER Large Building Energy Reporting, reporting year 2024 (config/lber.yaml), measured
   grid electricity matched to pilot buildings in make sites; statewide LBER Healthcare rows
-  for hospital and other_healthcare.
+  for other_healthcare.
 note: LBER covers buildings of about 20,000 sq ft and up, so these priors may not apply to
   smaller buildings. Nearly every segment has a low tail (p10 under 1 kWh per sq ft) that
   is implausible for an occupied commercial building and points to partial meter reporting
@@ -35,11 +35,10 @@ segments:
   hospital:
     measured_buildings: 13
     under_30: true
-    our_area: {p10: 6.84, median: 20.96, p90: 30.86}
+    our_area: &id002 {p10: 6.84, median: 20.96, p90: 30.86}
     lber_floor_area: {p10: 7.54, median: 17.95, p90: 52.39}
-    prior_from: LBER statewide Healthcare, LBER floor area
-    prior: {p10: 0.56, median: 9.83, p90: 31.99}
-    prior_buildings: 248
+    prior_from: pilot measured, our area, only 13 buildings
+    prior: *id002
   laundry:
     measured_buildings: 1
     under_30: true
@@ -50,10 +49,10 @@ segments:
   manufacturing:
     measured_buildings: 169
     under_30: false
-    our_area: &id002 {p10: 0.36, median: 4.35, p90: 32.65}
+    our_area: &id003 {p10: 0.36, median: 4.35, p90: 32.65}
     lber_floor_area: {p10: 0.37, median: 4.22, p90: 23.48}
     prior_from: pilot measured, our area
-    prior: *id002
+    prior: *id003
   other_healthcare:
     measured_buildings: 24
     under_30: true
@@ -65,10 +64,19 @@ segments:
   warehouse:
     measured_buildings: 211
     under_30: false
-    our_area: &id003 {p10: 0.33, median: 2.4, p90: 13.76}
+    our_area: &id004 {p10: 0.33, median: 2.4, p90: 13.76}
     lber_floor_area: {p10: 0.34, median: 2.26, p90: 12.19}
     prior_from: pilot measured, our area
-    prior: *id003
+    prior: *id004
+hospital_prior:
+  segments: [hospital]
+  from: pilot measured hospitals
+  status: placeholder
+  note: Hospital uses the median of its own measured pilot buildings (n 13, under 30) rather
+    than LBER's statewide Healthcare rows (median 9.83), which mix clinics and offices in
+    with hospitals. Owner's choice, 2026-10-20.
+  test: Compare with measured use of more Massachusetts hospitals.
+  replace: A statewide hospital-only spread, if LBER separates them.
 proxy:
   segments: [food_production, cold_storage, laundry]
   from: manufacturing
