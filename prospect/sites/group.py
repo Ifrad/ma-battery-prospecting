@@ -43,6 +43,9 @@ def components(nodes, edges) -> dict:
 
 # Pairs of touching parcels in one town whose owners match: equal normalized
 # names, or a possibly cut-off name that is a whole-word prefix of the other.
+# Distance is planar, in Massachusetts State Plane meters (EPSG:26986).
+# Geography ST_DWithin is not used: on PostGIS 3.5.2 it returned true for
+# 168 pilot pairs 3 to 315 m apart, and its answers varied between runs.
 TOUCHING_SAME_OWNER = """
 SELECT a.loc_id, b.loc_id
 FROM parcels a
@@ -56,7 +59,7 @@ WHERE a.owner_norm IS NOT NULL AND b.owner_norm IS NOT NULL
         OR (a.owner_truncated AND starts_with(b.owner_norm || ' ', a.owner_norm || ' '))
         OR (b.owner_truncated AND starts_with(a.owner_norm || ' ', b.owner_norm || ' '))
     )
-    AND ST_DWithin(a.geom::geography, b.geom::geography, %(tol_m)s)
+    AND ST_DWithin(ST_Transform(a.geom, 26986), ST_Transform(b.geom, 26986), %(tol_m)s)
 """
 
 
