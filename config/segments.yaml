@@ -34,7 +34,10 @@ rules:
     note: >-
       Unverified owner-name inference, including medical offices. Whole words
       exclude HOSPITALITY. Veterinary exclusions apply only to this keyword
-      rule, never to a hospital use code. Remaining keyword hospitals need review.
+      rule, never to a hospital use code. The 4 keyword hospital sites left
+      on the pilot build are unverified, and 2 look like medical office
+      buildings (VERNON MEDICAL CENTER II, HTA PEARL ST MEDICAL CENTER LLC).
+      Precision and recall are not measured; see docs/MATCH_RATES.md.
   - segment: cold_storage
     owner_keywords: [COLD STORAGE, COLD STORAGES, REFRIGERATED, REFRIGERATION, REFRIGERATING, REFRIGERATOR, REFRIGERATORS, FREEZER, FREEZERS, FROZEN]
     status: placeholder
@@ -47,6 +50,9 @@ rules:
       code). Requires a 4xx industrial use code or site area at least the
       placeholder in sites.yaml. Can still catch distributors; no distributor
       exclusions. Size and owner text do not verify production activity.
+      Known miss: PERFORMANCE FOOD GROUP, Brockton (code 400), which looks
+      like a warehouse. Precision and recall are not measured; only 2
+      suspicious rows were hand reviewed.
   - segment: laundry
     owner_keywords: [LAUNDRY, LAUNDRIES, LAUNDROMAT, LAUNDROMATS, CLEANER, CLEANERS, LINEN, LINENS, UNIFORM, UNIFORMS]
     status: placeholder

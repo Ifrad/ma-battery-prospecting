@@ -241,7 +241,7 @@ Evidence flags, per building and per site:
       times stories. Record it in
       docs/DATA.md, then stop and show the owner before deciding how
       estimated areas are used.
-- [ ] `docs(data): generate match rate report`
+- [x] `docs(data): generate match rate report`
       docs/MATCH_RATES.md with counts by region, segment and match method.
       Review by hand and record the results: 20 owner groups for false
       merges, about 10 sites per segment for keyword precision, where

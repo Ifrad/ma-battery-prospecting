@@ -9,8 +9,12 @@ food_keyword_min_area_sqft:
     keyword needs a 4xx industrial use code or at least this much site area.
     On the 2026-10-20 baseline, 8 of 14 keyword food sites fall back at
     20,000 sq ft and 9 at 50,000. JJ's Creamery falls back to generic.
-    Performance Food Group remains food production: code 400, 105,770 sq ft.
-    That row has conflicting evidence, not a verified classification error.
+    Performance Food Group, Brockton, still gets food production (code 400,
+    105,770 sq ft) and is a known miss: it looks like a warehouse from the
+    air and LBER says warehouse, though the company lists a meat cutting
+    plant there. Only 2 of 32 sampled rows were reviewed, picked because
+    they looked suspicious, so they do not estimate an error rate. Recall
+    is not measured. See docs/MATCH_RATES.md, Hand review.
 
 owner_normalization:
   # Removed after punctuation is turned into spaces.
