@@ -1,0 +1,15 @@
+# Settings for make validate (docs/VALIDATION.md).
+
+calibration_tolerance:
+  value: 0.05
+  status: placeholder
+  note: >-
+    How close the overall P10 to P90 hit rate must be to 80 percent for the
+    annual energy band to count as calibrated; outside it, the band widths
+    are recalibrated. Chosen by hand.
+  test: >-
+    Recheck the hit rate after each LBER release; a hit rate that drifts
+    past this line is the signal to recalibrate.
+  replace: >-
+    A tolerance set from the sampling error of the hit rate at the sample
+    size.

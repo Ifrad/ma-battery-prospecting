@@ -56,3 +56,21 @@ Statewide: the same method on LBER's own property types and floor areas, a metho
 | technology/science | 250 | 0.54 | 0.53 | 48% | 91% |
 | utility | 38 | 0.26 | 0.44 | 79% | 92% |
 | warehouse/storage | 792 | 0.41 | 0.41 | 68% | 106% |
+
+## Calibration of the annual energy band
+
+This tests the annual energy estimate only, not peak shape. Each pilot LBER building with measured grid electricity is drawn as if unmeasured, with the model's own draws and its town held out of the priors. The P10 to P90 band claims 80 percent; the table shows how often it holds the measured kWh, and how often the measured value is below or above it.
+
+| Group | Buildings | Inside the band | Below P10 | Above P90 |  |
+|---|---|---|---|---|---|
+| all | 700 | 79% | 10% | 11% |  |
+| cold_storage | 1 | 100% | 0% | 0% | too few to judge |
+| food_production | 2 | 50% | 0% | 50% | too few to judge |
+| generic | 279 | 78% | 10% | 11% |  |
+| hospital | 13 | 54% | 15% | 31% | too few to judge |
+| laundry | 1 | 100% | 0% | 0% | too few to judge |
+| manufacturing | 169 | 79% | 10% | 11% |  |
+| other_healthcare | 24 | 96% | 4% | 0% | too few to judge |
+| warehouse | 211 | 80% | 10% | 10% |  |
+
+Overall the band holds the measured value 79% of the time against the 80 percent it claims, within 5%, so the widths are not recalibrated. Groups under 30 buildings are too small to judge on their own.
