@@ -82,3 +82,17 @@ def test_assumptions_page_is_current():
     assert assumptions.PAGE.read_text() == assumptions.render(config.load()), (
         "docs/ASSUMPTIONS.md is stale; run make assumptions"
     )
+
+
+def test_check_rejects_a_value_outside_its_range():
+    node = {
+        "value": 0.99,
+        "range": {"low": 0.6, "high": 0.95},
+        "status": "placeholder",
+        "note": "n",
+        "test": "t",
+        "replace": "r",
+    }
+    (message,) = config.check({"f": {"a": node}})
+    assert "outside its range" in message
+    assert config.summary(dict(node, value=0.8), "") == "0.8 (range 0.6 to 0.95)"

@@ -10,8 +10,11 @@ installed_cost_usd:
   status: placeholder
   note: >-
     The owner's own estimates for one block, installed, unverified and
-    pending the operator's real number. Phase 5 reports how rankings change
-    between the two cases.
+    pending the operator's real number. Not a model input: sites are
+    ranked by value per block, and these two figures are only reference
+    points beside the break-even installed cost and example costs for the
+    optional model confidence. Phase 5 counts the sites whose break-even
+    cost clears each.
   test: >-
     Compare with a real installed cost from the operator or from public
     bids for similar systems.
@@ -59,26 +62,29 @@ om_usd_per_year:
 itc:
   rate: 0.30
   default_on: false
-  status: placeholder
+  status: sourced
+  source: >-
+    26 U.S.C. 48E(a)(2)(B)(ii)(I), energy storage technology with a
+    capacity under 1 MW, as amended by Pub. L. 119-21,
+    https://www.law.cornell.edu/uscode/text/26/48E, read 2026-10-20; see
+    docs/REVENUE_STREAMS.md.
   note: >-
-    The federal investment tax credit as a scenario setting, off by
-    default. 30 percent is the plan's scenario value and was not read from
-    IRS guidance. FEOC (foreign entity of concern) sourcing rules decide
-    whether a given battery qualifies.
-  test: >-
-    Read the current IRS guidance and check the battery's sourcing
-    against the FEOC rules.
-  replace: >-
-    The credit the operator actually claims for the standard deployment.
+    A cost-side toggle, off by default, used only in the break-even column
+    and the optional model confidence; it lowers the installed cost by the
+    credit. No credit if construction began after December 31, 2025 and
+    includes material assistance from a prohibited foreign entity, or if
+    the taxpayer is a specified foreign entity (48E(c)(3) and (d)(6)), so
+    the battery's supply chain decides whether it applies. Domestic content
+    and energy community adders are not modeled.
 
 min_host_benefit_usd_per_year:
   value: null
   status: placeholder
   note: >-
     The minimum yearly benefit a host must get for the deal to be worth
-    offering, added to the annualized cost in the Phase 4 hurdle. No
-    figure has been given yet, so it has no value; Phase 4 cannot compute
-    model confidence until it does.
+    offering. Not used in scoring: it is added to the annualized cost only
+    when a user asks for model confidence at a given cost and supplies a
+    figure. No figure has been given, so it has no value.
   test: >-
     Ask the operator what yearly saving a host needs before it signs.
   replace: >-
