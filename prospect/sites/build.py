@@ -24,6 +24,7 @@ STEPS = [
     lambda conn: group.group(conn, group.load_config()),
     "03_sites.sql",
     lambda conn: lber.match(conn, group.load_config()["lber_match"]),
+    "04_utility.sql",
 ]
 
 

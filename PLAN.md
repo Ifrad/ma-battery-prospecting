@@ -208,7 +208,7 @@ Evidence flags, per building and per site:
       (4) normalized address. Record the method and a confidence for every
       match, and keep a table of unmatched LBER rows. Report the UBID exact
       match rate first. Matched buildings get electricity source measured.
-- [ ] `feat(sites): assign electric utility and flag municipal light plants`
+- [x] `feat(sites): assign electric utility and flag municipal light plants`
       Join on TOWN_ID, no spatial join. Utility flag is known, municipal,
       or unknown for multi-provider towns. In the pilot, six towns have a
       municipal light plant: Boylston, Holden, Paxton, Princeton, Sterling
