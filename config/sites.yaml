@@ -60,3 +60,30 @@ lber_match:
   address_note: >-
     Common USPS street suffix and direction abbreviations. Not checked
     against every pilot address.
+
+# Local owner: the owner's mailing state is MA (or blank) and either the
+# owner city equals the parcel's town once punctuation is removed and the
+# abbreviations below are spelled out, or, when both are present, the
+# owner ZIP equals the parcel ZIP (catches villages such as Whitinsville
+# and misspellings). P.O. boxes count like any other address.
+local_owner:
+  city_words: {W: WEST, N: NORTH, S: SOUTH, E: EAST}
+  zip_fallback: true
+  status: placeholder
+  note: >-
+    On pilot candidate parcels the town name alone matches 43% of owner
+    cities; the ZIP fallback adds about 146, mostly abbreviations, typos
+    and villages. A ZIP can cross a town line, so a few may be wrong.
+
+# Tenure: years from the last sale to the parcels' ingest date. L3 keeps
+# only the latest sale, so when it is nominal, tenure is missing; it is
+# never taken from an older sale.
+tenure:
+  nominal_price_below: 1000
+  earliest_sale_year: 1900
+  status: placeholder
+  note: >-
+    Pilot candidate sales cluster at $0 (2,391), $1 (1,179), $10 (292),
+    $99 (76) and $100 (1,648), with only 23 between $101 and $1,000, so
+    any price under $1,000, or no price, counts as nominal. Sale dates
+    before 1900 (as early as 1754) are treated as filler.

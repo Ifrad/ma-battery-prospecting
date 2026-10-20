@@ -12,7 +12,7 @@ from pathlib import Path
 from prospect import use_codes
 from prospect.db import connect
 from prospect.regions import load_regions
-from prospect.sites import group, lber, segments, ubid
+from prospect.sites import group, lber, owner, segments, ubid
 
 SQL = Path(__file__).resolve().parents[2] / "sql" / "sites"
 
@@ -27,6 +27,8 @@ STEPS = [
     "04_utility.sql",
     lambda conn: segments.assign(conn, segments.load_config()),
     "05_segments.sql",
+    lambda conn: owner.assign(conn, group.load_config()),
+    "06_owner_tenure.sql",
 ]
 
 

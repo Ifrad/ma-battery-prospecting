@@ -218,7 +218,7 @@ Evidence flags, per building and per site:
       manufacturing, warehouse, generic. Keyword rules in config with
       tests, and a flag for how each segment was assigned. Hospital owner
       keywords: HOSPITAL, MEDICAL CENTER. HEALTH goes to other_healthcare.
-- [ ] `feat(sites): add local owner and tenure signals`
+- [x] `feat(sites): add local owner and tenure signals`
       Local owner: the owner mailing address is in the same town, P.O.
       boxes included. Tenure: years since the last sale, ignoring nominal
       sales ($1, $100 and similar), as a rough proxy for a locally rooted

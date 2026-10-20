@@ -4,7 +4,7 @@ TRUNCATE sites;
 
 INSERT INTO sites (
     site_id, town_id, owner, owner_norm, site_addr, parcels, buildings,
-    area_sqft, geom
+    area_sqft, geom, main_loc_id
 )
 WITH parcel_area AS (
     SELECT
@@ -47,7 +47,8 @@ SELECT
     t.parcels,
     t.buildings,
     t.area_sqft,
-    c.geom
+    c.geom,
+    m.loc_id
 FROM totals t
 JOIN main_parcel m USING (site_id)
 JOIN centre c USING (site_id);

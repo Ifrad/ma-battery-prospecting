@@ -12,7 +12,8 @@ TRUNCATE sites, lber_matches, lber_unmatched, buildings, parcels;
 
 INSERT INTO parcels (
     loc_id, town_id, records, prop_id, owner, site_addr, use_code, use_desc,
-    use_class, bld_area, stories, year_built, mixed_res_ci, geom
+    use_class, bld_area, stories, year_built, mixed_res_ci, geom,
+    site_zip, own_addr, own_city, own_state, own_zip, ls_date, ls_price
 )
 WITH r AS (
     SELECT
@@ -65,6 +66,13 @@ SELECT
     nullif((regexp_match(pr.attrs ->> 'STORIES', '^\s*([0-9]+(\.[0-9]+)?)'))[1]::numeric, 0),
     nullif((pr.attrs ->> 'YEAR_BUILT')::integer, 0),
     coalesce(g.mixed_res_ci, false),
-    pr.geom
+    pr.geom,
+    pr.attrs ->> 'ZIP',
+    pr.attrs ->> 'OWN_ADDR',
+    pr.attrs ->> 'OWN_CITY',
+    pr.attrs ->> 'OWN_STATE',
+    pr.attrs ->> 'OWN_ZIP',
+    pr.attrs ->> 'LS_DATE',
+    (pr.attrs ->> 'LS_PRICE')::integer
 FROM primary_record pr
 JOIN grouped g USING (loc_id);
