@@ -18,7 +18,7 @@ def site_draws(site: dict, buildings: list[dict], cfg: dict, streams: tuple) -> 
     s = savings.demand_savings(site, d, cfg)
     n = len(d["peak_kw"])
     g = (
-        grid.grid_revenue(site, d["peak_kw"], s["blocks"], cfg)
+        grid.grid_revenue(site, d["peak_kw"], s["blocks"], cfg, s["g3_weight"])
         if "connected_solutions" in streams
         else {"grid_kw": np.zeros(n), "grid_usd": np.zeros(n)}
     )

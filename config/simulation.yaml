@@ -5,6 +5,9 @@
 # is the National Grid G-2 peak, peak_window the G-3 peak window. Bins are by
 # the building's annual peak kW. A cell with fewer than 10 buildings uses all
 # types pooled in that bin (pooled_fallback: true) and keeps its own count.
+# event_window: across buildings, the June to September weekday 3 to 8 p.m.
+# mean load and the all-year weekday 3 to 8 p.m. peak, each over the annual
+# peak, for the ConnectedSolutions caps.
 status: sourced
 source: Simulated by prospect/priors/simulate.py (dispatch rule in docs/METHOD.md) on the
   ComStock 2025 release 3 Massachusetts sample in config/comstock.yaml, 2018 weather.
@@ -18,6 +21,9 @@ bins_kw:
 min_cell_buildings: 10
 pooled:
   load_factor: {p10: 0.276, median: 0.443, p90: 0.648}
+  event_window:
+    mean_over_peak: {p10: 0.139, median: 0.368, p90: 0.688}
+    peak_over_peak: {p10: 0.561, median: 0.894, p90: 0.997}
   bins:
     under_200:
       buildings: 224
@@ -42,6 +48,9 @@ types:
     peak_kw: {p10: 71.726, median: 139.52, p90: 281.562}
     peak_to_average: {p10: 2.376, median: 2.905, p90: 4.079}
     load_factor: {p10: 0.33, median: 0.459, p90: 0.63}
+    event_window:
+      mean_over_peak: {p10: 0.206, median: 0.473, p90: 0.679}
+      peak_over_peak: {p10: 0.688, median: 0.972, p90: 1.0}
     bins:
       under_200:
         buildings: 21
@@ -69,6 +78,9 @@ types:
     peak_kw: {p10: 343.497, median: 573.615, p90: 987.404}
     peak_to_average: {p10: 1.572, median: 1.808, p90: 2.577}
     load_factor: {p10: 0.564, median: 0.692, p90: 0.828}
+    event_window:
+      mean_over_peak: {p10: 0.446, median: 0.76, p90: 0.812}
+      peak_over_peak: {p10: 0.899, median: 0.991, p90: 1.0}
     bins:
       under_200:
         buildings: 0
@@ -96,6 +108,9 @@ types:
     peak_kw: {p10: 832.838, median: 1432.96, p90: 3845.738}
     peak_to_average: {p10: 2.082, median: 2.694, p90: 2.794}
     load_factor: {p10: 0.4, median: 0.454, p90: 0.588}
+    event_window:
+      mean_over_peak: {p10: 0.348, median: 0.401, p90: 0.532}
+      peak_over_peak: {p10: 0.58, median: 0.701, p90: 1.0}
     bins:
       under_200:
         buildings: 0
@@ -123,6 +138,9 @@ types:
     peak_kw: {p10: 87.197, median: 494.585, p90: 1296.257}
     peak_to_average: {p10: 2.038, median: 2.582, p90: 4.331}
     load_factor: {p10: 0.416, median: 0.557, p90: 0.667}
+    event_window:
+      mean_over_peak: {p10: 0.247, median: 0.523, p90: 0.645}
+      peak_over_peak: {p10: 0.775, median: 0.861, p90: 0.969}
     bins:
       under_200:
         buildings: 9
@@ -150,6 +168,9 @@ types:
     peak_kw: {p10: 131.293, median: 683.1, p90: 1937.258}
     peak_to_average: {p10: 2.316, median: 3.149, p90: 5.378}
     load_factor: {p10: 0.297, median: 0.435, p90: 0.57}
+    event_window:
+      mean_over_peak: {p10: 0.113, median: 0.4, p90: 0.598}
+      peak_over_peak: {p10: 0.61, median: 0.787, p90: 0.968}
     bins:
       under_200:
         buildings: 5
@@ -177,6 +198,9 @@ types:
     peak_kw: {p10: 71.297, median: 174.79, p90: 430.92}
     peak_to_average: {p10: 2.462, median: 3.086, p90: 4.255}
     load_factor: {p10: 0.318, median: 0.453, p90: 0.604}
+    event_window:
+      mean_over_peak: {p10: 0.265, median: 0.342, p90: 0.564}
+      peak_over_peak: {p10: 0.544, median: 0.792, p90: 0.962}
     bins:
       under_200:
         buildings: 19
@@ -204,6 +228,9 @@ types:
     peak_kw: {p10: 39.847, median: 238.605, p90: 588.545}
     peak_to_average: {p10: 2.839, median: 3.513, p90: 4.646}
     load_factor: {p10: 0.298, median: 0.383, p90: 0.491}
+    event_window:
+      mean_over_peak: {p10: 0.153, median: 0.324, p90: 0.63}
+      peak_over_peak: {p10: 0.374, median: 0.767, p90: 0.991}
     bins:
       under_200:
         buildings: 14
@@ -231,6 +258,9 @@ types:
     peak_kw: {p10: 96.377, median: 223.665, p90: 322.106}
     peak_to_average: {p10: 4.184, median: 5.262, p90: 7.596}
     load_factor: {p10: 0.236, median: 0.322, p90: 0.511}
+    event_window:
+      mean_over_peak: {p10: 0.137, median: 0.244, p90: 0.439}
+      peak_over_peak: {p10: 0.49, median: 0.921, p90: 0.973}
     bins:
       under_200:
         buildings: 13
@@ -258,6 +288,9 @@ types:
     peak_kw: {p10: 26.319, median: 69.725, p90: 96.395}
     peak_to_average: {p10: 2.182, median: 3.035, p90: 3.983}
     load_factor: {p10: 0.363, median: 0.466, p90: 0.583}
+    event_window:
+      mean_over_peak: {p10: 0.248, median: 0.453, p90: 0.667}
+      peak_over_peak: {p10: 0.675, median: 0.863, p90: 0.959}
     bins:
       under_200:
         buildings: 30
@@ -285,6 +318,9 @@ types:
     peak_kw: {p10: 12.815, median: 65.795, p90: 414.924}
     peak_to_average: {p10: 2.721, median: 4.378, p90: 7.277}
     load_factor: {p10: 0.236, median: 0.387, p90: 0.538}
+    event_window:
+      mean_over_peak: {p10: 0.117, median: 0.26, p90: 0.639}
+      peak_over_peak: {p10: 0.515, median: 0.95, p90: 1.0}
     bins:
       under_200:
         buildings: 23
@@ -312,6 +348,9 @@ types:
     peak_kw: {p10: 42.948, median: 309.805, p90: 1043.442}
     peak_to_average: {p10: 2.557, median: 3.179, p90: 5.571}
     load_factor: {p10: 0.291, median: 0.417, p90: 0.551}
+    event_window:
+      mean_over_peak: {p10: 0.175, median: 0.37, p90: 0.69}
+      peak_over_peak: {p10: 0.648, median: 0.932, p90: 0.997}
     bins:
       under_200:
         buildings: 11
@@ -339,6 +378,9 @@ types:
     peak_kw: {p10: 97.264, median: 526.43, p90: 1371.485}
     peak_to_average: {p10: 3.777, median: 5.792, p90: 8.245}
     load_factor: {p10: 0.186, median: 0.298, p90: 0.47}
+    event_window:
+      mean_over_peak: {p10: 0.051, median: 0.218, p90: 0.359}
+      peak_over_peak: {p10: 0.465, median: 0.844, p90: 0.97}
     bins:
       under_200:
         buildings: 7
@@ -366,6 +408,9 @@ types:
     peak_kw: {p10: 15.754, median: 52.28, p90: 193.851}
     peak_to_average: {p10: 1.776, median: 2.237, p90: 4.262}
     load_factor: {p10: 0.447, median: 0.616, p90: 0.726}
+    event_window:
+      mean_over_peak: {p10: 0.184, median: 0.419, p90: 0.644}
+      peak_over_peak: {p10: 0.727, median: 0.815, p90: 0.949}
     bins:
       under_200:
         buildings: 28
@@ -393,6 +438,9 @@ types:
     peak_kw: {p10: 16.329, median: 81.075, p90: 194.105}
     peak_to_average: {p10: 2.69, median: 4.161, p90: 6.159}
     load_factor: {p10: 0.249, median: 0.361, p90: 0.519}
+    event_window:
+      mean_over_peak: {p10: 0.116, median: 0.241, p90: 0.48}
+      peak_over_peak: {p10: 0.683, median: 0.897, p90: 0.983}
     bins:
       under_200:
         buildings: 27
@@ -420,6 +468,9 @@ types:
     peak_kw: {p10: 15.301, median: 139.565, p90: 490.704}
     peak_to_average: {p10: 2.429, median: 3.091, p90: 5.834}
     load_factor: {p10: 0.325, median: 0.446, p90: 0.55}
+    event_window:
+      mean_over_peak: {p10: 0.091, median: 0.304, p90: 0.605}
+      peak_over_peak: {p10: 0.746, median: 0.977, p90: 1.0}
     bins:
       under_200:
         buildings: 17

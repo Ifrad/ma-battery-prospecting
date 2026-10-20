@@ -181,13 +181,15 @@ The operator says it recovers costs in 2 to 3 years. docs/SCORES.md
 (`make score`) takes the median P50 value per block across scored sites,
 with ConnectedSolutions, and multiplies it by 2 and by 3: the installed
 cost per block a simple payback of that length would imply. On the
-2026-10-20 run (run 7) the median is $38,430 a year, so 2 years implies
-$76,859 per block and 3 years $115,289, below the owner's estimates of
+2026-10-20 run with the event-window cap (run 13) the median is $31,591
+a year, so 2 years implies $63,182 per block and 3 years $94,773, below
+the owner's estimates of
 $180,000 and $260,000. Either real costs are lower than the estimates,
 real value is higher than simulated, or the claim counts something else.
 
 This is a consistency check on the cost estimates, not evidence for or
 against the claim. Simple payback ignores financing, O&M and the host's
-share, and the value is simulated, gross and unvalidated. About two
-thirds of the median comes from ConnectedSolutions: the $200 per kW rate
-is sourced, but the performance factor behind it is a placeholder.
+share, and the value is simulated, gross and unvalidated. More than half
+of P50 value comes from ConnectedSolutions: the $200 per kW rate is
+sourced, but the performance factor and the event-window load behind it
+are a placeholder and a simulation.

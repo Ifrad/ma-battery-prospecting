@@ -678,7 +678,7 @@ was validated, and what is unvalidated.
       towns. Result: source and division confirmed (rate 15, Greater
       Boston, M.D.P.U. No. 1-26-F); no Eversource document lists towns by
       area, so the flag stays.
-- [ ] `feat(model): cap ConnectedSolutions by event-window load`
+- [x] `feat(model): cap ConnectedSolutions by event-window load`
       The payment cannot exceed the building's load during the 3 to 8 pm
       summer weekday event window unless the site exports, which needs an
       interconnection agreement, and then the 150 percent cap applies.
@@ -688,7 +688,14 @@ was validated, and what is unvalidated.
       uses the 3 to 8 pm peak, not the annual peak. Rerun make score and
       report the value per block distribution before and after, the change
       in ConnectedSolutions share of P50 value, and how many sites move
-      more than 10 places.
+      more than 10 places. `make simulate` adds per type the summer weekday
+      3 to 8 pm mean and the all-year weekday 3 to 8 pm peak, each over the
+      annual peak. Whether sites export is a placeholder (default no):
+      without export the counted kW per block is the lesser of the block's
+      average event output and the window mean load per block; with export
+      the 150 percent cap applies. Types with no open profile take the
+      pooled medians (placeholder). The report's sensitivity table now
+      rescores instead of repricing, since the cap is not linear.
 - [ ] `feat(validate): reproduce size-only baseline`
       Rank by building area, as the earlier public prototype
       (github.com/thutch17/powertown-hackathon) did, credited as prior

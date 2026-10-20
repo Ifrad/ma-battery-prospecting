@@ -109,6 +109,8 @@ def test_summary_bins_buildings_and_falls_back_when_a_cell_is_small():
                     "month_window_peak_kw": peak,
                     "reduction_all_kw": peak * 0.4,
                     "reduction_window_kw": peak * 0.5,
+                    "event_mean_kw": peak * 0.3,
+                    "event_peak_kw": peak * 0.9,
                 }
             )
     out = sim.summarize(rows, sample)
@@ -120,3 +122,22 @@ def test_summary_bins_buildings_and_falls_back_when_a_cell_is_small():
     assert mid["peak_window"] == out["pooled"]["bins"]["500_to_1000"]["peak_window"]
     assert office["load_factor"]["median"] == pytest.approx(0.5)
     assert office["peak_to_average"]["median"] == pytest.approx(2.0)
+    assert office["event_window"]["mean_over_peak"]["median"] == pytest.approx(0.3)
+    assert out["pooled"]["event_window"]["peak_over_peak"]["median"] == pytest.approx(
+        0.9
+    )
+
+
+def test_event_window_is_summer_weekday_afternoons():
+    from datetime import datetime
+
+    terms = {"window": {"start": "15:00", "end": "20:00"}, "months": [6, 7, 8, 9]}
+    starts = [
+        datetime(2018, 7, 2, 15, 0),  # Monday 3 pm, July
+        datetime(2018, 7, 2, 20, 0),  # 8 pm, outside
+        datetime(2018, 7, 7, 16, 0),  # Saturday
+        datetime(2018, 1, 8, 16, 0),  # Monday in January: all-year only
+    ]
+    summer, all_year = sim.event_window(starts, terms)
+    assert summer.tolist() == [True, False, False, False]
+    assert all_year.tolist() == [True, False, False, True]

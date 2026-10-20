@@ -39,16 +39,14 @@ def test_stored_physical_units_reprice_to_the_scored_value():
     for r in score.score_site(SITE, BUILDINGS, CFG):
         repriced = run.value_draws(stored(r), CFG)
         assert repriced == pytest.approx(r["draws"]["value_per_block"], rel=1e-5)
-        assert report.reprice(stored(r), CFG, 0.8, 0.61, 0.13) == pytest.approx(
-            r["value_per_block"]["p50"], rel=1e-5
-        )
 
 
-def test_lower_realization_or_more_overlap_lowers_repriced_value():
-    r = stored(score.score_site(SITE, BUILDINGS, CFG)[1])
-    base = report.reprice(r, CFG, 0.8, 0.61, 0.13)
-    assert report.reprice(r, CFG, 0.6, 0.61, 0.13) < base
-    assert report.reprice(r, CFG, 0.8, 0.61, 0.0) > base
+def test_sensitivity_moves_the_right_way():
+    scope = [(SITE, BUILDINGS)]
+    base = report.median_p50(scope, CFG)
+    assert report.median_p50(scope, report.with_factors(CFG, 0.6, 0.61, 0.13)) < base
+    assert report.median_p50(scope, report.with_factors(CFG, 0.8, 0.92, 0.13)) >= base
+    assert report.median_p50(scope, report.with_factors(CFG, 0.8, 0.61, 0.0)) > base
 
 
 def test_scores_are_stored_per_site_and_scenario(db):
