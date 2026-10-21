@@ -151,6 +151,13 @@ def test_committed_manifest_names_its_version_config_and_sources():
     assert "enernoc" not in json.dumps(MANIFEST["sources"]).lower()
 
 
+def test_committed_manifest_was_made_on_a_clean_tree():
+    assert not MANIFEST["version"].endswith("-dirty"), (
+        f"export/manifest.json has version {MANIFEST['version']}: commit the"
+        " code first, then run make export on a clean tree"
+    )
+
+
 def test_version_falls_back_without_git(monkeypatch):
     import subprocess
 
