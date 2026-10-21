@@ -143,3 +143,19 @@ def test_export_matches_the_model_with_cs_on_off_and_a_changed_demand_rate(
     assert got["streams"]["connected_solutions"]["share"] == pytest.approx(
         share, abs=0.01
     )
+
+
+def test_committed_manifest_names_its_version_config_and_sources():
+    assert schema.check_manifest(MANIFEST) == []
+    assert MANIFEST["config_hash"] == run.config_hash()
+    assert "enernoc" not in json.dumps(MANIFEST["sources"]).lower()
+
+
+def test_version_falls_back_without_git(monkeypatch):
+    import subprocess
+
+    def fail(*a, **k):
+        raise OSError
+
+    monkeypatch.setattr(subprocess, "run", fail)
+    assert build.version()  # the package version
