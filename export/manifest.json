@@ -1,9 +1,9 @@
 {
- "version": "v0.7.0-2-g756400b",
- "generated_at": "2026-10-21T04:13:25+00:00",
- "config_hash": "0cb9fae2584e9fdbf2fc1e56503e9b20a42d5d826c78a84b81ef9a75f04e03be",
- "score_run": 16,
- "scored_at": "2026-10-20T23:40:36+00:00",
+ "version": "v0.7.0-14-gc11b1d0",
+ "generated_at": "2026-10-21T04:55:08+00:00",
+ "config_hash": "a1dd6b6591f9769a027f3392a6d904adbc7d27443bafa7942e09a3c01bbdbc18",
+ "score_run": 17,
+ "scored_at": "2026-10-21T04:54:44+00:00",
  "sources": {
   "lber_reporting_years": [
    2024
