@@ -294,6 +294,10 @@ def manifest(cfg: dict, every: list[dict]) -> dict:
     }
 
 
+# What the export's version describes: the code that produces it.
+CODE_PATHS = ("prospect", "sql", "pyproject.toml", "uv.lock")
+
+
 def git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
@@ -303,12 +307,14 @@ def git(*args: str) -> str:
 def version() -> str:
     """The code version: git describe when run in a checkout, else the
     package version. It names the commit that produced the export, one
-    behind the commit that holds it, and ends in -dirty only when tracked
-    files outside export/ have changes: the export's own files never count."""
+    behind the commit that holds it, and ends in -dirty only when the code
+    (CODE_PATHS) has uncommitted changes. config/ and docs/ never count,
+    since the manifest records the config hash separately, and neither do
+    the export's own files."""
     try:
         described = git("describe", "--tags", "--always")
         changed = git(
-            "status", "--porcelain", "--untracked-files=no", "--", ".", ":!export"
+            "status", "--porcelain", "--untracked-files=no", "--", *CODE_PATHS
         )
     except (OSError, subprocess.CalledProcessError):
         return metadata.version("prospect")

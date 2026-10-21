@@ -168,22 +168,36 @@ def test_version_falls_back_without_git(monkeypatch):
     assert build.version()  # the package version
 
 
-@pytest.mark.parametrize(
-    "status, expected", [("", "v1-2-gabc"), (" M prospect/x.py", "v1-2-gabc-dirty")]
-)
-def test_version_is_dirty_only_for_changes_outside_the_export(
-    monkeypatch, status, expected
-):
-    calls = []
+def test_version_is_dirty_only_for_uncommitted_code(monkeypatch, tmp_path):
+    import subprocess
 
-    def fake(*args):
-        calls.append(args)
-        return "v1-2-gabc" if args[0] == "describe" else status
+    def run(*args):
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+        )
 
-    monkeypatch.setattr(build, "git", fake)
-    assert build.version() == expected
-    assert calls[0] == ("describe", "--tags", "--always")
-    assert calls[1][-1] == ":!export" and "--untracked-files=no" in calls[1]
+    files = ["prospect/x.py", "sql/1.sql", "pyproject.toml", "uv.lock"]
+    files += ["config/a.yaml", "docs/a.md", "export/a.json"]
+    for f in files:
+        (tmp_path / f).parent.mkdir(exist_ok=True)
+        (tmp_path / f).write_text("1\n")
+    run("init", "-q")
+    run("add", ".")
+    run("commit", "-q", "-m", "init")
+    run("tag", "v1")
+    monkeypatch.setattr(build, "ROOT", tmp_path)
+    assert build.version() == "v1"
+    for f in ("config/a.yaml", "docs/a.md", "export/a.json"):
+        (tmp_path / f).write_text("2\n")
+    (tmp_path / "prospect" / "new.py").write_text("untracked\n")
+    assert build.version() == "v1", "config, docs, export or untracked files count"
+    for f in files[:4]:
+        (tmp_path / f).write_text("2\n")
+        assert build.version() == "v1-dirty", f"an edit to {f} should count"
+        run("checkout", "--", f)
 
 
 FACTORS = [(0.95, 0.92, 0.0), (0.6, 0.75, 0.05)]

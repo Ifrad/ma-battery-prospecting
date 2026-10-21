@@ -297,6 +297,11 @@ To change the model itself, edit config/ and rebuild:
 | `make export` | writes export/ from the latest run; refuses if config/ changed since that run | yes |
 | `make report` | writes report.html from export/ | no |
 
+export/manifest.json names the code version (git describe, ending in
+"-dirty" only if prospect/, sql/, pyproject.toml or uv.lock had
+uncommitted changes) and, separately, the hash of config/, so a config
+change shows in the hash, not the version.
+
 So a fresh clone can build the report, change the report's settings and
 run the tests, but it cannot rescore after a config change: that needs
 PostGIS with the ingested data. Rebuilding from scratch:

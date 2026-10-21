@@ -976,7 +976,11 @@ on a phone, since the branch is not pushed.
       one behind the commit that holds it. Built: the export was
       regenerated at v0.7.0-2-g756400b with only the version and the
       generation time changed; a test fails if the committed manifest
-      ends in "-dirty".
+      ends in "-dirty". Changed after review: "-dirty" now counts only
+      uncommitted changes in prospect/, sql/, pyproject.toml and uv.lock.
+      config/ and docs/ do not count, because the manifest records the
+      config hash separately; otherwise no config change could pass both
+      the config hash test and the no "-dirty" test.
 - [x] `feat(report): add the ConnectedSolutions and realization factors as settings`
       Inputs for the performance factor (default and range from config,
       0.61 to 0.92), the overlap factor and the realization factor. Each
@@ -1167,6 +1171,16 @@ on a phone, since the branch is not pushed.
       the export, and checks the brief stays under 800 words, says it is
       not affiliated with Powertown and credits the prior work. It also
       fixes an off-by-one in the README test's Metro South top 10 rows.
+- [ ] `fix(config): say the export cap uses a G-3 site's 3 to 8 pm peak`
+      Added at the owner's request after review. The export_cap note in
+      config/connected_solutions.yaml says the model uses the annual peak
+      for every site; the code uses a G-3 site's 3 to 8 pm peak. Fix the
+      note, then make assumptions, make score, confirm every site keeps
+      its rank and every value, then make export and make report, in one
+      commit. Two commits: the "-dirty" rule changes first
+      (`fix(export): count only code changes as dirty`), since under the
+      old rule a config edit made the export dirty and no single commit
+      could pass make check.
 
 ---
 
