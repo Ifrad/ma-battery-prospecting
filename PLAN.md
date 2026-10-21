@@ -950,42 +950,134 @@ never committed; the owner attaches it to the GitHub release.
 
 ---
 
-## Phase 8: Docs and demo  (branch `phase-8-docs`, tag v1.0.0)
+## Phase 8: Factors, hospital check, README and brief  (branch `phase-8-brief-readme`, tag v0.8.0)
 
 Goal: someone at Powertown reads the brief in 2 minutes, opens the report,
-and can audit the method in 15.
-Done when: the README follows that structure and every link works on a phone.
+and can audit the method in 15; someone who finds the repo can run it from
+a fresh clone and change it.
+Done when: the README follows the structure below and every link works on
+a phone, the README figure test passes, the parity tests pass in Python
+and Node with the new factor settings, and the manifest and the report
+show no "-dirty" version.
 
-- [ ] `docs: write one-page brief for Powertown`
-      docs/BRIEF.md: what the tool does, the headline finding (value per
-      block), one worked
-      example (Brockton Hospital: its evidence flags and why it ranks where
-      it does), what is unvalidated, and the open questions. It can be
-      drafted and sent once Phase 5 gives a validation result. Check that
-      Brockton Hospital is scored before using it as the worked example;
-      if it is not, stop and ask the owner.
-- [ ] `docs: write layered README`
-      Top: problem sentence, what it does, a screenshot, and a "Start
-      here" path to the brief and report.html. Middle: 2 minute
-      walkthrough link. Bottom: method, validation, limits, how to run.
-      The headline is value per block. State that values are gross before
-      any host share and not profit, that cost is not modeled, and that
-      shape estimates are unvalidated until real meter data tests them. List open questions for Powertown:
-      how they find sites today, a list of current and contacted sites,
-      installed cost, ITC eligibility, whether ConnectedSolutions stacks
-      with peak shaving, the savings split, and how their own meter data
-      could replace the type-based shape estimates, and a Canton or
-      Sharon commercial bill, or Eversource's list of towns by rate
-      division, to settle which rate area serves the two Eversource towns.
-      Also list two product page claims to check, which are not inputs:
-      "1 to 3 months off your bill" and recovering costs "by year two or
-      three".
-- [ ] `docs: add method, data and limits pages`
-- [ ] `docs: add guide for plugging in operator data`
-      docs/POWERTOWN_DATA.md: where real block size, cost, tariffs, meter
-      data and outcome labels would go.
-- [ ] `docs: add screenshots`
-- [ ] `docs: credit prior work`
+- [ ] `fix(export): record a clean version`
+      The manifest version ends in "-dirty". Make the export record the
+      commit without counting the export folder itself as dirty.
+      Regenerate the export on a clean tree and confirm the manifest and
+      the report header show no "-dirty". Stop and ask the owner if this
+      needs a design choice.
+- [ ] `feat(report): add the ConnectedSolutions and realization factors as settings`
+      Inputs for the performance factor (default and range from config,
+      0.61 to 0.92), the overlap factor and the realization factor. Each
+      shows its default and whether it is a sourced value or a
+      placeholder, rejects values outside 0 to 1 (the performance factor
+      also within the config range, or a clearly labelled override), and
+      resets to defaults. The Moved column and filters keep working.
+      Extend the Node and Python parity tests to cover changed factors.
+      Update the limits section if needed.
+- [ ] `test(validate): hospital sanity check`
+      Compare the scored hospitals with hospital data already in the repo
+      or its documented public sources (for example LBER measured
+      electricity, ComStock hospital profiles). For each scored hospital
+      show modeled yearly kWh, implied average kW, modeled peak kW and
+      load factor next to the reference, and where a reference is an
+      input to the model (tier 1 LBER electricity), say the comparison is
+      circular and not validation. Check that no scored hospital has an
+      implausible load factor or a peak below its implied average. Write
+      the result to docs/VALIDATION.md as a sanity check, never as
+      accuracy. If this needs data not already in the repo, stop and ask
+      the owner before any download. Report any hospital that fails.
+- [ ] `docs(brief): replace the Brockton Hospital worked example`
+      Create docs/BRIEF.md with only the worked example section; the
+      brief task below writes the rest. The example site is WORCESTER
+      HAHNEMANN HOSPITAL (scored, rank 1 in Worcester), called an example
+      site, not the top site, with a line saying Worcester's top is a
+      tier, not an order. Show how its value per block is built from the
+      export figures. The Brockton Hospital requirement is dropped.
+- [ ] `docs(data): add data/README.md`
+      Short, and verified against the ingest code and existing docs, with
+      no guessed URLs: each raw source, how it is obtained, which
+      downloads are manual because mass.gov blocks automated ones,
+      licences, and the expected paths. The README links to it. Fix the
+      CLAUDE.md reference to it only if it still disagrees afterwards.
+- [ ] `docs(readme): write the full README`
+      Audience: someone who finds the repo, reads it, and wants to run and
+      change it. Plain, detailed, honest; no bold, no em dashes. Every
+      figure comes from config, docs or the export with its source, or is
+      labelled a placeholder. Parts, in order:
+      - What this is and is not: purpose, public data only, not
+        affiliated with Powertown, prior work credit
+        (github.com/thutch17/powertown-hackathon, never a hackathon
+        entry; this covers the earlier credit prior work task), value
+        per block is gross simulated revenue and not
+        profit, cost and host share not modeled.
+      - Start here: the shortest path to the report. Clone, install
+        requirements (Python 3.11, uv, optional Node 22 for the JavaScript
+        parity test), `make report`, open report.html by double click. No
+        database or internet is needed because the export is committed;
+        report.html is built, never committed, and attached to GitHub
+        releases. Two or three small screenshots of the built report under
+        docs/img, taken from a local-only server, each under 300 KB (ask
+        the owner if they cannot be kept small). This covers the earlier
+        screenshots task.
+      - Verify the fresh-clone path: clone to a temp folder, follow the
+        README steps exactly, run `make report` and the Node test, and
+        report what had to be fixed. The README claims nothing that was
+        not run.
+      - How the value is estimated, step by step: the funnel (candidate
+        sites, scored sites, the 150 kW line and the 200 kW flag,
+        municipal light plant exclusion), tier 1 measured LBER electricity
+        and tier 2 estimated, load profiles and the no-open-profile
+        placeholders, peak shape and its stress test, the battery block
+        (250 kW, 522 kWh), dispatch and the monthly demand reduction,
+        expected blocks per site, the simulated draws and P10, P50, P90,
+        ranking and tie breaks.
+      - Rate classes and demand charges: how a site is classified G-2 or
+        G-3 (thresholds and rule as in config and METHOD.md), which
+        utilities and rate areas are used, the dollars per kW-month for
+        each class with its source, which are placeholders, the
+        unconfirmed Eversource Canton and Sharon rate area and what the
+        model assumes, and how monthly demand savings become a yearly
+        figure. Every figure from config or the export manifest; a
+        placeholder is said so in the same sentence.
+      - ConnectedSolutions: the $200 per kW-summer and its sources, the
+        performance factor and its range, the overlap factor, the
+        realization factor, the 150 percent export cap and the
+        event-window load cap, which are placeholders, and the
+        ConnectedSolutions share of P50 value from docs/SCORES.md, which
+        the report also computes.
+      - The factors in plain words, with a small worked example for the
+        example site WORCESTER HAHNEMANN HOSPITAL from the export.
+      - How to play with the data: every report setting and filter, the
+        factors, the demand rate inputs, the customer status CSV
+        (docs/customer_status.example.csv), the Moved column; then how to
+        change config and rebuild (`make assumptions`, `make score`,
+        `make export`, `make report`) and which need the database, and
+        link data/README.md for the raw sources. Say
+        exactly what a fresh clone can and cannot do without PostGIS and
+        the ingested data, and that mass.gov blocks automated downloads.
+      - Validation and limits: a short summary from docs/VALIDATION.md
+        (Spearman, calibration, stress test, Worcester a tier, EnerNOC
+        used only locally, the factory 3 to 8 pm gap, the hospital sanity
+        check), pointing to the docs.
+      - Repository map, make targets, tests and CI, tags and releases,
+        data sources and licences (EnerNOC CC BY-NC 3.0, never
+        committed), how to cite or contact.
+      A test checks the figures the README quotes (funnel counts,
+      Spearman, ConnectedSolutions share, rates) against docs and config
+      and fails with a clear message if they differ.
+- [ ] `docs(brief): write one-page brief for Powertown`
+      docs/BRIEF.md, one page: what the tool does, the headline finding
+      (value per block), the worked example, what is unvalidated, and the
+      honest caveats. Open questions for Powertown: installed cost, ITC
+      eligibility, whether ConnectedSolutions stacks with peak shaving,
+      the savings split, how they find sites today, a list of current and
+      contacted sites, anonymized load shapes for manufacturing, laundry
+      and food, a Canton or Sharon commercial bill (or Eversource's list
+      of towns by rate division) to settle which rate area serves the two
+      Eversource towns, and priority regions. Two product page claims to
+      check, which are not inputs: "1 to 3 months off your bill" and
+      recovering costs "by year two or three".
 
 ---
 
@@ -1014,3 +1106,8 @@ Done when: the README follows that structure and every link works on a phone.
   `wip/building-parcel-overlap`. It needs wiring into `make sites`, its
   config value, a TRUNCATE CASCADE fix and a remeasured area error.
   Revisit only if area uncertainty is too wide.
+- docs/LIMITS.md, a limits page, moved from Phase 8. Limits are in
+  docs/VALIDATION.md, the report and the README until then.
+- docs/POWERTOWN_DATA.md, a guide for plugging in operator data, moved from
+  Phase 8: where real block size, cost, tariffs, meter data and outcome
+  labels would go.
