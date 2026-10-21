@@ -1045,7 +1045,7 @@ show no "-dirty" version.
       only the clean peak regulations, which are not an input, and the
       README says so. CLAUDE.md already matches ("Only data/README.md is
       tracked"), so it is unchanged.
-- [ ] `docs(readme): write the full README`
+- [x] `docs(readme): write the full README`
       Audience: someone who finds the repo, reads it, and wants to run and
       change it. Plain, detailed, honest; no bold, no em dashes. Every
       figure comes from config, docs or the export with its source, or is
@@ -1111,6 +1111,17 @@ show no "-dirty" version.
       A test checks the figures the README quotes (funnel counts,
       Spearman, ConnectedSolutions share, rates) against docs and config
       and fails with a clear message if they differ.
+      Built: README.md in those parts, with three screenshots in docs/img
+      (253, 143 and 180 KB) taken from a local-only server.
+      tests/test_readme.py builds 36 phrases from docs/FUNNEL.md,
+      docs/SCORES.md, docs/VALIDATION.md, config/ and the export (funnel
+      and scored counts, Spearman, calibration, stress, the
+      ConnectedSolutions share, rates, factors, the worked example) and
+      fails naming the phrase and its source; it also checks that linked
+      files exist, screenshots stay under 300 KB, and the writing rules.
+      Fresh clone (local clone, no database reachable): make report and
+      make check passed, with only database tests skipped and the Node
+      parity test run.
 - [ ] `docs(brief): write one-page brief for Powertown`
       docs/BRIEF.md, one page: what the tool does, the headline finding
       (value per block), the worked example, what is unvalidated, and the
