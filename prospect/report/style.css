@@ -38,3 +38,4 @@ tbody tr:hover { background: var(--band); }
 .detail { border: 1px solid var(--line); padding: 12px 16px; margin: 12px 0; background: var(--bg); }
 .detail h3 { font-size: 14px; margin: 16px 0 6px; }
 tbody tr { cursor: pointer; }
+.tag { display: inline-block; padding: 0 6px; border: 1px solid var(--accent); color: var(--accent); border-radius: 3px; }

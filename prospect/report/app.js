@@ -19,7 +19,8 @@
     sort: "rank",
     dir: 1,
     settings: C.defaults(M),
-    filters: { segment: "", utility: "", minValue: 0 },
+    filters: { segment: "", utility: "", minValue: 0, hideStatus: true },
+    statuses: {},
   };
   const cache = {};
 
@@ -116,7 +117,8 @@
     const rows = all.filter((r) =>
       (!f.segment || r.site.segment === f.segment) &&
       (!f.utility || r.site.utility === f.utility) &&
-      r.main.value_per_block.p50 >= f.minValue
+      r.main.value_per_block.p50 >= f.minValue &&
+      !(f.hideStatus && state.statuses[r.site.site_id])
     );
     const col = COLUMNS.find((c) => c[0] === state.sort) || COLUMNS[0];
     rows.sort((a, b) => {
@@ -129,7 +131,8 @@
     ).join("") + "<th>Data quality</th>";
     const body = rows.map((r, i) =>
       '<tr data-i="' + i + '" tabindex="0">' + COLUMNS.map((c) => '<td class="' + (c[3] || "") + '">' + cell(c[0], r) + "</td>").join("") +
-      '<td class="flags">' + esc(flagWords(r.site).join("; ")) + "</td></tr>"
+      '<td class="flags">' + (state.statuses[r.site.site_id] ? '<span class="tag">' +
+        esc(state.statuses[r.site.site_id]) + "</span> " : "") + esc(flagWords(r.site).join("; ")) + "</td></tr>"
     ).join("");
     document.getElementById("table").innerHTML = "<thead><tr>" + head + "</tr></thead><tbody>" + body + "</tbody>";
     document.querySelectorAll("#table th[data-key]").forEach((th) =>
@@ -174,7 +177,18 @@
       '<div class="controls"><label>Segment <select id="f-segment">' + opts(segments) + "</select></label>" +
       '<label>Utility <select id="f-utility">' + opts(utilities) + "</select></label>" +
       '<label>Minimum value per block $<input type="number" id="f-min" min="0" step="1000" value="' +
-      state.filters.minValue + '"></label></div>';
+      state.filters.minValue + '"></label></div>' +
+      "<h2>Customer status file</h2>" +
+      '<p class="muted">Optional. A CSV with a header row and the columns owner, address, town (optional) ' +
+      "and status (customer, contacted or declined). It is read in your browser only: nothing is uploaded " +
+      "or saved. A row matches a site when its owner name or its address equals the site's after both are " +
+      "put in upper case with punctuation removed (owner names also drop company words such as " +
+      esc(M.owner_drop_words.slice(0, 4).join(", ")) + ", and street words are abbreviated, STREET to ST); " +
+      "if a town is given it must match too. " +
+      "Matching sites get a status tag.</p>" +
+      '<div class="controls"><input type="file" id="status-file" accept=".csv,text/csv">' +
+      '<label><input type="checkbox" id="f-hide-status"' + (state.filters.hideStatus ? " checked" : "") +
+      "> Hide sites in the status file</label><span id=\"status-count\" class=\"muted\"></span></div>";
     document.getElementById("f-segment").value = state.filters.segment;
     document.getElementById("f-utility").value = state.filters.utility;
     document.getElementById("cs").addEventListener("change", (e) => {
@@ -199,6 +213,21 @@
     document.getElementById("f-segment").addEventListener("change", (e) => { state.filters.segment = e.target.value; render(); });
     document.getElementById("f-utility").addEventListener("change", (e) => { state.filters.utility = e.target.value; render(); });
     document.getElementById("f-min").addEventListener("change", (e) => { state.filters.minValue = Number(e.target.value) || 0; render(); });
+    document.getElementById("f-hide-status").addEventListener("change", (e) => { state.filters.hideStatus = e.target.checked; render(); });
+    document.getElementById("status-file").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const entries = C.parseCsv(String(reader.result));
+        const every = Object.values(DATA.regions).flat();
+        state.statuses = C.matchStatuses(every, entries, M.owner_drop_words, M.address_words);
+        document.getElementById("status-count").textContent =
+          entries.length + " rows read, " + Object.keys(state.statuses).length + " sites matched";
+        render();
+      };
+      reader.readAsText(file);
+    });
   }
 
   const DRIVER_WORDS = {

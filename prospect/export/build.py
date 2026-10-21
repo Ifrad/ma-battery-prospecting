@@ -282,6 +282,11 @@ def manifest(cfg: dict, every: list[dict]) -> dict:
                 "value"
             ],
         },
+        # The report matches a customer status file by owner name normalized
+        # the same way sites are grouped (config/sites.yaml).
+        "owner_drop_words": cfg["sites"]["owner_normalization"]["drop_words"],
+        # and by address with the LBER address abbreviations.
+        "address_words": cfg["sites"]["lber_match"]["address_words"],
         "placeholders": [
             {"file": f, "path": p, "value": v, "note": n}
             for f, p, v, n in config.placeholders(config.load_all())

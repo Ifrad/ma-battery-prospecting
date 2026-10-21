@@ -902,13 +902,19 @@ list.
       default rank). Results are cached per region and settings; a
       recompute takes under a tenth of a second. Hide existing customers
       arrives with the customer status task.
-- [ ] `feat(report): load a customer status file`
+- [x] `feat(report): load a customer status file`
       An optional CSV the reader picks in the browser: owner or address,
       and a status (customer, contacted, declined). Matching sites get a
       status tag and are hidden by default. The file is read locally,
       never uploaded, and never committed. Document how rows are matched
       (normalized owner or address). Add docs/customer_status.example.csv
-      with obviously fake rows.
+      with obviously fake rows. Built: columns owner, address, town
+      (optional) and status; owners are normalized as sites are grouped
+      (punctuation removed, company words dropped) and addresses with the
+      LBER street abbreviations, both carried in the manifest; a given
+      town must match. A "Hide sites in the status file" filter is on by
+      default. The page and README.md describe the matching;
+      customer_status*.csv is gitignored.
 - [ ] `feat(report): add assumptions and limits section`
       Lists every placeholder in use. Explains value per block: simulated,
       gross revenue before any host share, not profit. Says installed cost
