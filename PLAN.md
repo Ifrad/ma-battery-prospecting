@@ -1032,12 +1032,19 @@ show no "-dirty" version.
       each figure from the export or config with its source or
       placeholder status, plus the band, why it ranks there, and what to
       doubt (above the ComStock hospitals' kWh and peak per sq ft).
-- [ ] `docs(data): add data/README.md`
+- [x] `docs(data): add data/README.md`
       Short, and verified against the ingest code and existing docs, with
       no guessed URLs: each raw source, how it is obtained, which
       downloads are manual because mass.gov blocks automated ones,
       licences, and the expected paths. The README links to it. Fix the
       CLAUDE.md reference to it only if it still disagrees afterwards.
+      Built: the four ingested sources load into Postgres raw tables, not
+      files; data/ holds only what make comstock, make simulate, make
+      enernoc, make sensitivity and make match-rates write. None of the
+      sources is a manual download: the documented mass.gov 403 blocked
+      only the clean peak regulations, which are not an input, and the
+      README says so. CLAUDE.md already matches ("Only data/README.md is
+      tracked"), so it is unchanged.
 - [ ] `docs(readme): write the full README`
       Audience: someone who finds the repo, reads it, and wants to run and
       change it. Plain, detailed, honest; no bold, no em dashes. Every
