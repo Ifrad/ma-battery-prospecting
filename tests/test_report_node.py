@@ -15,6 +15,19 @@ from prospect.export import build, recompute
 from prospect.report.build import load_export
 
 ROOT = build.ROOT
+# Changed factors, as tests/js/compute.test.js sets them.
+FACTOR_CASES = {
+    "factors_high": {
+        "realization_factor": 0.95,
+        "performance_factor": 0.92,
+        "overlap_factor": 0.0,
+    },
+    "factors_low": {
+        "realization_factor": 0.6,
+        "performance_factor": 0.75,
+        "overlap_factor": 0.05,
+    },
+}
 
 
 def expectations() -> dict:
@@ -22,8 +35,10 @@ def expectations() -> dict:
     m = data["manifest"]
     sites = [s for r in data["regions"].values() for s in r]
     cases = {}
-    for name in ("defaults", "cs_off", "rate_up"):
+    for name in ("defaults", "cs_off", "rate_up", "factors_high", "factors_low"):
         st = recompute.defaults(m)
+        if name in FACTOR_CASES:
+            st.update(FACTOR_CASES[name])
         if name == "cs_off":
             st["connected_solutions"] = False
         if name == "rate_up":

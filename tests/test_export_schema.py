@@ -184,3 +184,32 @@ def test_version_is_dirty_only_for_changes_outside_the_export(
     assert build.version() == expected
     assert calls[0] == ("describe", "--tags", "--always")
     assert calls[1][-1] == ":!export" and "--untracked-files=no" in calls[1]
+
+
+FACTORS = [(0.95, 0.92, 0.0), (0.6, 0.75, 0.05)]
+
+
+@pytest.mark.parametrize("exports", [False, True])
+@pytest.mark.parametrize("real, perf, overlap", FACTORS)
+def test_export_matches_the_model_with_changed_factors(exports, real, perf, overlap):
+    from prospect.model.report import with_factors
+
+    base = copy.deepcopy(CFG)
+    base["connected_solutions"]["site_exports"]["value"] = exports
+    m = build.manifest(base, [SITE])
+    _, site = exported(base)
+    rescored = score.score_site(
+        SITE, BUILDINGS, with_factors(base, real, perf, overlap)
+    )
+    st = recompute.defaults(m)
+    st.update(realization_factor=real, performance_factor=perf, overlap_factor=overlap)
+    # The rounding bound grows with what each rounded kW of peak is worth
+    # (performance times one minus overlap), so scale the default tolerance.
+    cs = CFG["connected_solutions"]
+    worth = perf * (1 - overlap)
+    default = cs["performance_factor"]["value"] * (1 - cs["overlap_factor"]["value"])
+    tol = VALUE_TOL * max(1.0, worth / default)
+    for r in rescored:
+        st["connected_solutions"] = r["scenario"] == "with_connected_solutions"
+        x = recompute.value_draws(site, m, st)
+        assert x["value"] == pytest.approx(r["draws"]["value_per_block"], abs=tol)

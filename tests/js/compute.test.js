@@ -22,6 +22,8 @@ function settingsFor(name) {
   if (name === "rate_up") {
     for (const u of Object.keys(s.rates)) for (const k of Object.keys(s.rates[u])) s.rates[u][k] *= 1.25;
   }
+  if (name === "factors_high") Object.assign(s, { realization_factor: 0.95, performance_factor: 0.92, overlap_factor: 0 });
+  if (name === "factors_low") Object.assign(s, { realization_factor: 0.6, performance_factor: 0.75, overlap_factor: 0.05 });
   return s;
 }
 
@@ -74,4 +76,12 @@ test("customer status matching uses the manifest's words", () => {
     a: "customer",
     b: "contacted",
   });
+});
+
+test("factor inputs reject values outside 0 to 1 and label overrides", () => {
+  const f = manifest.connected_solutions.performance_factor;
+  for (const bad of ["", "abc", "-0.1", "1.01"]) assert.equal(C.checkFactor(bad, f).ok, false, bad);
+  assert.deepEqual(C.checkFactor(String(f.value), f), { ok: true, value: f.value, override: false });
+  assert.deepEqual(C.checkFactor("0.5", f), { ok: true, value: 0.5, override: true });
+  assert.deepEqual(C.checkFactor("1", f), { ok: true, value: 1, override: true });
 });

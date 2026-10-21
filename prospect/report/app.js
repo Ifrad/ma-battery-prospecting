@@ -7,6 +7,17 @@
   const M = DATA.manifest;
   const C = window.Compute;
   const REGIONS = { metro_south: "Metro South", worcester: "Worcester" };
+  // Factors the reader can change: settings key, label, config file and its
+  // default and range from the manifest.
+  const FACTORS = [
+    ["realization_factor", "Realization factor", "profiles", M.realization_factor,
+      "share of the simulated peak cut a real controller achieves"],
+    ["performance_factor", "ConnectedSolutions performance factor", "connected_solutions",
+      M.connected_solutions.performance_factor, "share of 250 kW a block delivers on average across an event"],
+    ["overlap_factor", "ConnectedSolutions overlap factor", "connected_solutions",
+      M.connected_solutions.overlap_factor, "share of event revenue lost to days that are also the building's peak"],
+  ];
+  const isPlaceholder = (file, key) => M.placeholders.some((p) => p.file === file && p.path === key);
   const FLAG_WORDS = {
     capped: "one block's cut is at its power limit",
     rate_area_unconfirmed: "Eversource rate area unconfirmed",
@@ -161,6 +172,17 @@
         esc(u) + '" data-schedule="' + sched + '" value="' + rates[u][sched] + '"> per kW-month</label>'
       ).join("")
     ).join("");
+    const factorInputs = FACTORS.map(([key, label, file, f, words]) => {
+      const v = state.settings[key];
+      const override = v < f.low || v > f.high;
+      return '<label title="' + esc(words) + '">' + esc(label) +
+        ' <input type="number" step="0.01" min="0" max="1" data-factor="' + key + '" value="' + v + '">' +
+        '<span class="muted">default ' + f.value + ", range " + f.low + " to " + f.high + ", " +
+        (isPlaceholder(file, key) ? "placeholder" : "sourced") + "</span>" +
+        '<span class="tag" data-override="' + key + '"' + (override ? "" : " hidden") +
+        ">override: outside the config range</span>" +
+        '<span class="error" data-error="' + key + '" hidden></span></label>';
+    }).join("");
     const opts = (vals) => '<option value="">all</option>' +
       vals.map((v) => '<option value="' + esc(v) + '">' + esc(v) + "</option>").join("");
     const every = Object.values(DATA.regions).flat();
@@ -173,6 +195,7 @@
       (state.settings.connected_solutions ? " checked" : "") + "> Include ConnectedSolutions</label>" +
       '<button type="button" id="reset">Reset to model defaults</button></div>' +
       '<div class="controls">' + rateInputs + "</div>" +
+      '<div class="controls">' + factorInputs + "</div>" +
       "<h2>Filters</h2>" +
       '<div class="controls"><label>Segment <select id="f-segment">' + opts(segments) + "</select></label>" +
       '<label>Utility <select id="f-utility">' + opts(utilities) + "</select></label>" +
@@ -202,6 +225,20 @@
         const r = JSON.parse(JSON.stringify(state.settings.rates));
         r[el.dataset.utility][el.dataset.schedule] = v;
         state.settings = Object.assign({}, state.settings, { rates: r });
+        render();
+      })
+    );
+    document.querySelectorAll("#settings input[data-factor]").forEach((el) =>
+      el.addEventListener("change", () => {
+        const key = el.dataset.factor;
+        const f = FACTORS.find((x) => x[0] === key)[3];
+        const r = C.checkFactor(el.value, f);
+        const err = document.querySelector('#settings [data-error="' + key + '"]');
+        err.hidden = r.ok;
+        err.textContent = r.ok ? "" : "Not applied: " + r.message + ".";
+        if (!r.ok) return;
+        document.querySelector('#settings [data-override="' + key + '"]').hidden = !r.override;
+        state.settings = Object.assign({}, state.settings, { [key]: r.value });
         render();
       })
     );

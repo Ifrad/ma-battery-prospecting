@@ -135,6 +135,10 @@ def limits(data: dict, validation: str) -> str:
         f" event window (median {e(f['factory_event_median'])}) than the model"
         f" assumes for sites without a profile ({x['model_factory_event']:.2f}),"
         " so factory ConnectedSolutions revenue is probably understated.",
+        "The figures in this list use the model's default factors. The"
+        " realization, performance and overlap factors in Settings are"
+        " placeholders; changing them recomputes the table and the note above"
+        " it, not this list.",
         "Not modeled: space for battery cabinets, utility interconnection"
         " capacity, and whether the owner is willing.",
     ]

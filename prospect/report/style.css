@@ -5,8 +5,10 @@
   --band: #f3f5f7;
   --accent: #2f5d8a;
   --bg: #ffffff;
+  --error: #b00020;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -38,4 +40,5 @@ tbody tr:hover { background: var(--band); }
 .detail { border: 1px solid var(--line); padding: 12px 16px; margin: 12px 0; background: var(--bg); }
 .detail h3 { font-size: 14px; margin: 16px 0 6px; }
 tbody tr { cursor: pointer; }
+.error { color: var(--error); }
 .tag { display: inline-block; padding: 0 6px; border: 1px solid var(--accent); color: var(--accent); border-radius: 3px; }
