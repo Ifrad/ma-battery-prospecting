@@ -1,7 +1,7 @@
-"""The figures README.md quotes still match the docs, config and export they
-come from. Each check builds the phrase the README should contain from its
-source; when a source changes, the failure names the phrase and the source,
-so the README can be updated by hand."""
+"""The figures README.md and docs/BRIEF.md quote still match the docs, config
+and export they come from. Each check builds the phrase the page should
+contain from its source; when a source changes, the failure names the page,
+the phrase and the source, so the page can be updated by hand."""
 
 import json
 import re
@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 README = (ROOT / "README.md").read_text()
 # Line breaks in the README do not matter: compare with whitespace collapsed.
 FLAT = " ".join(README.split())
+BRIEF = (ROOT / "docs" / "BRIEF.md").read_text()
+BRIEF_FLAT = " ".join(BRIEF.split())
 DOCS = ROOT / "docs"
 CFG = config.load()
 
@@ -25,7 +27,7 @@ def doc(name: str) -> str:
 
 def find(pattern: str, text: str, source: str) -> re.Match:
     m = re.search(pattern, text)
-    assert m, f"{source} no longer has the line the README test reads ({pattern!r})"
+    assert m, f"{source} no longer has the line the figure test reads ({pattern!r})"
     return m
 
 
@@ -109,7 +111,7 @@ def share_phrases() -> list[tuple[str, str]]:
     s = doc("SCORES.md")
     share = find(r"\| ConnectedSolutions \| \$[\d,]+ \| (\d+)% \|", s, "SCORES")
     top = s.split("### Metro South", 1)[1].split("### Worcester", 1)[0]
-    towns = [r.split(" | ")[1] for r in top.splitlines() if r.startswith("| ")][2:12]
+    towns = [r.split(" | ")[1] for r in top.splitlines() if r.startswith("| ")][1:11]
     assert set(towns) <= {"Canton", "Sharon"}, (
         f"docs/SCORES.md: Metro South's top 10 are no longer all in Canton and"
         f" Sharon ({towns}); update the README's rate area paragraph"
@@ -212,3 +214,145 @@ def test_readme_follows_the_writing_rules():
     assert "—" not in README, "README has an em dash"
     assert "**" not in README, "README uses bold"
     assert re.search(r"\baccurate\b", README.replace("not accurate", "")) is None
+
+
+def hahnemann() -> dict:
+    sites = json.loads((ROOT / "export" / "worcester.geojson").read_text())["features"]
+    [s] = [
+        f["properties"]
+        for f in sites
+        if f["properties"]["owner"] == "WORCESTER HAHNEMANN HOSPITAL"
+    ]
+    return s
+
+
+def brief_phrases() -> list[tuple[str, str]]:
+    import numpy as np
+
+    f, s, v = doc("FUNNEL.md"), doc("SCORES.md"), doc("VALIDATION.md")
+    candidates = find(
+        r"\| Candidate sites \| [\d,]+ \| [\d,]+ \| ([\d,]+) \|", f, "FUNNEL"
+    )
+    ms = find(r"\| Metro South \| \d+ \| \d+ \| (\d+) \|", s, "SCORES")
+    w = find(r"\| Worcester \| \d+ \| \d+ \| (\d+) \|", s, "SCORES")
+    both = find(r"\| Both \| \d+ \| \d+ \| (\d+) \| \d+ \| (\d+) \|", s, "SCORES")
+    with_cs = find(
+        r"\| Plus ConnectedSolutions \| \$[\d,]+ \| (\$[\d,]+) \|", s, "SCORES"
+    )
+    demand = find(r"\| Demand savings only \| \$[\d,]+ \| (\$[\d,]+) \|", s, "SCORES")
+    share = find(r"\| ConnectedSolutions \| \$[\d,]+ \| (\d+)% \|", s, "SCORES")
+    wtop = s.split("### Worcester", 1)[1]
+    wvals = [r.split(" | ")[5] for r in wtop.splitlines() if r.startswith("| ")][1:16]
+    e = find(r"Spearman ([\d.]+) against ([\d.]+) for size-only", v, "VALIDATION")
+    stress = find(
+        r"Metro South keeps (\d+) of its top 15 and Worcester (\d+)\.", v, "VALIDATION"
+    )
+    not_closer = find(r"Where it is not: ([a-z_, ]+)\.", v, "VALIDATION")
+    hrow = find(
+        r"\| WORCESTER HAHNEMANN HOSPITAL \|.*\| ([\d.]+) \| ([\d.]+) \| outside",
+        v,
+        "VALIDATION",
+    )
+    n_ref = find(
+        r"next to the (\d+) Massachusetts hospitals in the ComStock", v, "VALIDATION"
+    )
+
+    ng = rates("National Grid (Massachusetts Electric)")
+    ev = rates("Eversource Energy (NSTAR Electric)")
+    cs = CFG["connected_solutions"]
+    perf, over = cs["performance_factor"]["value"], cs["overlap_factor"]["value"]
+    usd = cs["daily_dispatch_usd_per_kw_season"]["value"]
+    real = CFG["profiles"]["realization_factor"]["value"]
+    power = CFG["battery"]["block"]["power_kw"]
+    full_cs = power * perf * (1 - over) * usd
+    ceiling = 12 * power * real * ng["G-3"] + full_cs
+
+    site = hahnemann()
+    x = site["scenarios"]["with_connected_solutions"]
+    val, st = x["value_per_block"], x["streams"]
+    dem, grid = st["demand_savings"]["p50"], st["connected_solutions"]["p50"]
+    kwm = float(np.percentile(site["draws"]["kwm_g3"], 50))
+    peak = float(np.percentile(site["draws"]["peak_kw"], 50))
+    ratio = site["event_window"]["mean_over_peak"]
+    lber = sum(b["grid_kwh"] or 0 for b in site["buildings"])
+    src_docs = "docs/FUNNEL.md, docs/SCORES.md and docs/VALIDATION.md"
+    src_ex = "export/worcester.geojson (Worcester Hahnemann Hospital) and config/"
+    return [
+        (
+            f"{both[1]} of {candidates[1]} candidate sites are scored: {ms[1]} in"
+            f" Metro South, {w[1]} in Worcester",
+            src_docs,
+        ),
+        (
+            f"{with_cs[1]} a year with ConnectedSolutions, {demand[1]} from demand"
+            " savings alone",
+            src_docs,
+        ),
+        (f"ConnectedSolutions is {share[1]} percent of P50 value", src_docs),
+        (
+            f"(${ev['G-2']:.2f} per kW-month, against National Grid's"
+            f" ${ng['G-2']:.2f})",
+            "config/",
+        ),
+        (
+            f"its top 15 run from {wvals[-1]} to {wvals[0]}, close to the one-block"
+            f" ceiling of {money(ceiling)}",
+            "docs/SCORES.md and config/",
+        ),
+        (f"{site['building_count']} buildings, {site['area_sqft']:,} sq ft", src_ex),
+        (f"reports {lber:,} kWh in LBER", src_ex),
+        (f"G-3 in every draw, ${ng['G-3']:.2f} per kW-month", src_ex),
+        (f"{kwm:,.2f} kW-months, after the realization factor {real}", src_ex),
+        (
+            f"{kwm:,.2f} x ${ng['G-3']:.2f} = {money(st['demand_savings']['p50'])}",
+            src_ex,
+        ),
+        (
+            f"min({power} x {perf}, {ratio} x {peak:,.0f} kW peak) = {power * perf:g},"
+            f" x (1 - {over}) = {power * perf * (1 - over):g} kW",
+            src_ex,
+        ),
+        (
+            f"{power * perf * (1 - over):g} kW x ${usd} ="
+            f" {money(st['connected_solutions']['p50'])}",
+            src_ex,
+        ),
+        (
+            f"{money(dem)} + {money(grid)} = {money(val['p50'])},"
+            f" band ${val['p10']:,} to ${val['p90']:,}",
+            src_ex,
+        ),
+        (f"{site['blocks']:.1f} expected blocks", src_ex),
+        (f"ranks {site['size_rank']}th in Worcester", src_ex),
+        (f"({hrow[1]} kWh, {hrow[2]} W) are above all {n_ref[1]} ComStock", src_docs),
+        (
+            f"Metro South keeps {stress[1]} of its top 15 and Worcester {stress[2]}",
+            src_docs,
+        ),
+        (f"Spearman {e[1]} against {e[2]}", src_docs),
+        (f"no better for {not_closer[1]}", src_docs),
+        (f"(performance factor {perf}, overlap factor {over}, no export)", "config/"),
+        (f"{both[2]} scored sites (factories", src_docs),
+    ]
+
+
+BRIEF_PHRASES = brief_phrases()
+
+
+@pytest.mark.parametrize(
+    "phrase, source", BRIEF_PHRASES, ids=[p for p, _ in BRIEF_PHRASES]
+)
+def test_brief_quotes_current_figures(phrase, source):
+    assert " ".join(phrase.split()) in BRIEF_FLAT, (
+        f"docs/BRIEF.md no longer matches {source}: expected the text {phrase!r}."
+        " Update the brief figure from the source."
+    )
+
+
+def test_brief_follows_the_writing_rules():
+    assert "\u2014" not in BRIEF and "**" not in BRIEF
+    assert "not affiliated with Powertown" in BRIEF
+    assert "github.com/thutch17/powertown-hackathon" in BRIEF and "prior work" in BRIEF
+    assert "hackathon entry" not in BRIEF
+    assert re.search(r"\baccurate\b", BRIEF) is None
+    assert len(BRIEF.split()) <= 800, "docs/BRIEF.md is meant to fit on one page"

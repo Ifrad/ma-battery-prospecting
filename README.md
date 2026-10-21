@@ -382,8 +382,8 @@ small fixtures under tests/fixtures/. Tests that need Postgres skip without
 it, and the JavaScript parity test (tests/js/compute.test.js, run with
 `node --test`, no npm packages) skips without Node. CI (GitHub Actions)
 runs `make check` with PostGIS 16 and Node 22 and fails instead of skipping
-when either is missing. A README test checks that the figures quoted here
-still match docs/ and config/.
+when either is missing. tests/test_readme.py checks that the figures quoted
+here and in docs/BRIEF.md still match docs/, config/ and the export.
 
 ## Tags and releases
 

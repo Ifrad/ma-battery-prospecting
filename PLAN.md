@@ -1158,6 +1158,15 @@ on a phone, since the branch is not pushed.
       Added at the owner's request after review. The layout named
       docs/LIMITS.md and docs/POWERTOWN_DATA.md, which moved to Later; it
       now lists the docs pages that exist.
+- [x] `test: check the brief's figures against their sources`
+      Added at the owner's request after review. tests/test_readme.py
+      also rebuilds 21 figures in docs/BRIEF.md (headline counts and
+      values, rates, the Worcester top 15 and one-block ceiling, every
+      step of the worked example, the validation figures) from
+      docs/FUNNEL.md, docs/SCORES.md, docs/VALIDATION.md, config/ and
+      the export, and checks the brief stays under 800 words, says it is
+      not affiliated with Powertown and credits the prior work. It also
+      fixes an off-by-one in the README test's Metro South top 10 rows.
 
 ---
 
