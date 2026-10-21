@@ -1020,13 +1020,18 @@ show no "-dirty" version.
       range, following their measured LBER electricity (VHS Acquisition
       Subsidiary, Worcester Hahnemann Hospital and Harrington Hospital
       Corp above it, Lutheran Housing Corporation below).
-- [ ] `docs(brief): replace the Brockton Hospital worked example`
+- [x] `docs(brief): replace the Brockton Hospital worked example`
       Create docs/BRIEF.md with only the worked example section; the
       brief task below writes the rest. The example site is WORCESTER
       HAHNEMANN HOSPITAL (scored, rank 1 in Worcester), called an example
       site, not the top site, with a line saying Worcester's top is a
       tier, not an order. Show how its value per block is built from the
       export figures. The Brockton Hospital requirement is dropped.
+      Built: a step table from the block to the P50 value per block
+      ($25,258 demand savings plus $26,535 ConnectedSolutions, $51,793),
+      each figure from the export or config with its source or
+      placeholder status, plus the band, why it ranks there, and what to
+      doubt (above the ComStock hospitals' kWh and peak per sq ft).
 - [ ] `docs(data): add data/README.md`
       Short, and verified against the ingest code and existing docs, with
       no guessed URLs: each raw source, how it is obtained, which
