@@ -1171,7 +1171,7 @@ on a phone, since the branch is not pushed.
       the export, and checks the brief stays under 800 words, says it is
       not affiliated with Powertown and credits the prior work. It also
       fixes an off-by-one in the README test's Metro South top 10 rows.
-- [ ] `fix(config): say the export cap uses a G-3 site's 3 to 8 pm peak`
+- [x] `fix(config): say the export cap uses a G-3 site's 3 to 8 pm peak`
       Added at the owner's request after review. The export_cap note in
       config/connected_solutions.yaml says the model uses the annual peak
       for every site; the code uses a G-3 site's 3 to 8 pm peak. Fix the
@@ -1180,7 +1180,13 @@ on a phone, since the branch is not pushed.
       commit. Two commits: the "-dirty" rule changes first
       (`fix(export): count only code changes as dirty`), since under the
       old rule a config edit made the export dirty and no single commit
-      could pass make check.
+      could pass make check. Built: rescored as run 17 (config
+      a1dd6b6591f9, was 0cb9fae2584e). All 708 site and scenario rows
+      match run 16 in all 27 columns, every stored draw included, and the
+      rank order is identical in both regions and both scenarios. The
+      export's GeoJSON and CSV files are byte-identical; the manifest
+      changes only its version (v0.7.0-14-gc11b1d0), times, config hash
+      and score run.
 
 ---
 

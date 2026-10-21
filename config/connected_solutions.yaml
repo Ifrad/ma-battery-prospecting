@@ -55,8 +55,12 @@ export_cap_share_of_site_peak:
     and 1.5 times the estimated site peak (divided by the site's blocks),
     before the performance and overlap factors. For G-3 customers the
     program sets the peak from 15-minute peaks in the 3 to 8 p.m. event
-    windows, which can be lower than the annual peak; the model uses the
-    estimated annual peak for every site.
+    windows, which can be lower than the annual peak, so for a draw on G-3
+    (G-3 weight over one half) the model uses the site's 3 to 8 p.m. peak:
+    the estimated annual peak times its type's weekday 3 to 8 p.m. peak
+    over annual peak (event_window peak_over_peak in
+    config/simulation.yaml). Other draws use the estimated annual peak.
+    Applies only when site_exports is true.
 
 site_exports:
   value: false
