@@ -10,7 +10,10 @@ not profit, not accurate, unvalidated. Reads the database only.
 
 import csv
 import json
+import subprocess
 import sys
+from datetime import UTC, datetime
+from importlib import metadata
 from pathlib import Path
 
 from prospect.db import connect
@@ -286,6 +289,57 @@ def manifest(cfg: dict, every: list[dict]) -> dict:
     }
 
 
+def version() -> str:
+    """The code version: git describe when run in a checkout, else the
+    package version."""
+    try:
+        return subprocess.run(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return metadata.version("prospect")
+
+
+def provenance(conn, run: dict, cfg: dict) -> dict:
+    """Version, time, config hash and the sources behind the export. EnerNOC
+    is left out on purpose: the tool does not incorporate it."""
+    fetched = dict(
+        conn.execute(
+            "SELECT source, max(finished_at)::date::text FROM ingest_runs"
+            " WHERE status = 'succeeded' AND source = ANY(%s) GROUP BY 1",
+            (["parcels", "footprints", "utility_territories", "lber", "comstock"],),
+        ).fetchall()
+    )
+    years = [
+        r[0]
+        for r in conn.execute(
+            "SELECT DISTINCT reporting_year FROM raw_lber ORDER BY 1"
+        ).fetchall()
+    ]
+    d = cfg["comstock"]["dataset"]
+    return {
+        "version": version(),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "config_hash": run["config_hash"],
+        "score_run": run["run_id"],
+        "scored_at": run["scored_at"].isoformat(timespec="seconds"),
+        "sources": {
+            "lber_reporting_years": years,
+            "comstock": {"release": d["release"], "weather_year": d["weather_year"]},
+            "fetched": fetched,
+            "rates_read": {
+                u: str(v["read"])
+                for u, v in cfg["rates"]["utilities"].items()
+                if "read" in v
+            },
+        },
+    }
+
+
 def write(conn, out: Path = OUT) -> dict:
     run = latest_run(conn)
     if run["config_hash"] != config_hash():
@@ -305,7 +359,9 @@ def write(conn, out: Path = OUT) -> dict:
             w.writeheader()
             w.writerows(csv_rows(rs))
         written[region] = len(rs)
-    (out / "manifest.json").write_text(json.dumps(manifest(cfg, every), indent=1))
+    (out / "manifest.json").write_text(
+        json.dumps({**provenance(conn, run, cfg), **manifest(cfg, every)}, indent=1)
+    )
     return {"run_id": run["run_id"], "sites": written}
 
 

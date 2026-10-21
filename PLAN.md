@@ -856,8 +856,14 @@ list.
       every exported P50 within $10 (the rounding of draws to 0.1); a
       model-scored site passed through the export matches the model draw
       by draw, with and without export.
-- [ ] `chore(export): add data manifest`
+- [x] `chore(export): add data manifest`
       Version, generated time, config hash, source reporting years.
+      export/manifest.json opens with the version (git describe, or the
+      package version outside git), the generation time, the config hash
+      and the score run, and the sources: LBER reporting years, the
+      ComStock release and weather year, each public source's ingest date
+      and each utility's rates read date. EnerNOC is not listed, since the
+      tool does not incorporate it.
 - [ ] `feat(report): build single-file report from the export`
       A script under `prospect/report/` writes one HTML file with data, CSS
       and JS inline and no external scripts, fonts or images. A region

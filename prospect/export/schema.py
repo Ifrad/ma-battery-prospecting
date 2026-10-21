@@ -71,3 +71,28 @@ def too_large(directory: Path) -> list[str]:
         for p in sorted(directory.iterdir())
         if p.is_file() and p.stat().st_size > MAX_BYTES
     ]
+
+
+MANIFEST_FIELDS = (
+    "version",
+    "generated_at",
+    "config_hash",
+    "score_run",
+    "scored_at",
+    "sources",
+    "draws",
+    "battery_block",
+    "demand_rates_usd_per_kw_month",
+    "realization_factor",
+    "connected_solutions",
+    "placeholders",
+)
+
+
+def check_manifest(m: dict) -> list[str]:
+    out = [f"manifest: missing {k}" for k in MANIFEST_FIELDS if k not in m]
+    if "sources" in m and not m["sources"].get("lber_reporting_years"):
+        out.append("manifest: no LBER reporting year")
+    if "costs" in m:
+        out.append("manifest: carries a cost block; cost is not modeled")
+    return out

@@ -1,4 +1,30 @@
 {
+ "version": "v0.5.0-6-gc47c85e-dirty",
+ "generated_at": "2026-10-21T02:48:41+00:00",
+ "config_hash": "0cb9fae2584e9fdbf2fc1e56503e9b20a42d5d826c78a84b81ef9a75f04e03be",
+ "score_run": 16,
+ "scored_at": "2026-10-20T23:40:36+00:00",
+ "sources": {
+  "lber_reporting_years": [
+   2024
+  ],
+  "comstock": {
+   "release": "2025/comstock_amy2018_release_3",
+   "weather_year": 2018
+  },
+  "fetched": {
+   "utility_territories": "2026-10-19",
+   "footprints": "2026-10-19",
+   "lber": "2026-10-19",
+   "comstock": "2026-10-20",
+   "parcels": "2026-10-19"
+  },
+  "rates_read": {
+   "National Grid (Massachusetts Electric)": "2026-10-20",
+   "Eversource Energy (NSTAR Electric)": "2026-10-20",
+   "West Boylston Municipal Lighting Plant": "2026-10-20"
+  }
+ },
  "draws": 1000,
  "battery_block": {
   "power_kw": 250,
