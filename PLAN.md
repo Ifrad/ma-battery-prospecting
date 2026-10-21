@@ -958,7 +958,9 @@ a fresh clone and change it.
 Done when: the README follows the structure below and every link works on
 a phone, the README figure test passes, the parity tests pass in Python
 and Node with the new factor settings, and the manifest and the report
-show no "-dirty" version.
+show no "-dirty" version. Checked at review: the README test confirms
+every linked file and image exists; the README has not yet been viewed
+on a phone, since the branch is not pushed.
 
 - [x] `fix(export): record a clean version`
       The manifest version ends in "-dirty". Make the export record the
