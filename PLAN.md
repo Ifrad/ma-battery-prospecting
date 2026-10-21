@@ -801,8 +801,9 @@ network, backend or install, to see which buildings to approach next,
 ranked by value per block.
 Done when: `make export` writes per-region files under 5 MB each that pass
 schema validation, `make report` writes report.html from the export, it
-opens offline, and it lets a reader change the key assumptions and filter the
-list.
+opens offline, it lets a reader change the key assumptions and filter the
+list, and the parity tests pass in Python and Node. report.html is built,
+never committed; the owner attaches it to the GitHub release.
 
 - [x] `docs(plan): merge export and report phases`
       Merge the Export and Report phases into this one phase, keeping every
@@ -900,8 +901,8 @@ list.
       a G-2 and G-3 rate input per utility, prefilled from the manifest,
       a reset to model defaults, and a Moved column (up or down from the
       default rank). Results are cached per region and settings; a
-      recompute takes under a tenth of a second. Hide existing customers
-      arrives with the customer status task.
+      recompute takes under a tenth of a second. Hide existing customers is
+      built with the customer status file, on by default.
 - [x] `feat(report): load a customer status file`
       An optional CSV the reader picks in the browser: owner or address,
       and a status (customer, contacted, declined). Matching sites get a
