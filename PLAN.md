@@ -886,10 +886,12 @@ list.
       never committed; the owner attaches it to each GitHub release from
       v0.7.0. prospect/report/compute.js mirrors
       prospect/export/recompute.py and is inlined with the UI script.
-- [ ] `feat(report): add site detail view`
+- [x] `feat(report): add site detail view`
       Evidence flags, top drivers, the buildings and parcels in the site,
       and a map link by coordinates for outreach (an external link,
-      nothing embedded).
+      nothing embedded). Clicking a row (or Enter on it) opens the panel;
+      drivers are in plain words, and the link opens OpenStreetMap at the
+      site's centroid only when clicked.
 - [ ] `feat(report): add settings and filters`
       Settings the reader can change, recomputed in the browser from the
       export: ConnectedSolutions on or off, demand rate. A column showing

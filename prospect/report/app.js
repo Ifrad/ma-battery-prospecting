@@ -101,8 +101,8 @@
       (c) => '<th class="' + (c[3] || "") + '" data-key="' + c[0] + '">' + c[1] +
         (state.sort === c[0] ? (state.dir > 0 ? " ▲" : " ▼") : "") + "</th>"
     ).join("") + "<th>Data quality</th>";
-    const body = rows.map((r) =>
-      "<tr>" + COLUMNS.map((c) => '<td class="' + (c[3] || "") + '">' + cell(c[0], r) + "</td>").join("") +
+    const body = rows.map((r, i) =>
+      '<tr data-i="' + i + '" tabindex="0">' + COLUMNS.map((c) => '<td class="' + (c[3] || "") + '">' + cell(c[0], r) + "</td>").join("") +
       '<td class="flags">' + esc(flagWords(r.site).join("; ")) + "</td></tr>"
     ).join("");
     document.getElementById("table").innerHTML = "<thead><tr>" + head + "</tr></thead><tbody>" + body + "</tbody>";
@@ -114,7 +114,71 @@
         render();
       })
     );
+    document.querySelectorAll("#table tbody tr").forEach((tr) => {
+      const open = () => showDetail(rows[Number(tr.dataset.i)]);
+      tr.addEventListener("click", open);
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter") open(); });
+    });
     renderSummary(rows);
+  }
+
+  const DRIVER_WORDS = {
+    reduction_share: "share of the peak one block cuts",
+    load_factor: "load factor",
+    peak_kw: "estimated peak",
+    annual_kwh: "yearly electricity",
+    blocks: "number of blocks",
+  };
+
+  function drivers(list) {
+    return list.map((d) => {
+      const m = d.match(/^(\S+) ([+-][\d.]+)$/);
+      return m ? (DRIVER_WORDS[m[1]] || m[1]) + " (" + m[2] + ")" : d;
+    });
+  }
+
+  function mapLink(site) {
+    const lat = site.lat.toFixed(6), lon = site.lon.toFixed(6);
+    return "https://www.openstreetmap.org/?mlat=" + lat + "&mlon=" + lon + "#map=18/" + lat + "/" + lon;
+  }
+
+  function showDetail(r) {
+    const s = r.site;
+    const list = (xs) => "<ul>" + xs.map((x) => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+    const parcels = s.parcels.map((p) =>
+      "<tr><td>" + esc(p.loc_id) + "</td><td>" + esc(p.site_addr) + "</td><td>" + esc(p.use_code) +
+      " " + esc(p.use_desc) + "</td><td>" + esc(p.owner) + "</td></tr>").join("");
+    const buildings = s.buildings.map((b) =>
+      "<tr><td>" + esc(b.building_id) + '</td><td class="num">' +
+      (b.area_sqft == null ? "" : b.area_sqft.toLocaleString("en-US")) + "</td><td>" + esc(b.area_source) +
+      "</td><td>" + esc(b.electricity_source) + '</td><td class="num">' +
+      (b.grid_kwh == null ? "" : b.grid_kwh.toLocaleString("en-US")) + "</td></tr>").join("");
+    const v = r.main.value_per_block;
+    document.getElementById("detail").hidden = false;
+    document.getElementById("detail").innerHTML =
+      '<button id="close-detail" type="button">Close</button>' +
+      "<h2>" + esc(s.owner) + ", " + esc(s.site_addr) + ", " + esc(s.town) + "</h2>" +
+      "<p>Rank " + r.rank + " in " + REGIONS[state.region] + ". Value per block " + usd(v.p50) +
+      " a year (P10 " + usd(v.p10) + " to P90 " + usd(v.p90) + "), " + r.main.blocks.toFixed(1) +
+      " blocks expected. Segment " + esc(s.segment) + ", " + esc(s.utility) + ".</p>" +
+      '<p><a href="' + mapLink(s) + '" target="_blank" rel="noopener noreferrer">Map of the site location</a>' +
+      ' <span class="muted">(opens OpenStreetMap; nothing is loaded until you click)</span></p>' +
+      "<h3>Evidence</h3>" + list(flagWords(s)) +
+      "<h3>Top drivers of its value</h3>" +
+      (r.site.scenarios.with_connected_solutions.top_drivers.length
+        ? list(drivers(r.site.scenarios.with_connected_solutions.top_drivers))
+        : "<p class=\"muted\">None stand out across its draws.</p>") +
+      "<h3>Parcels (" + s.parcels.length + ")</h3>" +
+      '<div class="table-wrap"><table><thead><tr><th>Parcel</th><th>Address</th><th>Use</th><th>Owner</th></tr></thead><tbody>' +
+      parcels + "</tbody></table></div>" +
+      "<h3>Candidate buildings (" + s.buildings.length + ")</h3>" +
+      '<div class="table-wrap"><table><thead><tr><th>Building</th><th class="num">Floor area, sq ft</th>' +
+      '<th>Area source</th><th>Electricity</th><th class="num">Measured kWh</th></tr></thead><tbody>' +
+      buildings + "</tbody></table></div>";
+    document.getElementById("close-detail").addEventListener("click", () => {
+      document.getElementById("detail").hidden = true;
+    });
+    document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function renderSummary(rows) {
