@@ -75,3 +75,22 @@ def test_limits_section_states_the_required_points():
         assert phrase in text
     share = build.export_facts(data)["cs_share"]
     assert f"{share:.0%}" in text
+
+
+def test_page_makes_no_requests_and_inlines_the_tested_compute_code():
+    page = build.page(build.load_export())
+    script = page[page.rindex("<script>") : page.rindex("</script>")]
+    for pattern in (
+        "fetch(",
+        "XMLHttpRequest",
+        "WebSocket",
+        "EventSource",
+        "import(",
+        "sendBeacon",
+        ".src =",
+        "url(",
+    ):
+        assert pattern not in script and pattern not in page.split("<script")[0]
+    assert (build.HERE / "compute.js").read_text() in page  # the code node --test runs
+    urls = set(re.findall(r"https?://[^\s\"'<>]+", script))
+    assert urls == {"https://www.openstreetmap.org/?mlat="}  # a link built on click

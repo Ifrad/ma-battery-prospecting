@@ -13,6 +13,7 @@ jobs:
     env:
       UV_LOCKED: "1"
       PROSPECT_REQUIRE_DB: "1"
+      PROSPECT_REQUIRE_NODE: "1"
     services:
       db:
         image: postgis/postgis:16-3.5
@@ -33,4 +34,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - run: make check
