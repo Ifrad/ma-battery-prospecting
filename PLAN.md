@@ -864,7 +864,7 @@ list.
       ComStock release and weather year, each public source's ingest date
       and each utility's rates read date. EnerNOC is not listed, since the
       tool does not incorporate it.
-- [ ] `feat(report): build single-file report from the export`
+- [x] `feat(report): build single-file report from the export`
       A script under `prospect/report/` writes one HTML file with data, CSS
       and JS inline and no external scripts, fonts or images. A region
       switch (Metro South, Worcester) and a sortable ranked table: owner,
@@ -872,14 +872,20 @@ list.
       range) and its percentile rank inside the region, expected blocks,
       total, the share of value from each revenue stream, data quality as
       text from the evidence flags, and the size-only rank next to the
-      model rank. No profit colors. Both scenarios show side by side. The report says ConnectedSolutions
-      is the same per block for every eligible site except those capped
-      by the program's export cap. The report computes the
+      model rank. No profit colors. Both scenarios show side by side. The
+      report says ConnectedSolutions pays every eligible site the same per
+      block unless the building's 3 to 8 pm load or the export cap limits
+      it, and counts the sites where it does. The report computes the
       ConnectedSolutions share of P50 value from the export and states it,
       never hardcoded (docs/SCORES.md currently shows 56 percent). It shows
       the flags capped, rate area unconfirmed and no open profile in plain
       words.
-      Basic responsive CSS.
+      Basic responsive CSS. Built: `make report` writes report.html (about
+      8 MB, all 1,000 draws embedded; it loads in about a third of a
+      second and re-sorts in under a tenth). report.html is gitignored and
+      never committed; the owner attaches it to each GitHub release from
+      v0.7.0. prospect/report/compute.js mirrors
+      prospect/export/recompute.py and is inlined with the UI script.
 - [ ] `feat(report): add site detail view`
       Evidence flags, top drivers, the buildings and parcels in the site,
       and a map link by coordinates for outreach (an external link,
