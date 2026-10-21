@@ -16,6 +16,7 @@ from prospect.validate import (
     baseline,
     calibration,
     energy,
+    hospitals,
     limits,
     meters,
     sensitivity,
@@ -111,6 +112,7 @@ def summary(r: dict, cfg: dict) -> list[str]:
         f" top 15 and Worcester {st['worcester']['top15_kept']}.",
         *meter_lines(r.get("meters")),
         *rescale_lines(r.get("rescale")),
+        *hospitals.summary_line(r.get("hospitals")),
         "- Value per block has no accuracy number. It is simulated, gross,"
         " before the host share, and unvalidated.",
     ]
@@ -134,6 +136,7 @@ def render(r: dict, cfg: dict) -> str:
         limits.PEAK_SHAPE,
         meters.section(r["meters"]),
         meters.rescale_section(r["rescale"]),
+        hospitals.section(r["hospitals"]),
         sensitivity.section(),
         limits.UNVALIDATED,
         limits.LIMITS,
@@ -153,6 +156,7 @@ def main() -> None:
             "stress": stress.results(conn, cfg),
             "meters": meters.results(cfg),
             "rescale": meters.rescale_results(cfg),
+            "hospitals": hospitals.results(conn, cfg),
         }
     PAGE.write_text(render(r, cfg))
     print(f"wrote {PAGE.relative_to(ROOT)}")
