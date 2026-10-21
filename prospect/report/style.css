@@ -15,7 +15,7 @@ body {
   color: var(--ink);
   background: var(--bg);
 }
-header, main, footer { padding: 16px 24px; max-width: 1400px; margin: 0 auto; }
+header, main, footer { padding: 16px 24px; max-width: 1680px; margin: 0 auto; }
 h1 { font-size: 20px; margin: 0 0 4px; }
 h2 { font-size: 16px; margin: 24px 0 8px; }
 p { margin: 6px 0; }
@@ -28,11 +28,13 @@ button.region[aria-pressed="true"] { background: var(--accent); color: #fff; bor
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
 th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-th { position: sticky; top: 0; background: var(--band); cursor: pointer; white-space: nowrap; }
-th.num, td.num { text-align: right; white-space: nowrap; }
+th { position: sticky; top: 0; background: var(--band); cursor: pointer; vertical-align: bottom; min-width: 4.5em; }
+th.num { text-align: right; }
+td.num { text-align: right; white-space: nowrap; }
 tbody tr:hover { background: var(--band); }
 .band { color: var(--muted); font-size: 12px; }
 .flags { font-size: 12px; color: var(--muted); }
+td.flags { min-width: 16em; }
 @media (max-width: 720px) {
   header, main, footer { padding: 12px; }
   .hide-narrow { display: none; }

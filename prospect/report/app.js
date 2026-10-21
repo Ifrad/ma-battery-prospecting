@@ -82,18 +82,20 @@
     return rows;
   }
 
+  // Header labels are HTML: <wbr> lets the long program name break in a
+  // narrow column, so the table fits a laptop-width window.
   const COLUMNS = [
     ["rank", "Rank", (r) => r.rank, "num"],
     ["owner", "Owner", (r) => r.site.owner || ""],
     ["town", "Town", (r) => r.site.town],
     ["segment", "Segment", (r) => r.site.segment],
     ["value", "Value per block, P50", (r) => r.main.value_per_block.p50, "num"],
-    ["with_cs", "With ConnectedSolutions", (r) => r.with_cs.value_per_block.p50, "num"],
+    ["with_cs", "With Connected<wbr>Solutions", (r) => r.with_cs.value_per_block.p50, "num"],
     ["demand_only", "Demand savings only", (r) => r.demand_only.value_per_block.p50, "num"],
     ["percentile", "Percentile in region", (r) => r.percentile, "num"],
     ["blocks", "Blocks", (r) => r.main.blocks, "num"],
     ["total", "Total, P50", (r) => r.main.total.p50, "num"],
-    ["cs_share", "ConnectedSolutions share", (r) => r.main.streams.connected_solutions.share, "num"],
+    ["cs_share", "Connected<wbr>Solutions share", (r) => r.main.streams.connected_solutions.share, "num"],
     ["size_rank", "Size-only rank", (r) => r.site.size_rank, "num"],
     ["moved", "Moved", (r) => r.moved, "num"],
   ];
@@ -138,7 +140,7 @@
     });
     const head = COLUMNS.map(
       (c) => '<th class="' + (c[3] || "") + '" data-key="' + c[0] + '">' + c[1] +
-        (state.sort === c[0] ? (state.dir > 0 ? " ▲" : " ▼") : "") + "</th>"
+        (state.sort === c[0] ? (state.dir > 0 ? "&nbsp;▲" : "&nbsp;▼") : "") + "</th>"
     ).join("") + "<th>Data quality</th>";
     const body = rows.map((r, i) =>
       '<tr data-i="' + i + '" tabindex="0">' + COLUMNS.map((c) => '<td class="' + (c[3] || "") + '">' + cell(c[0], r) + "</td>").join("") +
