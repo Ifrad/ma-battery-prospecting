@@ -112,7 +112,81 @@
     );
   }
 
+  // A customer status file row matches a site by owner name or address,
+  // normalized as sites are grouped and LBER addresses matched: upper case,
+  // punctuation removed, owner company words dropped, street words
+  // abbreviated (STREET to ST). A town, if given, must match too.
+  function normalize(text, dropWords, abbreviations) {
+    const drop = new Set(dropWords || []);
+    const abbr = abbreviations || {};
+    return String(text || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, " ")
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w && !drop.has(w))
+      .map((w) => abbr[w] || w)
+      .join(" ");
+  }
+
+  // Minimal CSV: header row, commas, double-quoted fields with "" escapes.
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = "", quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (c === '"') quoted = false;
+        else field += c;
+      } else if (c === '"') quoted = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(field); field = "";
+        if (row.some((x) => x.trim() !== "")) rows.push(row);
+        row = [];
+      } else field += c;
+    }
+    row.push(field);
+    if (row.some((x) => x.trim() !== "")) rows.push(row);
+    if (!rows.length) return [];
+    const head = rows[0].map((h) => h.trim().toLowerCase());
+    return rows.slice(1).map((r) => {
+      const o = {};
+      head.forEach((h, j) => { o[h] = (r[j] || "").trim(); });
+      return o;
+    });
+  }
+
+  const STATUSES = ["customer", "contacted", "declined"];
+
+  // The status of each site matched by a customer file: site_id to status.
+  function matchStatuses(sites, entries, dropWords, addressWords) {
+    const out = {};
+    for (const e of entries) {
+      const status = (e.status || "").toLowerCase();
+      if (STATUSES.indexOf(status) < 0) continue;
+      const owner = normalize(e.owner, dropWords);
+      const address = normalize(e.address, [], addressWords);
+      const town = normalize(e.town, []);
+      for (const s of sites) {
+        if (town && normalize(s.town, []) !== town) continue;
+        const addresses = [s.site_addr].concat((s.parcels || []).map((p) => p.site_addr));
+        const byOwner = owner && normalize(s.owner, dropWords) === owner;
+        const byAddress =
+          address && addresses.some((a) => normalize(a, [], addressWords) === address);
+        if (byOwner || byAddress) out[s.site_id] = status;
+      }
+    }
+    return out;
+  }
+
   const api = {
+    normalize: normalize,
+    parseCsv: parseCsv,
+    matchStatuses: matchStatuses,
+    STATUSES: STATUSES,
     defaults: defaults,
     valueDraws: valueDraws,
     percentile: percentile,

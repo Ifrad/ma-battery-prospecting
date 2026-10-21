@@ -85,6 +85,8 @@ MANIFEST_FIELDS = (
     "demand_rates_usd_per_kw_month",
     "realization_factor",
     "connected_solutions",
+    "owner_drop_words",
+    "address_words",
     "placeholders",
 )
 
