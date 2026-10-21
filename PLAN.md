@@ -915,13 +915,23 @@ list.
       town must match. A "Hide sites in the status file" filter is on by
       default. The page and README.md describe the matching;
       customer_status*.csv is gitignored.
-- [ ] `feat(report): add assumptions and limits section`
+- [x] `feat(report): add assumptions and limits section`
       Lists every placeholder in use. Explains value per block: simulated,
       gross revenue before any host share, not profit. Says installed cost
       and the host share are not modeled, and the reader applies their
       own. Says peak shape is unvalidated until real meter data tests it.
       Lists what the ranking does not model: space for cabinets, utility
-      interconnection capacity, owner willingness.
+      interconnection capacity, owner willingness. Also states, with each
+      figure read at build time from docs/VALIDATION.md (the build fails if
+      one is missing) or computed from the export: the ConnectedSolutions
+      share of P50 value; peak shape only stress-tested, with top-15
+      survival; Worcester's top a tier, not an order; how many of Metro
+      South's top 10 are Eversource Canton and Sharon sites with the rate
+      area unconfirmed; the number of sites with no open profile; the
+      modest gain over size-only (Spearman, and where it is no closer);
+      the energy band hit rate; EnerNOC used only as a local out-of-sample
+      test; and factories' higher 3 to 8 pm load than modeled, so their
+      ConnectedSolutions revenue is probably understated.
 - [ ] `test(report): check offline use and parity`
       The built file makes no network requests, and its value per block,
       expected blocks and stream shares match the Python model at default
