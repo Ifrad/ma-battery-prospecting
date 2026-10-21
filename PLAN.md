@@ -1122,7 +1122,7 @@ show no "-dirty" version.
       Fresh clone (local clone, no database reachable): make report and
       make check passed, with only database tests skipped and the Node
       parity test run.
-- [ ] `docs(brief): write one-page brief for Powertown`
+- [x] `docs(brief): write one-page brief for Powertown`
       docs/BRIEF.md, one page: what the tool does, the headline finding
       (value per block), the worked example, what is unvalidated, and the
       honest caveats. Open questions for Powertown: installed cost, ITC
@@ -1134,6 +1134,14 @@ show no "-dirty" version.
       Eversource towns, and priority regions. Two product page claims to
       check, which are not inputs: "1 to 3 months off your bill" and
       recovering costs "by year two or three".
+      Built: docs/BRIEF.md, about 780 words around the worked example,
+      every figure from docs/SCORES.md, docs/VALIDATION.md, config/ or the
+      export: what it does, the headline (354 scored sites, median P50
+      $31,591 with ConnectedSolutions and $11,589 without, a 56 percent
+      ConnectedSolutions share, Metro South's top 10 all in the
+      unconfirmed Eversource rate area, Worcester a tier near the
+      one-block ceiling), what is unvalidated, the nine open questions and
+      the two claims to check.
 
 ---
 
