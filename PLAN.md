@@ -960,7 +960,7 @@ a phone, the README figure test passes, the parity tests pass in Python
 and Node with the new factor settings, and the manifest and the report
 show no "-dirty" version.
 
-- [ ] `fix(export): record a clean version`
+- [x] `fix(export): record a clean version`
       The manifest version ends in "-dirty". Make the export record the
       commit without counting the export folder itself as dirty.
       Regenerate the export on a clean tree and confirm the manifest and
@@ -971,7 +971,10 @@ show no "-dirty" version.
       regenerated from the clean tree in a second commit that ticks it,
       since a clean export can only be made once the fix is committed.
       The manifest version names the commit that produced the export,
-      one behind the commit that holds it.
+      one behind the commit that holds it. Built: the export was
+      regenerated at v0.7.0-2-g756400b with only the version and the
+      generation time changed; a test fails if the committed manifest
+      ends in "-dirty".
 - [ ] `feat(report): add the ConnectedSolutions and realization factors as settings`
       Inputs for the performance factor (default and range from config,
       0.61 to 0.92), the overlap factor and the realization factor. Each
