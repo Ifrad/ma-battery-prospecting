@@ -42,3 +42,36 @@ def test_customer_status_example_is_fake_and_real_files_are_ignored():
     assert ignored("customer_status.csv") and ignored("data/customer_status_2026.csv")
     assert not ignored("docs/customer_status.example.csv")
     assert ignored("report.html")
+
+
+def test_limits_read_every_figure_from_validation_md():
+    f = build.findings((build.DOCS / "VALIDATION.md").read_text())
+    assert set(f) == set(build.PATTERNS)
+    assert 0 < float(f["spearman_size"]) <= float(f["spearman_model"]) < 1
+
+
+def test_limits_fail_loudly_when_validation_md_lacks_a_figure():
+    import pytest
+
+    with pytest.raises(SystemExit, match="spearman_model"):
+        build.findings("nothing here")
+
+
+def test_limits_section_states_the_required_points():
+    data = build.load_export()
+    text = build.limits(data, (build.DOCS / "VALIDATION.md").read_text())
+    for phrase in (
+        "not profit",
+        "Installed cost and the host share are not modeled",
+        "only stress-tested",
+        "tier, not an order",
+        "rate area is unconfirmed",
+        "no open load profile",
+        "only modestly",
+        "out-of-sample",
+        "probably understated",
+        "Placeholders in use",
+    ):
+        assert phrase in text
+    share = build.export_facts(data)["cs_share"]
+    assert f"{share:.0%}" in text
