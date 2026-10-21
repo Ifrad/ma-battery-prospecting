@@ -966,6 +966,12 @@ show no "-dirty" version.
       Regenerate the export on a clean tree and confirm the manifest and
       the report header show no "-dirty". Stop and ask the owner if this
       needs a design choice.
+      This task is an exception to one commit per task: the fix and its
+      unit test come first with the box unticked, then the export is
+      regenerated from the clean tree in a second commit that ticks it,
+      since a clean export can only be made once the fix is committed.
+      The manifest version names the commit that produced the export,
+      one behind the commit that holds it.
 - [ ] `feat(report): add the ConnectedSolutions and realization factors as settings`
       Inputs for the performance factor (default and range from config,
       0.61 to 0.92), the overlap factor and the realization factor. Each

@@ -294,19 +294,25 @@ def manifest(cfg: dict, every: list[dict]) -> dict:
     }
 
 
+def git(*args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.strip()
+
+
 def version() -> str:
     """The code version: git describe when run in a checkout, else the
-    package version."""
+    package version. It names the commit that produced the export, one
+    behind the commit that holds it, and ends in -dirty only when tracked
+    files outside export/ have changes: the export's own files never count."""
     try:
-        return subprocess.run(
-            ["git", "describe", "--tags", "--always", "--dirty"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
+        described = git("describe", "--tags", "--always")
+        changed = git(
+            "status", "--porcelain", "--untracked-files=no", "--", ".", ":!export"
+        )
     except (OSError, subprocess.CalledProcessError):
         return metadata.version("prospect")
+    return described + ("-dirty" if changed else "")
 
 
 def provenance(conn, run: dict, cfg: dict) -> dict:

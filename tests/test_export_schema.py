@@ -159,3 +159,21 @@ def test_version_falls_back_without_git(monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", fail)
     assert build.version()  # the package version
+
+
+@pytest.mark.parametrize(
+    "status, expected", [("", "v1-2-gabc"), (" M prospect/x.py", "v1-2-gabc-dirty")]
+)
+def test_version_is_dirty_only_for_changes_outside_the_export(
+    monkeypatch, status, expected
+):
+    calls = []
+
+    def fake(*args):
+        calls.append(args)
+        return "v1-2-gabc" if args[0] == "describe" else status
+
+    monkeypatch.setattr(build, "git", fake)
+    assert build.version() == expected
+    assert calls[0] == ("describe", "--tags", "--always")
+    assert calls[1][-1] == ":!export" and "--untracked-files=no" in calls[1]
