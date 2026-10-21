@@ -112,6 +112,17 @@
     );
   }
 
+  // A factor typed into the settings (report only; the Python model reads
+  // config). Outside 0 to 1 is rejected; inside 0 to 1 but outside the config
+  // range is accepted as an override, which the page labels.
+  function checkFactor(value, factor) {
+    const v = Number(value);
+    if (value === "" || value === null || !Number.isFinite(v) || v < 0 || v > 1) {
+      return { ok: false, message: "must be a number from 0 to 1" };
+    }
+    return { ok: true, value: v, override: v < factor.low || v > factor.high };
+  }
+
   // A customer status file row matches a site by owner name or address,
   // normalized as sites are grouped and LBER addresses matched: upper case,
   // punctuation removed, owner company words dropped, street words
@@ -187,6 +198,7 @@
     parseCsv: parseCsv,
     matchStatuses: matchStatuses,
     STATUSES: STATUSES,
+    checkFactor: checkFactor,
     defaults: defaults,
     valueDraws: valueDraws,
     percentile: percentile,

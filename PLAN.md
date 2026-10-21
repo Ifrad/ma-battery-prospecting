@@ -975,7 +975,7 @@ show no "-dirty" version.
       regenerated at v0.7.0-2-g756400b with only the version and the
       generation time changed; a test fails if the committed manifest
       ends in "-dirty".
-- [ ] `feat(report): add the ConnectedSolutions and realization factors as settings`
+- [x] `feat(report): add the ConnectedSolutions and realization factors as settings`
       Inputs for the performance factor (default and range from config,
       0.61 to 0.92), the overlap factor and the realization factor. Each
       shows its default and whether it is a sourced value or a
@@ -983,7 +983,19 @@ show no "-dirty" version.
       also within the config range, or a clearly labelled override), and
       resets to defaults. The Moved column and filters keep working.
       Extend the Node and Python parity tests to cover changed factors.
-      Update the limits section if needed.
+      Update the limits section if needed. Built: three inputs under
+      Settings, each showing its default, config range and status (all
+      three are placeholders, read from the manifest's placeholder list).
+      Values outside 0 to 1 are not applied and say so; values inside 0
+      to 1 but outside the config range apply with an "override: outside
+      the config range" tag. compute.js already took the factors; the
+      input check (checkFactor) is new and Node-tested. Parity: Node
+      matches the Python reference for every site with two factor sets
+      (0.95, 0.92, 0 and 0.6, 0.75, 0.05), and the Python export
+      recompute matches the model rescored with those factors draw by
+      draw, export on and off, within the rounding bound scaled by
+      performance times one minus overlap. The limits section now says
+      its figures use the default factors.
 - [ ] `test(validate): hospital sanity check`
       Compare the scored hospitals with hospital data already in the repo
       or its documented public sources (for example LBER measured
