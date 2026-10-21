@@ -136,8 +136,8 @@ Never rewrite history on main.
     sql/migrations/      numbered SQL migrations
     config/              YAML config with sourced and placeholder status
     tests/               pytest tests and fixtures
-    docs/                METHOD, DATA, VALIDATION, LIMITS, MATCH_RATES,
-                         POWERTOWN_DATA
+    docs/                METHOD, DATA, FUNNEL, SCORES, VALIDATION,
+                         ASSUMPTIONS, REVENUE_STREAMS, MATCH_RATES, BRIEF
     data/                ignored by git
 
 ## Commands
