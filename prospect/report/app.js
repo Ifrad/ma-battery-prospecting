@@ -14,7 +14,14 @@
     eversource_all_hours: "Eversource billing approximated with the all-hours peak",
     placeholder_mix: "load profile is a pooled mix of types",
   };
-  const state = { region: "metro_south", sort: "rank", dir: 1, settings: C.defaults(M) };
+  const state = {
+    region: "metro_south",
+    sort: "rank",
+    dir: 1,
+    settings: C.defaults(M),
+    filters: { segment: "", utility: "", minValue: 0 },
+  };
+  const cache = {};
 
   const usd = (x) => "$" + Math.round(x).toLocaleString("en-US");
   const pct = (x) => Math.round(x * 100) + "%";
@@ -31,7 +38,14 @@
     return out;
   }
 
+  // Ranked rows for a region under some settings, cached by both.
   function scored(region, settings) {
+    const key = region + JSON.stringify(settings);
+    if (!cache[key]) cache[key] = rank(region, settings);
+    return cache[key];
+  }
+
+  function rank(region, settings) {
     const sites = DATA.regions[region];
     const off = Object.assign({}, settings, { connected_solutions: false });
     const on = Object.assign({}, settings, { connected_solutions: true });
@@ -69,6 +83,7 @@
     ["total", "Total, P50", (r) => r.main.total.p50, "num"],
     ["cs_share", "ConnectedSolutions share", (r) => r.main.streams.connected_solutions.share, "num"],
     ["size_rank", "Size-only rank", (r) => r.site.size_rank, "num"],
+    ["moved", "Moved", (r) => r.moved, "num"],
   ];
 
   function cell(key, r) {
@@ -86,12 +101,23 @@
       case "total": return usd(r.main.total.p50);
       case "cs_share": return pct(r.main.streams.connected_solutions.share);
       case "size_rank": return String(r.site.size_rank);
+      case "moved": return r.moved === 0 ? "" : (r.moved > 0 ? "up " : "down ") + Math.abs(r.moved);
     }
     return "";
   }
 
   function render() {
-    const rows = scored(state.region, state.settings);
+    const base = scored(state.region, C.defaults(M));
+    const baseRank = {};
+    base.forEach((r) => { baseRank[r.site.site_id] = r.rank; });
+    const all = scored(state.region, state.settings);
+    all.forEach((r) => { r.moved = baseRank[r.site.site_id] - r.rank; });
+    const f = state.filters;
+    const rows = all.filter((r) =>
+      (!f.segment || r.site.segment === f.segment) &&
+      (!f.utility || r.site.utility === f.utility) &&
+      r.main.value_per_block.p50 >= f.minValue
+    );
     const col = COLUMNS.find((c) => c[0] === state.sort) || COLUMNS[0];
     rows.sort((a, b) => {
       const x = col[2](a), y = col[2](b);
@@ -119,7 +145,60 @@
       tr.addEventListener("click", open);
       tr.addEventListener("keydown", (e) => { if (e.key === "Enter") open(); });
     });
-    renderSummary(rows);
+    renderSummary(all);
+    document.getElementById("count").textContent =
+      rows.length + " of " + all.length + " scored sites shown";
+  }
+
+  function settingsPanel() {
+    const rates = state.settings.rates;
+    const rateInputs = Object.keys(rates).map((u) =>
+      Object.keys(rates[u]).map((sched) =>
+        "<label>" + esc(u) + " " + sched + ' $<input type="number" step="0.01" min="0" data-utility="' +
+        esc(u) + '" data-schedule="' + sched + '" value="' + rates[u][sched] + '"> per kW-month</label>'
+      ).join("")
+    ).join("");
+    const opts = (vals) => '<option value="">all</option>' +
+      vals.map((v) => '<option value="' + esc(v) + '">' + esc(v) + "</option>").join("");
+    const every = Object.values(DATA.regions).flat();
+    const segments = [...new Set(every.map((s) => s.segment))].sort();
+    const utilities = [...new Set(every.map((s) => s.utility))].sort();
+    document.getElementById("settings").innerHTML =
+      "<h2>Settings</h2>" +
+      '<p class="muted">Recomputed in your browser from the export. Defaults are the model\'s own inputs.</p>' +
+      '<div class="controls"><label><input type="checkbox" id="cs"' +
+      (state.settings.connected_solutions ? " checked" : "") + "> Include ConnectedSolutions</label>" +
+      '<button type="button" id="reset">Reset to model defaults</button></div>' +
+      '<div class="controls">' + rateInputs + "</div>" +
+      "<h2>Filters</h2>" +
+      '<div class="controls"><label>Segment <select id="f-segment">' + opts(segments) + "</select></label>" +
+      '<label>Utility <select id="f-utility">' + opts(utilities) + "</select></label>" +
+      '<label>Minimum value per block $<input type="number" id="f-min" min="0" step="1000" value="' +
+      state.filters.minValue + '"></label></div>';
+    document.getElementById("f-segment").value = state.filters.segment;
+    document.getElementById("f-utility").value = state.filters.utility;
+    document.getElementById("cs").addEventListener("change", (e) => {
+      state.settings = Object.assign({}, state.settings, { connected_solutions: e.target.checked });
+      render();
+    });
+    document.querySelectorAll("#settings input[data-utility]").forEach((el) =>
+      el.addEventListener("change", () => {
+        const v = Number(el.value);
+        if (!(v >= 0)) return;
+        const r = JSON.parse(JSON.stringify(state.settings.rates));
+        r[el.dataset.utility][el.dataset.schedule] = v;
+        state.settings = Object.assign({}, state.settings, { rates: r });
+        render();
+      })
+    );
+    document.getElementById("reset").addEventListener("click", () => {
+      state.settings = C.defaults(M);
+      settingsPanel();
+      render();
+    });
+    document.getElementById("f-segment").addEventListener("change", (e) => { state.filters.segment = e.target.value; render(); });
+    document.getElementById("f-utility").addEventListener("change", (e) => { state.filters.utility = e.target.value; render(); });
+    document.getElementById("f-min").addEventListener("change", (e) => { state.filters.minValue = Number(e.target.value) || 0; render(); });
   }
 
   const DRIVER_WORDS = {
@@ -194,7 +273,6 @@
       " it is capped, because the building's own 3 to 8 pm load (or the program's export cap) limits what a block can deliver. " +
       "Across this region ConnectedSolutions is " + pct(share) + " of P50 value per block" +
       (share > 0.5 ? ", so more than half of the ranking rests on it." : ".");
-    document.getElementById("count").textContent = rows.length + " scored sites";
   }
 
   function regionButtons() {
@@ -212,5 +290,6 @@
   }
 
   regionButtons();
+  settingsPanel();
   render();
 })();

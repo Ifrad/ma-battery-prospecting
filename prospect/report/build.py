@@ -71,6 +71,7 @@ Export {html.escape(m["version"])}, generated {html.escape(m["generated_at"])}.<
 <div id="regions"></div><span id="count" class="muted"></span>
 </div>
 <p id="cs-note" class="note"></p>
+<section id="settings"></section>
 <section id="detail" class="detail" hidden></section>
 <div class="table-wrap"><table id="table"></table></div>
 </main>

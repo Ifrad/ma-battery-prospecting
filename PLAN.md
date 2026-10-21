@@ -892,11 +892,16 @@ list.
       nothing embedded). Clicking a row (or Enter on it) opens the panel;
       drivers are in plain words, and the link opens OpenStreetMap at the
       site's centroid only when clicked.
-- [ ] `feat(report): add settings and filters`
+- [x] `feat(report): add settings and filters`
       Settings the reader can change, recomputed in the browser from the
       export: ConnectedSolutions on or off, demand rate. A column showing
       how far each site moved from the defaults. Filters: segment,
-      utility, minimum value per block, hide existing customers.
+      utility, minimum value per block, hide existing customers. Built:
+      a G-2 and G-3 rate input per utility, prefilled from the manifest,
+      a reset to model defaults, and a Moved column (up or down from the
+      default rank). Results are cached per region and settings; a
+      recompute takes under a tenth of a second. Hide existing customers
+      arrives with the customer status task.
 - [ ] `feat(report): load a customer status file`
       An optional CSV the reader picks in the browser: owner or address,
       and a status (customer, contacted, declined). Matching sites get a
