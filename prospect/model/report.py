@@ -127,54 +127,6 @@ def value_section(by: dict) -> list[str]:
     return out
 
 
-def break_even_section(by: dict, cfg: dict) -> list[str]:
-    est = cfg["costs"]["installed_cost_usd"]
-    out = ["## Break-even installed cost per block", ""]
-    out.append(
-        "The installed cost per block at which P50 value per block equals the"
-        " annualized cost (life, financing rate and O&M from config/costs.yaml)."
-        " It leaves out any host benefit. The ITC column applies the 30 percent"
-        " credit where the site is under 1 MW; it is off by default. The two"
-        f" estimates ({usd(est['low'])} and {usd(est['middle'])}) are the owner's"
-        " unverified reference points, not model inputs: a site clears one when"
-        " its break-even cost is at or above it."
-    )
-    body = []
-    for scen, label in SCENARIOS.items():
-        for itc, col in ((False, "break_even_p50"), (True, "break_even_p50_itc")):
-            be = np.array([r[col] for r in by[scen]])
-            q = np.percentile(be, [10, 50, 90])
-            body.append(
-                [
-                    label,
-                    "with ITC" if itc else "no ITC",
-                    usd(q[0]),
-                    usd(q[1]),
-                    usd(q[2]),
-                    int((be >= est["low"]).sum()),
-                    int((be >= est["middle"]).sum()),
-                    len(be),
-                ]
-            )
-    out += [
-        "",
-        table(
-            [
-                "Scenario",
-                "ITC",
-                "p10",
-                "median",
-                "p90",
-                f"Clear {usd(est['low'])}",
-                f"Clear {usd(est['middle'])}",
-                "Sites",
-            ],
-            body,
-        ),
-    ]
-    return out
-
-
 def streams_section(by: dict) -> list[str]:
     rs = by["with_connected_solutions"]
     demand = sum(r["demand_p50"] for r in rs)
@@ -263,22 +215,6 @@ def sensitivity_section(scope: list, cfg: dict) -> list[str]:
     ]
 
 
-def payback_section(by: dict, cfg: dict) -> list[str]:
-    med = float(np.median([r["value_p50"] for r in by["with_connected_solutions"]]))
-    est = cfg["costs"]["installed_cost_usd"]
-    return [
-        "## Payback check",
-        "",
-        "The operator says it recovers costs in 2 to 3 years. At the median P50"
-        f" value per block with ConnectedSolutions, {usd(med)} a year, a simple"
-        f" payback of 2 years implies an installed cost of {usd(2 * med)} per"
-        f" block and 3 years {usd(3 * med)}, against the owner's estimates of"
-        f" {usd(est['low'])} and {usd(est['middle'])}. This is a consistency"
-        " check on the cost estimates, not evidence for or against the claim:"
-        " simple payback ignores financing, O&M and the host's share.",
-    ]
-
-
 def rank_key(r: dict) -> tuple:
     """Rank by P50 value per block, then expected blocks, then P50 total."""
     return (-r["value_p50"], -r["blocks"], -r["total_p50"], r["site_id"])
@@ -289,7 +225,7 @@ def top_section(by: dict) -> list[str]:
     out.append(
         f"The {TOP} sites per region with the highest P50 value per block, with"
         " ConnectedSolutions. Value is per block per year; the band is P10 to"
-        " P90. Break-even is per block at P50, without the ITC. Ties are"
+        " P90. Ties are"
         " broken by expected blocks, then P50 total. capped: one block's cut"
         " reaches its power limit in most draws, so value per block is at the"
         " one-block ceiling. Rate area unconfirmed: Eversource sites in Canton"
@@ -313,7 +249,6 @@ def top_section(by: dict) -> list[str]:
                     "Blocks",
                     "Value per block P50",
                     "P10 to P90",
-                    "Break-even",
                     "Note",
                 ],
                 [
@@ -325,7 +260,6 @@ def top_section(by: dict) -> list[str]:
                         f"{r['blocks']:.1f}",
                         usd(r["value_p50"]),
                         f"{usd(r['value_p10'])} to {usd(r['value_p90'])}",
-                        usd(r["break_even_p50"]),
                         "; ".join(
                             n
                             for n, on in (
@@ -365,21 +299,17 @@ def render(scored: list[dict], run: dict, cfg: dict, scope: list) -> str:
         " perfect foresight reduced by the realization factor).",
         "",
         f"Scope: {len(one)} funnel survivors at 150 kW (docs/FUNNEL.md), two"
-        " scenarios each. Municipal plant sites are not scored. Model"
-        " confidence is not computed here; run `prospect score --installed-cost"
-        " X --min-host-benefit Y` for a given cost.",
+        " scenarios each. Municipal plant sites are not scored. Cost and profit"
+        " are not modeled: the reader applies their own installed cost and host"
+        " share.",
         "",
         *counts_section(one),
         "",
         *value_section(by),
         "",
-        *break_even_section(by, cfg),
-        "",
         *streams_section(by),
         "",
         *sensitivity_section(scope, cfg),
-        "",
-        *payback_section(by, cfg),
         "",
         *top_section(by),
     ]

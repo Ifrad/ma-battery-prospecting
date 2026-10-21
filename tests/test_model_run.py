@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from prospect.model import report, run, score
@@ -65,7 +64,5 @@ def test_scores_are_stored_per_site_and_scenario(db):
         ("demand_savings", 1000, True),
         ("with_connected_solutions", 1000, True),
     ]
-    rows = list(run.confidence_rows(db, CFG, 180_000, 0, False))
-    assert [s for _, s, _ in rows] == ["demand_savings", "with_connected_solutions"]
-    assert all(0 <= c <= 1 for _, _, c in rows)
-    assert np.isfinite(rows[0][2])
+    cols = db.execute("SELECT * FROM site_scores LIMIT 0").description
+    assert not [c.name for c in cols if "break_even" in c.name or "itc" in c.name]

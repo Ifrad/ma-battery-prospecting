@@ -155,13 +155,11 @@ docs/ASSUMPTIONS.md (`make assumptions`) explains each one.
   and point here. The page renders with JavaScript, so a recheck on
   2026-10-20 could not read it. Whether the ratings are per cabinet or per
   pair, and the 90 percent usable depth, are placeholders.
-- Costs: config/costs.yaml. The 10 year life is the warranty on the same
-  page; the installed cost cases, financing rate, O&M, ITC rate and
-  minimum host benefit are placeholders. Cost is not an input to the
-  ranking: life, financing and O&M turn value into a break-even installed
-  cost, the two installed cost cases are reference points beside it, and
-  the minimum host benefit has no value and is used only when a user asks
-  for model confidence at a given cost.
+  The page also claims "1 to 3 months off your bill" and recovering costs
+  "by year two or three"; neither is used as an input.
+- Cost and profit are not modeled. Value per block is gross revenue before
+  any host share; the reader applies their own installed cost and host
+  share.
 
 ## After each October 31 LBER release
 
@@ -174,22 +172,3 @@ docs/ASSUMPTIONS.md (`make assumptions`) explains each one.
 Rates also change through the year: recheck the rate summaries named in
 config/rates.yaml (each utility's `refresh` line). ComStock and the
 simulation change only with a new ComStock release.
-
-## Payback check
-
-The operator says it recovers costs in 2 to 3 years. docs/SCORES.md
-(`make score`) takes the median P50 value per block across scored sites,
-with ConnectedSolutions, and multiplies it by 2 and by 3: the installed
-cost per block a simple payback of that length would imply. On the
-2026-10-20 run with the event-window cap (run 13) the median is $31,591
-a year, so 2 years implies $63,182 per block and 3 years $94,773, below
-the owner's estimates of
-$180,000 and $260,000. Either real costs are lower than the estimates,
-real value is higher than simulated, or the claim counts something else.
-
-This is a consistency check on the cost estimates, not evidence for or
-against the claim. Simple payback ignores financing, O&M and the host's
-share, and the value is simulated, gross and unvalidated. More than half
-of P50 value comes from ConnectedSolutions: the $200 per kW rate is
-sourced, but the performance factor and the event-window load behind it
-are a placeholder and a simulation.

@@ -32,8 +32,8 @@ UNVALIDATED = [
     " program documents, but what a block actually delivers in events (the"
     " performance factor, the overlap with the building's own peaks, and"
     " whether the site exports) is a placeholder.",
-    "- Installed cost is not in the model. Value per block is gross revenue;"
-    " break-even cost is a translation, not a prediction.",
+    "- Cost and profit are not modeled. Value per block is gross revenue; the"
+    " reader applies their own installed cost and host share.",
     "- The Eversource rate area for Canton and Sharon is unconfirmed: the rate"
     " is the Greater Boston one, and no Eversource document lists towns by area.",
     "- Factories, laundries, food plants, cold storage and auto repair have no"

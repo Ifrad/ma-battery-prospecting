@@ -1,14 +1,11 @@
 """Score funnel survivors and store the results.
 
-Usage: prospect score [--installed-cost X --min-host-benefit Y [--itc]]
-       (make score runs it with no options)
+Usage: prospect score (make score)
 
-With no options it scores every site in scope under each scenario, stores a
-new run in score_runs and site_scores, and writes docs/SCORES.md. With an
-installed cost and a minimum host benefit it reads the latest run instead
-and prints model confidence per site, recomputed from the stored draws.
-Values are simulated gross yearly revenue per block before any host share,
-not profit, and unvalidated.
+Scores every site in scope under each scenario, stores a new run in
+score_runs and site_scores, and writes docs/SCORES.md. Values are simulated
+gross yearly revenue per block before any host share, not profit, and
+unvalidated.
 """
 
 import hashlib
@@ -17,7 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from prospect.db import connect
-from prospect.model import cost, report, score
+from prospect.model import report, score
 from prospect.priors import config
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -41,8 +38,7 @@ BUILDINGS = """
 COLUMNS = (
     "run_id, site_id, scenario, region, segment, utility, tier, passes_200kw,"
     " least_certain, flags, blocks, value_p10, value_p50, value_p90, total_p10,"
-    " total_p50, total_p90, break_even_p50, break_even_p10, break_even_p50_itc,"
-    " break_even_p10_itc, itc_applies, demand_p50, grid_p50, demand_share,"
+    " total_p50, total_p90, demand_p50, grid_p50, demand_share,"
     " grid_share, top_drivers, kwm_g2, kwm_g3, blocks_draws, grid_kw, peak_kw,"
     " g3_draws"
 )
@@ -70,13 +66,7 @@ def load_scope(conn, cfg: dict) -> list[tuple[dict, list[dict]]]:
 
 
 def row(run_id: int, site: dict, r: dict) -> list:
-    v, t, be, st, x = (
-        r["value_per_block"],
-        r["total"],
-        r["break_even"],
-        r["streams"],
-        r["draws"],
-    )
+    v, t, st, x = r["value_per_block"], r["total"], r["streams"], r["draws"]
     return [
         run_id,
         site["site_id"],
@@ -95,11 +85,6 @@ def row(run_id: int, site: dict, r: dict) -> list:
         t["p10"],
         t["p50"],
         t["p90"],
-        be["p50"],
-        be["p10"],
-        be["p50_itc"],
-        be["p10_itc"],
-        be["itc_applies"],
         st["demand"]["p50"],
         st["connected_solutions"]["p50"],
         st["demand"]["share"],
@@ -146,38 +131,9 @@ def value_draws(stored: dict, cfg: dict) -> np.ndarray:
     return demand + (grid if stored["scenario"] == "with_connected_solutions" else 0.0)
 
 
-def confidence_rows(conn, cfg: dict, installed: float, host: float, itc: bool):
-    """Model confidence per site and scenario of the latest run."""
-    cur = conn.execute(
-        "SELECT site_id, scenario, utility, blocks, kwm_g2, kwm_g3, grid_kw"
-        " FROM site_scores WHERE run_id = (SELECT max(run_id) FROM score_runs)"
-        " ORDER BY site_id, scenario"
-    )
-    names = [d.name for d in cur.description]
-    for r in cur.fetchall():
-        s = dict(zip(names, r, strict=True))
-        yield (
-            s["site_id"],
-            s["scenario"],
-            cost.confidence(
-                value_draws(s, cfg), installed, host, cfg, itc, s["blocks"]
-            ),
-        )
-
-
-def main(installed: float | None, host: float | None, itc: bool) -> int:
+def main() -> int:
     cfg = config.load()
-    if (installed is None) != (host is None):
-        print("give both --installed-cost and --min-host-benefit, or neither")
-        return 2
     with connect() as conn:
-        if installed is not None:
-            print("site_id,scenario,model_confidence")
-            for site_id, scenario, c in confidence_rows(
-                conn, cfg, installed, host, itc
-            ):
-                print(f"{site_id},{scenario},{c:.3f}")
-            return 0
         run_id = score_all(conn, cfg)
         conn.commit()
         report.write(conn, run_id, cfg)

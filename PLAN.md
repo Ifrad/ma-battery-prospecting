@@ -807,13 +807,18 @@ list.
 - [x] `docs(plan): merge export and report phases`
       Merge the Export and Report phases into this one phase, keeping every
       task text from both.
-- [ ] `refactor(model): remove cost and profit layer`
+- [x] `refactor(model): remove cost and profit layer`
       Cost and profit are no longer modeled. Remove break-even cost, model
       confidence, the minimum host benefit, the payback check, the owner's
       installed cost figures, the ITC setting, life, financing and O&M from
       code, config, docs and the export, with a new migration that drops
       the break-even columns from site_scores. No site's rank or P50 value
       per block may change. Installed cost stays only as an open question.
+      Done: prospect/model/cost.py, the score flags and their tests are
+      gone, config/costs.yaml is deleted, migration 0020 drops the columns,
+      and the export, manifest, scores and validation pages carry no cost.
+      Rescored: all 708 site and scenario rows keep their rank and every
+      value (P10, P50, P90, blocks, total, both streams).
 - [x] `feat(export): write ranked sites per region as GeoJSON and CSV`
       Value per block first: P50 with the P10 to P90 band, expected
       blocks, total, the value split by revenue stream, and the evidence
@@ -832,7 +837,7 @@ list.
       eligible grid-program kW). The manifest carries the config values the
       report needs: demand rates, the realization factor and the
       ConnectedSolutions factors and caps. Built: all 1,000 stored draws per site, which fit
-      the budget (Worcester 4.55 MB, Metro South 3.54 MB), so the report
+      the budget (Worcester 4.52 MB, Metro South 3.51 MB), so the report
       reproduces the stored P50s exactly: kW-months under G-2 and G-3,
       whole blocks, the drawn site peak and whether the draw is on G-3
       (both stored by make score since migration 0019), plus each site's
@@ -952,9 +957,9 @@ Done when: the README follows that structure and every link works on a phone.
 - Learn building load shape from Powertown's real meter data where they
   share it, replacing the type-based priors.
 - Split value between host and operator, moved from Phase 4: host share
-  as a parameter that changes only the site detail numbers (host share,
-  operator share minus annualized cost), never the ranking, with a host
-  share slider in the report.
+  as a parameter that changes only the site detail numbers (host share and
+  operator share), never the ranking, with a host share slider in the
+  report.
 - Phase 4, if area uncertainty is too wide: test floors derived from
   building height, and the Overture buildings probe for multi-story types.
 - Key `raw_parcels`, `raw_footprints` and `raw_utility_territories` by
