@@ -932,11 +932,20 @@ list.
       the energy band hit rate; EnerNOC used only as a local out-of-sample
       test; and factories' higher 3 to 8 pm load than modeled, so their
       ConnectedSolutions revenue is probably understated.
-- [ ] `test(report): check offline use and parity`
+- [x] `test(report): check offline use and parity`
       The built file makes no network requests, and its value per block,
       expected blocks and stream shares match the Python model at default
       settings, with ConnectedSolutions on or off, and with a changed
-      demand rate.
+      demand rate. Built: tests/js/compute.test.js runs under Node's
+      built-in runner (node --test, no npm packages, no package.json)
+      against the same compute.js the page inlines, comparing it with the
+      Python reference for every site in those three cases and with the
+      model's exported values; tests/test_report_node.py runs it and skips
+      when node is missing locally, but fails when PROSPECT_REQUIRE_NODE
+      is set, as CI sets it (CI installs Node 22). Offline: the page loads
+      no external scripts, styles, fonts or images, has no request-making
+      code, and an empty inline favicon; its only URL is the map link
+      built when the reader clicks.
 
 ---
 
