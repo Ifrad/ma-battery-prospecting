@@ -996,7 +996,7 @@ show no "-dirty" version.
       draw, export on and off, within the rounding bound scaled by
       performance times one minus overlap. The limits section now says
       its figures use the default factors.
-- [ ] `test(validate): hospital sanity check`
+- [x] `test(validate): hospital sanity check`
       Compare the scored hospitals with hospital data already in the repo
       or its documented public sources (for example LBER measured
       electricity, ComStock hospital profiles). For each scored hospital
@@ -1008,6 +1008,18 @@ show no "-dirty" version.
       the result to docs/VALIDATION.md as a sanity check, never as
       accuracy. If this needs data not already in the repo, stop and ask
       the owner before any download. Report any hospital that fails.
+      Built: prospect/validate/hospitals.py, run by make validate, using
+      only local data (data/comstock from make simulate; no download).
+      The reference is the 9 Massachusetts hospitals in the ComStock
+      sample. Load factor and tier 1 kWh are marked circular; kWh and
+      peak per sq ft are independent of ComStock, since the hospital
+      prior comes from LBER pilot hospitals. A hospital fails on a load
+      factor outside the ComStock hospitals or a peak below average in
+      any draw; kWh or W per sq ft outside their range is a flag. Result:
+      24 scored hospitals, none fail; 4 tier 1 hospitals sit outside the
+      range, following their measured LBER electricity (VHS Acquisition
+      Subsidiary, Worcester Hahnemann Hospital and Harrington Hospital
+      Corp above it, Lutheran Housing Corporation below).
 - [ ] `docs(brief): replace the Brockton Hospital worked example`
       Create docs/BRIEF.md with only the worked example section; the
       brief task below writes the rest. The example site is WORCESTER
