@@ -2,6 +2,9 @@
 data/*
 !data/README.md
 
+# The report is built by make report and attached to the release, never committed
+/report.html
+
 # Operator customer lists: read locally by the report, never committed
 customer_status*.csv
 !docs/customer_status.example.csv

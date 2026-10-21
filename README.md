@@ -7,3 +7,10 @@ share, using public data only. Cost and profit are not modeled: the operator
 applies its own installed cost and host share.
 
 Work in progress. Nothing here is ready to use yet.
+
+## The report
+
+report.html is one self-contained page, built from the committed export with
+`make report` (no database needed). It is never committed: the owner attaches
+the built file to each GitHub release, starting with v0.7.0. Open it by double
+click; it makes no network requests.
