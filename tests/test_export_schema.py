@@ -1,8 +1,7 @@
 """The committed export: schema, size budget, and parity with the Python
 model. Rounding draws to 0.1 kW-month and 0.1 kW moves value per block by a
 few dollars (at most about $8 a draw with export on, where each kW of peak is
-worth 1.5 x 0.61 x 0.87 x $200), and break-even by about seven times the
-value gap (value over the annual cost factor), hence the tolerances."""
+worth 1.5 x 0.61 x 0.87 x $200), hence the tolerance."""
 
 import copy
 import json
@@ -11,11 +10,11 @@ import numpy as np
 import pytest
 
 from prospect.export import build, recompute, schema
-from prospect.model import cost, grid, run, score
+from prospect.model import grid, run, score
 from prospect.priors import config
 
 EXPORT = build.OUT
-VALUE_TOL, BREAK_EVEN_TOL = 10.0, 100.0
+VALUE_TOL = 10.0
 CFG = config.load()
 
 
@@ -49,9 +48,10 @@ def test_export_draws_reproduce_the_scored_values(region):
                     e["value_per_block"][k], abs=VALUE_TOL
                 )
                 assert r["total"][k] == pytest.approx(e["total"][k], abs=VALUE_TOL)
-            for k in ("p50", "p10", "p50_itc", "p10_itc"):
-                assert r["break_even"][k] == pytest.approx(
-                    e["break_even"][k], abs=BREAK_EVEN_TOL
+            assert r["blocks"] == pytest.approx(s["blocks"], abs=0.01)
+            for k in ("demand_savings", "connected_solutions"):
+                assert r["streams"][k]["share"] == pytest.approx(
+                    e["streams"][k]["share"], abs=0.01
                 )
 
 
@@ -106,33 +106,40 @@ def test_export_recompute_matches_the_model_draw_by_draw(exports):
         assert x["value"] == pytest.approx(r["draws"]["value_per_block"], abs=VALUE_TOL)
 
 
-def test_break_even_and_confidence_match_the_model_at_a_given_cost():
+@pytest.mark.parametrize("cs_on", [False, True])
+@pytest.mark.parametrize("rate_scale", [1.0, 1.25])
+def test_export_matches_the_model_with_cs_on_off_and_a_changed_demand_rate(
+    cs_on, rate_scale
+):
     m = build.manifest(CFG, [SITE])
     rows, site = exported(CFG)
-    r = next(x for x in rows if x["scenario"] == "with_connected_solutions")
-    got = recompute.site_summary(site, m, recompute.defaults(m))
-    for k in ("p50", "p10", "p50_itc", "p10_itc"):
-        assert got["break_even"][k] == pytest.approx(
-            r["break_even"][k], abs=BREAK_EVEN_TOL
-        )
-    model_values = r["draws"]["value_per_block"]
-    for installed, host, itc in [
-        (180_000, 0, False),
-        (260_000, 5_000, True),
-        (90_000, 2_000, False),
-    ]:
-        want = cost.confidence(model_values, installed, host, CFG, itc, r["blocks"])
-        have = recompute.confidence(
-            got["values"], installed, host, m, itc, got["blocks"]
-        )
-        assert have == pytest.approx(want, abs=0.01)
-
-
-def test_higher_cost_never_raises_recomputed_confidence():
-    m = build.manifest(CFG, [SITE])
-    _, site = exported(CFG)
-    values = recompute.site_summary(site, m, recompute.defaults(m))["values"]
-    c = [
-        recompute.confidence(values, x, 0, m, False, 1.0) for x in (50e3, 150e3, 300e3)
-    ]
-    assert c == sorted(c, reverse=True) and np.isfinite(c).all()
+    scenario = "with_connected_solutions" if cs_on else "demand_savings"
+    r = next(x for x in rows if x["scenario"] == scenario)
+    st = recompute.defaults(m)
+    st["connected_solutions"] = cs_on
+    st["rates"] = {
+        u: {k: v * rate_scale for k, v in sched.items()}
+        for u, sched in st["rates"].items()
+    }
+    got = recompute.site_summary(site, m, st)
+    # The model side: its own draws, demand repriced at the changed rate.
+    x = r["draws"]
+    rates = {
+        k: v * rate_scale for k, v in m["demand_rates_usd_per_kw_month"][NG].items()
+    }
+    demand = x["kwm_g2"] * rates["G-2"] + x["kwm_g3"] * rates["G-3"]
+    value = demand + (x["grid_usd"] if cs_on else 0.0)
+    for q, want in zip(
+        ("p10", "p50", "p90"), np.percentile(value, [10, 50, 90]), strict=True
+    ):
+        assert got["value_per_block"][q] == pytest.approx(want, abs=VALUE_TOL)
+    assert got["blocks"] == pytest.approx(r["blocks"])
+    share = (
+        float(np.median(x["grid_usd"]))
+        / (float(np.median(demand)) + float(np.median(x["grid_usd"])))
+        if cs_on
+        else 0.0
+    )
+    assert got["streams"]["connected_solutions"]["share"] == pytest.approx(
+        share, abs=0.01
+    )

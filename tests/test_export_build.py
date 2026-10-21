@@ -5,13 +5,6 @@ def scenario(p50):
     return {
         "value_per_block": {"p10": p50 - 1, "p50": p50, "p90": p50 + 1},
         "total": {"p10": p50 - 1, "p50": p50, "p90": p50 + 1},
-        "break_even": {
-            "p50": 10,
-            "p10": 5,
-            "p50_itc": 14,
-            "p10_itc": 7,
-            "itc_applies": True,
-        },
         "streams": {
             "demand_savings": {"p50": p50, "share": 1.0},
             "connected_solutions": {"p50": 0, "share": 0.0},
@@ -70,16 +63,15 @@ def test_draws_block_keeps_every_draw_in_physical_units():
     }
 
 
-def test_manifest_leaves_cost_and_host_benefit_empty():
+def test_manifest_carries_model_inputs_and_no_cost():
     from prospect.priors import config
 
     m = build.manifest(
         config.load(), [{"utility": "National Grid (Massachusetts Electric)"}]
     )
-    assert m["costs"]["installed_cost_usd_per_block"] is None
-    assert m["costs"]["min_host_benefit_usd_per_year"] is None
+    assert "costs" not in m
     assert m["demand_rates_usd_per_kw_month"] == {
         "National Grid (Massachusetts Electric)": {"G-2": 15.24, "G-3": 10.61}
     }
     assert m["connected_solutions"]["site_exports"] is False
-    assert any(p["file"] == "costs" for p in m["placeholders"])
+    assert not any(p["file"] == "costs" for p in m["placeholders"])

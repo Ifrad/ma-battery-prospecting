@@ -27,8 +27,8 @@ def test_two_scenarios_differ_only_by_connected_solutions():
     assert np.array_equal(a["demand_usd"], b["demand_usd"])
     assert np.allclose(b["value_per_block"] - a["value_per_block"], b["grid_usd"])
     assert (
-        rows["with_connected_solutions"]["break_even"]["p50"]
-        >= rows["demand_savings"]["break_even"]["p50"]
+        rows["with_connected_solutions"]["value_per_block"]["p50"]
+        >= rows["demand_savings"]["value_per_block"]["p50"]
     )
 
 

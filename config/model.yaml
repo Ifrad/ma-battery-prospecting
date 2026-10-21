@@ -78,17 +78,16 @@ blocks:
     One battery block per this many kW of estimated peak, at least one,
     each block taking an equal share of the site's load. 1,000 kW is the
     lower edge of the top size bin in config/simulation.yaml, where one
-    block cuts the most kW. Without the installed cost the count cannot be
-    optimized, so this is a sizing rule, not an optimum. Revenue scales per
-    block and installed cost is per block with no volume discount.
+    block cuts the most kW. Cost is not modeled, so the count cannot be
+    optimized: this is a sizing rule, not an optimum. Revenue scales per
+    block.
     max_blocks has no value: no cap is applied.
   test: >-
     Compare with the block counts the operator installs at large sites.
   replace: >-
     The operator's sizing rule and block cap.
 
-# Two scenarios per site. The ITC is a cost-side toggle used only in the
-# break-even column and the optional model confidence, not a scenario.
+# Two scenarios per site.
 scenarios:
   demand_savings: [demand]
   with_connected_solutions: [demand, connected_solutions]

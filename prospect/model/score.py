@@ -1,11 +1,11 @@
-"""Score one site under each scenario: value per block, blocks, total and
-break-even installed cost. Reads nothing from the database; see
+"""Score one site under each scenario: value per block, blocks, total, value
+by stream and top drivers. Reads nothing from the database; see
 prospect/model/run.py for that.
 """
 
 import numpy as np
 
-from prospect.model import cost, drivers, value
+from prospect.model import drivers, value
 
 EVERSOURCE = "Eversource Energy (NSTAR Electric)"
 
@@ -35,9 +35,6 @@ def score_site(site: dict, buildings: list[dict], cfg: dict) -> list[dict]:
             {
                 "scenario": name,
                 **s,
-                "break_even": cost.break_even_summary(
-                    x["value_per_block"], s["blocks"], cfg
-                ),
                 "streams": value.by_stream(x),
                 "drivers": drivers.top_drivers(x),
                 "flags": flags(site, x),

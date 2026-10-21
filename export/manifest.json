@@ -38,22 +38,6 @@
   "site_exports": false,
   "export_cap_share_of_site_peak": 1.5
  },
- "costs": {
-  "life_years": 10,
-  "financing_rate": 0.08,
-  "om_usd_per_year": 4000,
-  "itc": {
-   "rate": 0.3,
-   "default_on": false,
-   "max_capacity_kw": 1000
-  },
-  "installed_cost_usd_per_block": null,
-  "min_host_benefit_usd_per_year": null,
-  "installed_cost_reference_usd": {
-   "low": 180000,
-   "middle": 260000
-  }
- },
  "placeholders": [
   {
    "file": "battery",
@@ -96,30 +80,6 @@
    "path": "overlap_factor",
    "value": "0.13 (range 0 to 0.13)",
    "note": "The share of event days that fall on the building's own monthly peak, when the same battery energy cannot serve both, so grid revenue is not double counted with peak shaving. An upper bound: a building has at most one monthly peak day in each of the 4 event months, and daily dispatch calls at least 30 events (sourced), so at most 4 / 30 = 0.13 of event revenue is at risk. ConnectedSolutions revenue is reduced by this share."
-  },
-  {
-   "file": "costs",
-   "path": "installed_cost_usd",
-   "value": "low=180000, middle=260000",
-   "note": "The owner's own estimates for one block, installed, unverified and pending the operator's real number. Not a model input: sites are ranked by value per block, and these two figures are only reference points beside the break-even installed cost and example costs for the optional model confidence. docs/SCORES.md counts the sites whose break-even cost clears each."
-  },
-  {
-   "file": "costs",
-   "path": "financing_rate",
-   "value": "0.08",
-   "note": "Yearly rate used to annualize the installed cost. Not from a source."
-  },
-  {
-   "file": "costs",
-   "path": "om_usd_per_year",
-   "value": "4000",
-   "note": "Operations and maintenance for one block. An unverified estimate."
-  },
-  {
-   "file": "costs",
-   "path": "min_host_benefit_usd_per_year",
-   "value": "None",
-   "note": "The minimum yearly benefit a host must get for the deal to be worth offering. Not used in scoring: it is added to the annualized cost only when a user asks for model confidence at a given cost and supplies a figure. No figure has been given, so it has no value."
   },
   {
    "file": "funnel",
@@ -173,7 +133,7 @@
    "file": "model",
    "path": "blocks",
    "value": "peak_kw_per_block=1000, max_blocks=None",
-   "note": "One battery block per this many kW of estimated peak, at least one, each block taking an equal share of the site's load. 1,000 kW is the lower edge of the top size bin in config/simulation.yaml, where one block cuts the most kW. Without the installed cost the count cannot be optimized, so this is a sizing rule, not an optimum. Revenue scales per block and installed cost is per block with no volume discount. max_blocks has no value: no cap is applied."
+   "note": "One battery block per this many kW of estimated peak, at least one, each block taking an equal share of the site's load. 1,000 kW is the lower edge of the top size bin in config/simulation.yaml, where one block cuts the most kW. Cost is not modeled, so the count cannot be optimized: this is a sizing rule, not an optimum. Revenue scales per block. max_blocks has no value: no cap is applied."
   },
   {
    "file": "profiles",

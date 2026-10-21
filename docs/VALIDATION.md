@@ -226,7 +226,7 @@ Each case rebuilds sites, priors, the funnel and the scores in a throwaway copy 
 
 - Peak shape: the monthly peak reduction share, load factor and event-window load all come from ComStock simulation (one weather year, 2018, perfect foresight reduced by a placeholder realization factor). Stress-tested, its unit-free measures checked against EnerNOC meters, and the share of a block's cut checked on EnerNOC shapes at assumed peaks only, since the dataset hides real kW.
 - ConnectedSolutions delivery: the rate and terms are sourced from the program documents, but what a block actually delivers in events (the performance factor, the overlap with the building's own peaks, and whether the site exports) is a placeholder.
-- Installed cost is not in the model. Value per block is gross revenue; break-even cost is a translation, not a prediction.
+- Cost and profit are not modeled. Value per block is gross revenue; the reader applies their own installed cost and host share.
 - The Eversource rate area for Canton and Sharon is unconfirmed: the rate is the Greater Boston one, and no Eversource document lists towns by area.
 - Factories, laundries, food plants, cold storage and auto repair have no open load profile: they take the widest simulated range in their size bin.
 - Matching LBER rows to buildings is reported in docs/MATCH_RATES.md, but ownership grouping and keyword segments were only hand-checked on a small, non-random sample.

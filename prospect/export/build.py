@@ -71,13 +71,6 @@ def scenario_block(r: dict) -> dict:
     return {
         "value_per_block": {k: d(r[f"value_{k}"]) for k in ("p10", "p50", "p90")},
         "total": {k: d(r[f"total_{k}"]) for k in ("p10", "p50", "p90")},
-        "break_even": {
-            "p50": d(r["break_even_p50"]),
-            "p10": d(r["break_even_p10"]),
-            "p50_itc": d(r["break_even_p50_itc"]),
-            "p10_itc": d(r["break_even_p10_itc"]),
-            "itc_applies": r["itc_applies"],
-        },
         "streams": {
             "demand_savings": {
                 "p50": d(r["demand_p50"]),
@@ -207,8 +200,6 @@ CSV_COLUMNS = [
     "value_p90",
     "blocks",
     "total_p50",
-    "break_even_p50",
-    "break_even_p50_itc",
     "demand_share",
     "connected_solutions_share",
     "lat",
@@ -247,8 +238,6 @@ def csv_rows(region_sites: list[dict]) -> list[dict]:
                         for k in ("p10", "p50", "p90")
                     },
                     "total_p50": sc["total"]["p50"],
-                    "break_even_p50": sc["break_even"]["p50"],
-                    "break_even_p50_itc": sc["break_even"]["p50_itc"],
                     "demand_share": sc["streams"]["demand_savings"]["share"],
                     "connected_solutions_share": sc["streams"]["connected_solutions"][
                         "share"
@@ -260,10 +249,8 @@ def csv_rows(region_sites: list[dict]) -> list[dict]:
 
 def manifest(cfg: dict, every: list[dict]) -> dict:
     """The model inputs the report needs to recompute value per block,
-    break-even cost and model confidence from the draws. Installed cost and
-    the minimum host benefit are left empty: the reader supplies them."""
+    expected blocks and the stream split from the draws."""
     cs = cfg["connected_solutions"]
-    costs = cfg["costs"]
     block = cfg["battery"]["block"]
     utilities = sorted({s["utility"] for s in every})
     factor = lambda c: {"value": c["value"], **c.get("range", {})}  # noqa: E731
@@ -291,21 +278,6 @@ def manifest(cfg: dict, every: list[dict]) -> dict:
             "export_cap_share_of_site_peak": cs["export_cap_share_of_site_peak"][
                 "value"
             ],
-        },
-        "costs": {
-            "life_years": costs["life_years"]["value"],
-            "financing_rate": costs["financing_rate"]["value"],
-            "om_usd_per_year": costs["om_usd_per_year"]["value"],
-            "itc": {
-                "rate": costs["itc"]["rate"],
-                "default_on": costs["itc"]["default_on"],
-                "max_capacity_kw": costs["itc"]["max_capacity_kw"],
-            },
-            "installed_cost_usd_per_block": None,
-            "min_host_benefit_usd_per_year": None,
-            "installed_cost_reference_usd": {
-                k: costs["installed_cost_usd"][k] for k in ("low", "middle")
-            },
         },
         "placeholders": [
             {"file": f, "path": p, "value": v, "note": n}

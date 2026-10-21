@@ -1,4 +1,4 @@
-"""Recompute value per block, break-even cost and model confidence from the
+"""Recompute value per block, expected blocks and the stream split from the
 export alone, as the report does in the browser. This is the reference the
 report's JavaScript mirrors line for line; tests check both against the
 Python model (prospect/model/).
@@ -12,7 +12,6 @@ def defaults(manifest: dict) -> dict:
     cs = manifest["connected_solutions"]
     return {
         "connected_solutions": True,
-        "itc": manifest["costs"]["itc"]["default_on"],
         "realization_factor": manifest["realization_factor"]["value"],
         "performance_factor": cs["performance_factor"]["value"],
         "overlap_factor": cs["overlap_factor"]["value"],
@@ -55,63 +54,24 @@ def percentiles(x: np.ndarray) -> dict:
     return {"p10": float(p10), "p50": float(p50), "p90": float(p90)}
 
 
-def crf(rate: float, years: float) -> float:
-    growth = (1 + rate) ** years
-    return rate * growth / (growth - 1)
-
-
-def itc_applies(blocks: float, manifest: dict) -> bool:
-    itc = manifest["costs"]["itc"]
-    return blocks * manifest["battery_block"]["power_kw"] < itc["max_capacity_kw"]
-
-
-def credit(manifest: dict, itc: bool, blocks: float) -> float:
-    on = itc and itc_applies(blocks, manifest)
-    return manifest["costs"]["itc"]["rate"] if on else 0.0
-
-
-def break_even(value: float, manifest: dict, itc: bool, blocks: float = 1) -> float:
-    c = manifest["costs"]
-    factor = crf(c["financing_rate"], c["life_years"])
-    return max(
-        0.0,
-        (value - c["om_usd_per_year"]) / (factor * (1 - credit(manifest, itc, blocks))),
-    )
-
-
-def annual_cost(
-    installed: float, manifest: dict, itc: bool, blocks: float = 1
-) -> float:
-    c = manifest["costs"]
-    factor = crf(c["financing_rate"], c["life_years"])
-    return (
-        installed * (1 - credit(manifest, itc, blocks)) * factor + c["om_usd_per_year"]
-    )
-
-
-def confidence(
-    values, installed: float, host: float, manifest: dict, itc: bool, blocks: float
-) -> float:
-    hurdle = annual_cost(installed, manifest, itc, blocks) + host
-    return float(np.mean(np.asarray(values) > hurdle))
-
-
 def site_summary(site: dict, manifest: dict, settings: dict) -> dict:
     """What the report shows for one site under the given settings."""
     x = value_draws(site, manifest, settings)
-    v = percentiles(x["value"])
-    blocks = float(np.mean(site["draws"]["blocks"]))
     demand, grid = float(np.median(x["demand"])), float(np.median(x["grid"]))
+    total = demand + grid
     return {
-        "value_per_block": v,
+        "value_per_block": percentiles(x["value"]),
         "total": percentiles(x["total"]),
-        "break_even": {
-            "p50": break_even(v["p50"], manifest, False),
-            "p10": break_even(v["p10"], manifest, False),
-            "p50_itc": break_even(v["p50"], manifest, True, blocks),
-            "p10_itc": break_even(v["p10"], manifest, True, blocks),
+        "blocks": float(np.mean(site["draws"]["blocks"])),
+        "streams": {
+            "demand_savings": {
+                "p50": demand,
+                "share": demand / total if total > 0 else 0.0,
+            },
+            "connected_solutions": {
+                "p50": grid,
+                "share": grid / total if total > 0 else 0.0,
+            },
         },
-        "streams": {"demand_savings": demand, "connected_solutions": grid},
         "values": x["value"],
-        "blocks": blocks,
     }
