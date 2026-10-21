@@ -1144,6 +1144,16 @@ on a phone, since the branch is not pushed.
       unconfirmed Eversource rate area, Worcester a tier near the
       one-block ceiling), what is unvalidated, the nine open questions and
       the two claims to check.
+- [x] `fix(report): fit the ranked table to a laptop-width window`
+      Added at the owner's request after review. Every header was nowrap,
+      so the long ConnectedSolutions labels set the column widths and the
+      data quality column was squeezed to 99 px, making rows about 200 px
+      tall and the table scroll sideways inside a 1,400 px page. Headers
+      now wrap (a <wbr> breaks the program name, the sort arrow stays on
+      its label), the data quality column has a 16em minimum, and the
+      page is up to 1,680 px wide. At a 1,470 px window the table fits
+      with no sideways scroll and the median row is 83 px in Metro South
+      and 71 px in Worcester. The README screenshots are retaken.
 
 ---
 
