@@ -7,6 +7,51 @@ before any host share. It uses public data only, covers two pilot regions
 (Metro South around Brockton, and Worcester), and comes with a P10 to P90
 band and the reasons for each site.
 
+Open the report: download report.html from the
+[v0.8.0 release](https://github.com/Ifrad/ma-battery-prospecting/releases/tag/v0.8.0)
+([direct link](https://github.com/Ifrad/ma-battery-prospecting/releases/download/v0.8.0/report.html)),
+then open it in any browser. It works offline and needs no install.
+docs/BRIEF.md is the one-page summary written for Powertown.
+
+## Results
+
+From docs/SCORES.md and docs/BRIEF.md. Values are simulated gross
+yearly revenue per battery block, not profit.
+
+- A funnel narrowed 9,640 candidate sites in Metro South and Worcester to
+  354 sites worth scoring.
+- The median scored site is worth $31,591 per block a year with
+  ConnectedSolutions, and $11,589 from demand savings alone. 194 sites are
+  above $30,000 and 100 are above $40,000.
+- ConnectedSolutions, one grid program, is 56 percent of the value, so the
+  ranking depends heavily on that program.
+- In Metro South the top 10 are all Eversource sites in Canton and Sharon,
+  because Eversource's demand charge is more than twice National Grid's.
+  Which Eversource rate area those towns sit in is still unconfirmed.
+- In Worcester the top 15 are close together, near the one-block ceiling,
+  so they should be treated as a group to call, not a strict order.
+- The model does not just rank by size. Worcester Hahnemann Hospital ranks
+  first in Worcester but 78th by building area alone.
+- Of the placeholder factors, the realization factor moves the median most:
+  from $27,947 to $33,538 across its range.
+
+## In short
+
+- Question: which Massachusetts commercial and industrial buildings should
+  a battery company contact first, and why?
+- Data: public only. MassGIS parcels, footprints and electric providers,
+  DOER's measured building electricity (LBER), NREL ComStock 15-minute load
+  profiles, and utility tariffs.
+- Method: group parcels into sites with SQL in PostGIS, estimate each
+  site's yearly electricity and monthly peak, simulate one battery block on
+  ComStock building load profiles, and run 1,000 Monte Carlo draws per
+  site to rank by the median with a P10 to P90 band.
+- Checks: tested against a size-only baseline with whole towns held out,
+  a calibration check on the uncertainty band, stress tests, rank
+  stability and a sensitivity analysis on every placeholder factor.
+- Output: an offline interactive report, a one-page brief, and CSV and
+  GeoJSON files per region.
+
 ![The report: header, ConnectedSolutions note and settings](docs/img/report-top.png)
 
 ## What this is and is not
@@ -34,38 +79,6 @@ band and the reasons for each site.
   and town permit history. In the pilot towns that is a size-only ranking,
   and this project uses it as the baseline to beat (docs/VALIDATION.md).
 
-## Start here
-
-The shortest path to the report needs no database and no internet, because
-the export it is built from is committed in export/.
-
-1. Install Python 3.11 or later and uv (docs.astral.sh/uv). Node 22 is
-   optional: it is only needed for the JavaScript parity test.
-2. Clone and build:
-
-       git clone https://github.com/Ifrad/ma-battery-prospecting.git
-       cd ma-battery-prospecting
-       make report
-
-   `make report` creates a virtual environment with uv on first run and
-   writes report.html (about 8 MB) in the repository root.
-3. Open report.html by double click, or `open report.html` on macOS. It is
-   one self-contained page: data, styles and scripts are inline, and it
-   makes no network requests. The only link out is a map link in the site
-   detail view, which loads nothing until you click it.
-
-report.html is built, never committed. A built copy is attached to each
-GitHub release from v0.7.0.
-
-To run the tests, including the JavaScript parity test when Node is
-installed:
-
-    make check
-
-Without a database the tests that need one skip; everything else runs.
-Checked from a fresh clone on 2026-10-21 (macOS, uv, Node 22, no database
-reachable): `make report` wrote report.html, and `make check` passed with
-only the database tests skipped; the Node parity test ran and passed.
 
 ![The ranked table for Worcester](docs/img/report-table.png)
 
@@ -345,6 +358,41 @@ figure for value per block.
   or peak per sq ft range, following their measured LBER electricity.
 - Not modeled: installed cost, host share, space for cabinets, utility
   interconnection capacity and owner willingness.
+
+
+## Run it yourself
+
+The shortest path to the report needs no database and no internet, because
+the export it is built from is committed in export/.
+
+1. Install Python 3.11 or later and uv (docs.astral.sh/uv). Node 22 is
+   optional: it is only needed for the JavaScript parity test.
+2. Clone and build:
+
+       git clone https://github.com/Ifrad/ma-battery-prospecting.git
+       cd ma-battery-prospecting
+       make report
+
+   `make report` creates a virtual environment with uv on first run and
+   writes report.html (about 8 MB) in the repository root.
+3. Open report.html by double click, or `open report.html` on macOS. It is
+   one self-contained page: data, styles and scripts are inline, and it
+   makes no network requests. The only link out is a map link in the site
+   detail view, which loads nothing until you click it.
+
+report.html is built, never committed. A built copy is attached to each
+GitHub release from v0.7.0.
+
+To run the tests, including the JavaScript parity test when Node is
+installed:
+
+    make check
+
+Without a database the tests that need one skip; everything else runs.
+Checked from a fresh clone on 2026-10-21 (macOS, uv, Node 22, no database
+reachable): `make report` wrote report.html, and `make check` passed with
+only the database tests skipped; the Node parity test ran and passed.
+
 
 ## Repository map
 
